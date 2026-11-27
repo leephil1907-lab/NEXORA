@@ -23,6 +23,13 @@ export async function GET(request: Request) {
   }
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return NextResponse.json({ error: "Sign in to view your generations." }, { status: 401 });
+  const ageAdmin = createAdminClient();
+  const { data: ageProfile, error: ageProfileError } = await ageAdmin.from("profiles")
+    .select("age_verified_at").eq("id", user.id).single();
+  if (ageProfileError || !ageProfile?.age_verified_at) {
+    return NextResponse.json({ code: "AGE_VERIFICATION_REQUIRED", error: "Complete NEXORA's 18+ age verification before using this feature." }, { status: 403 });
+  }
+
 
   const url = new URL(request.url);
   const limit = Math.min(30, Math.max(1, Number.parseInt(url.searchParams.get("limit") || "12", 10) || 12));
