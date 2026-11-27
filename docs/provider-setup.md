@@ -30,8 +30,17 @@ A dedicated GPU worker must:
 
 Do not point `NEXORA_IMAGE_ENDPOINT` at this LoRA: the current generic image adapter only supports text-to-image and does not submit a reference image. The clothing worker needs its own adapter and API contract. Do not mark the feature ready until a real GPU smoke test completes.
 
-## Virtual try-on and segmentation
-These are separate workflows. FASHN VTON v1.5 accepts a person image and a garment image and generates a try-on result; FASHN Human Parser produces semantic clothing/body-region segmentation masks. Check the license, runtime requirements and current upstream instructions before deployment.
+## Production virtual try-on (FASHN)
+NEXORA includes a dedicated, account-scoped clothing try-on route at `/api/fashion/try-on` and a studio screen at `/studio/try-on`.
+
+Configure this server-side secret in Render:
+- `FASHN_API_KEY`: API key from the [FASHN Developer API dashboard](https://app.fashn.ai/).
+
+The adapter calls `POST https://api.fashn.ai/v1/run` with `model_name: tryon-max`, then polls `GET /v1/status/{id}`. It accepts signed private Supabase image URLs, requires an explicit adult-subject consent declaration, checks that both assets belong to the signed-in account, and copies completed output into the private `lumi-assets` bucket so NEXORA does not depend on FASHN's expiring CDN links. It requests 2K quality output. FASHN charges its own API credits; NEXORA's existing generation-credit ledger is not currently applied to this separate try-on workflow.
+
+Before enabling the feature, apply `202611270002_fashion_jobs.sql` and verify that the Supabase `lumi-assets` bucket exists and is private. FASHN requires its own prepaid API credits and key. If `FASHN_API_KEY` is absent, the route returns `PROVIDER_NOT_CONFIGURED` and does not fabricate an output.
+
+This workflow is intentionally limited to ordinary clothing and accessories. It is not an undressing, intimate-image, or sexualized face-swap feature. Users must have the pictured adult's explicit permission.
 
 ## Launch gate
 Run a real generation smoke test for every enabled model and modality before advertising it as available. Record model version, settings, prediction/job ID, output dimensions/duration and stored asset URL.
