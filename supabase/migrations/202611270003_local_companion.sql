@@ -54,7 +54,7 @@ begin
   update public.local_inference_commands
      set status = 'expired', completed_at = now(), error_message = 'Command expired before execution.'
    where device_id = p_device_id and user_id = p_user_id
-     and status = 'queued' and expires_at <= now();
+     and status in ('queued','running') and expires_at <= now();
 
   update public.local_inference_commands
      set status = 'queued', lease_expires_at = null
@@ -75,7 +75,7 @@ begin
   return query
     update public.local_inference_commands
        set status = 'running', started_at = coalesce(started_at, now()),
-           lease_expires_at = now() + interval '90 seconds'
+           lease_expires_at = now() + interval '10 minutes'
      where id = claimed_id
      returning *;
 end;
