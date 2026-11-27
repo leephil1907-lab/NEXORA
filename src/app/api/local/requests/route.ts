@@ -33,6 +33,14 @@ export async function POST(request: Request) {
       .select("id").eq("id", parsed.data.deviceId).eq("user_id", user.id).eq("status", "active").single();
     if (deviceError || !device) return NextResponse.json({ error: "This local device is unavailable or revoked." }, { status: 404 });
 
+    const { count: pendingCount, error: pendingError } = await admin.from("local_inference_commands")
+      .select("id", { count: "exact", head: true })
+      .eq("device_id", device.id).in("status", ["queued", "running"]);
+    if (pendingError) return NextResponse.json({ error: "Could not check the local request queue." }, { status: 500 });
+    if ((pendingCount ?? 0) >= 5) {
+      return NextResponse.json({ error: "This device already has five pending local requests. Wait for one to finish." }, { status: 429 });
+    }
+
     const { data, error } = await admin.from("local_inference_commands").insert({
       user_id: user.id,
       device_id: device.id,
