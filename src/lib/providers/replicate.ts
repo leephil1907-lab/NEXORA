@@ -1,6 +1,5 @@
 import type {
   GenerationProvider,
-  GenerationSettings,
   ModelEntry,
   ProviderJob,
   StartJobArgs,
