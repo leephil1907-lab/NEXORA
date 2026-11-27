@@ -6,7 +6,7 @@ The companion connects a user's local OpenAI-compatible text model to NEXORA wit
 
 1. A signed-in NEXORA user registers a local device. NEXORA returns a random 256-bit bearer token once; only its SHA-256 hash is stored.
 2. The companion stores the token in its private environment and polls `GET /api/local/agent/commands` over HTTPS.
-3. NEXORA atomically leases a queued command to that device. A command is limited to ten minutes and a 90-second renewable/reclaimable lease.
+3. NEXORA atomically leases a queued command to that device. A command is limited to ten minutes and a ten-minute reclaimable lease.
 4. The agent sends the prompt to its local OpenAI-compatible endpoint (default `http://127.0.0.1:4891/v1`).
 5. The agent submits the result using its device token. Users can inspect their own request status and revoke devices.
 
