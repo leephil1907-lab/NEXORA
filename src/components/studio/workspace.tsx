@@ -8,7 +8,7 @@ import type { User } from "@supabase/supabase-js";
 import {
   AlertTriangle, ArrowUpRight, Camera, Check, ChevronDown, Cpu, Film,
   Gauge, Home, Image as ImageIcon, Library, LoaderCircle, LogOut, Plus, ShieldAlert,
-  ShieldCheck, Sparkles, Timer, Trash2, UploadCloud, Volume2, WandSparkles, X, Zap
+  ShieldCheck, Shirt, Sparkles, Timer, Trash2, UploadCloud, Volume2, WandSparkles, X, Zap
 } from "lucide-react";
 import { createClient } from "@/lib/supabase/browser";
 import { Logo } from "@/components/ui/logo";
@@ -540,6 +540,9 @@ export function Workspace() {
                 <item.icon size={15} className="text-violet" /> {item.label}
               </a>
             ))}
+            <Link href="/studio/try-on" className="flex items-center gap-2.5 rounded-xl px-3.5 py-2.5 text-xs font-semibold text-muted transition-colors duration-200 hover:bg-white/5 hover:text-white">
+              <Shirt size={15} className="text-violet" /> Virtual try-on
+            </Link>
           </nav>
 
           <div className="mt-auto hidden rounded-2xl border border-line bg-white/[0.02] p-4 lg:block">
