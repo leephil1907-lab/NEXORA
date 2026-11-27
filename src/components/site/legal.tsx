@@ -48,7 +48,7 @@ export function LegalPage({
             <p className="text-sm text-muted">
               Questions about this document? Reach the team through your account email thread,
               or review the{" "}
-              <Link href="/#faq" className="text-violet underline-offset-4 hover:underline">
+              <Link href="/#faq" className="text-lime underline-offset-4 hover:underline">
                 product FAQ
               </Link>
               .

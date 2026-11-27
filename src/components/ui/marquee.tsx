@@ -12,7 +12,7 @@ export function Marquee({ items, className }: { items: string[]; className?: str
             <span className="font-display text-sm font-semibold uppercase tracking-[0.28em] text-white/40">
               {item}
             </span>
-            <span className="h-1.5 w-1.5 rounded-full bg-gradient-to-r from-violet to-cyan" />
+            <span className="h-1.5 w-1.5 rounded-full bg-gradient-to-r from-lime to-cyan" />
           </span>
         ))}
       </div>

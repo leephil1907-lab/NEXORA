@@ -133,7 +133,7 @@ export default function LocalCompanionPage() {
           </section>
 
           <section className="glass-strong rounded-3xl p-6">
-            <div className="flex items-center justify-between gap-3"><div className="flex items-center gap-2"><Smartphone size={17} className="text-violet" /><h2 className="font-semibold">Your devices</h2></div><button type="button" onClick={() => loadDevices().catch((e) => setError(e.message))} className="btn-ghost !p-2" aria-label="Refresh devices"><RefreshCw size={14} /></button></div>
+            <div className="flex items-center justify-between gap-3"><div className="flex items-center gap-2"><Smartphone size={17} className="text-lime" /><h2 className="font-semibold">Your devices</h2></div><button type="button" onClick={() => loadDevices().catch((e) => setError(e.message))} className="btn-ghost !p-2" aria-label="Refresh devices"><RefreshCw size={14} /></button></div>
             <div className="mt-4 space-y-3">
               {devices.length === 0 ? <p className="rounded-xl border border-line p-4 text-xs text-muted">No local devices registered yet.</p> : devices.map((device) => (
                 <div key={device.id} className="flex items-center justify-between gap-3 rounded-xl border border-line bg-white/[0.02] p-3">
@@ -147,7 +147,7 @@ export default function LocalCompanionPage() {
         </div>
 
         <section className="glass-strong mt-6 rounded-3xl p-6">
-          <div className="flex items-center gap-2"><Laptop size={17} className="text-violet" /><h2 className="font-semibold">Run a local text request</h2></div>
+          <div className="flex items-center gap-2"><Laptop size={17} className="text-lime" /><h2 className="font-semibold">Run a local text request</h2></div>
           <p className="mt-2 text-xs leading-relaxed text-muted">Choose a connected device. The companion must be running and its local model API must be available before submitting.</p>
           <form onSubmit={submitPrompt} className="mt-5 space-y-3">
             <label className="block text-xs text-muted">Target device<select value={deviceId} onChange={(e) => setDeviceId(e.target.value)} required className="field mt-2 w-full"><option value="">Select a registered device</option>{activeDevices.map((device) => <option key={device.id} value={device.id}>{device.name} ({device.platform})</option>)}</select></label>

@@ -6,8 +6,8 @@ import Image from "next/image";
 import Link from "next/link";
 import type { User } from "@supabase/supabase-js";
 import {
-  AlertTriangle, ArrowUpRight, Camera, Check, ChevronDown, Cpu, Film,
-  Gauge, Home, Image as ImageIcon, Library, LoaderCircle, LogOut, Plus, ShieldAlert,
+  AlertTriangle, ArrowUpRight, Boxes, Camera, Check, ChevronDown, Cpu, Film,
+  Gauge, Home, Image as ImageIcon, Library, LoaderCircle, LogOut, MessageSquare, Plus, ShieldAlert,
   ShieldCheck, Shirt, Sparkles, Timer, Trash2, UploadCloud, Volume2, WandSparkles, Zap
 } from "lucide-react";
 import { createClient } from "@/lib/supabase/browser";
@@ -144,12 +144,11 @@ export function Workspace() {
   );
 
   useEffect(() => {
-    if (!currentModel && modelsForKind.length > 0) setModelId(modelsForKind[0].id);
-    if (currentModel && currentModel.modality !== kind) {
-      const fallback = modelsForKind[0];
-      if (fallback) setModelId(fallback.id);
+    if (modelsForKind.length > 0 && !modelsForKind.some((m) => m.id === modelId)) {
+      const localFirst = modelsForKind.find((m) => m.provider === "custom-image" || m.provider === "custom-llm");
+      setModelId((localFirst ?? modelsForKind[0]).id);
     }
-  }, [currentModel, modelsForKind, kind]);
+  }, [modelsForKind, modelId]);
 
   useEffect(() => {
     if (!currentModel) return;
@@ -459,7 +458,7 @@ export function Workspace() {
   if (!ready) {
     return (
       <main className="flex min-h-screen items-center justify-center">
-        <LoaderCircle size={22} className="animate-spin text-violet" />
+        <LoaderCircle size={22} className="animate-spin text-lime" />
       </main>
     );
   }
@@ -468,17 +467,17 @@ export function Workspace() {
     return (
       <main className="flex min-h-screen items-center justify-center px-5 py-10">
         <section className="glass-strong w-full max-w-lg rounded-[1.75rem] p-7 sm:p-10">
-          <div className="flex h-14 w-14 items-center justify-center rounded-2xl border border-violet/25 bg-violet/10 text-violet">
+          <div className="flex h-14 w-14 items-center justify-center rounded-2xl border border-lime/25 bg-lime/10 text-lime">
             <ShieldCheck size={26} />
           </div>
-          <p className="mt-6 text-[10px] font-semibold uppercase tracking-[0.2em] text-violet">NEXORA · Age assurance</p>
+          <p className="mt-6 text-[10px] font-semibold uppercase tracking-[0.2em] text-lime">NEXORA · Age assurance</p>
           <h1 className="mt-3 font-display text-3xl font-bold tracking-tight text-white">Adults only. 18+</h1>
           <p className="mt-3 text-sm leading-relaxed text-muted">Confirm your date of birth to enter the studio. Your date of birth is checked on the server and is not stored; NEXORA records only the confirmation timestamp and verification method.</p>
           <form onSubmit={verifyAge} className="mt-7 space-y-4">
             <label className="block text-xs font-semibold text-white/80" htmlFor="nexora-dob">Date of birth</label>
             <input id="nexora-dob" type="date" required max={new Date().toISOString().slice(0,10)} value={dateOfBirth} onChange={(event) => setDateOfBirth(event.target.value)} className="w-full rounded-xl border border-line bg-white/[0.04] px-4 py-3 text-sm text-white [color-scheme:dark]" />
             <label className="flex items-start gap-3 rounded-xl border border-line bg-white/[0.02] p-3.5 text-xs leading-relaxed text-white/80">
-              <input type="checkbox" required className="mt-0.5 accent-violet" />
+              <input type="checkbox" required className="mt-0.5 accent-lime" />
               I confirm that this date of birth is accurate and that I am at least 18 years old.
             </label>
             {ageError && <p role="alert" className="text-xs text-rose">{ageError}</p>}
@@ -537,11 +536,17 @@ export function Workspace() {
                 href={item.href}
                 className="flex items-center gap-2.5 rounded-xl px-3.5 py-2.5 text-xs font-semibold text-muted transition-colors duration-200 hover:bg-white/5 hover:text-white"
               >
-                <item.icon size={15} className="text-violet" /> {item.label}
+                <item.icon size={15} className="text-lime" /> {item.label}
               </a>
             ))}
+            <Link href="/chat" className="flex items-center gap-2.5 rounded-xl px-3.5 py-2.5 text-xs font-semibold text-muted transition-colors duration-200 hover:bg-white/5 hover:text-white">
+              <MessageSquare size={15} className="text-lime" /> Uncensored chat
+            </Link>
+            <Link href="/models" className="flex items-center gap-2.5 rounded-xl px-3.5 py-2.5 text-xs font-semibold text-muted transition-colors duration-200 hover:bg-white/5 hover:text-white">
+              <Boxes size={15} className="text-lime" /> Model catalog
+            </Link>
             <Link href="/studio/try-on" className="flex items-center gap-2.5 rounded-xl px-3.5 py-2.5 text-xs font-semibold text-muted transition-colors duration-200 hover:bg-white/5 hover:text-white">
-              <Shirt size={15} className="text-violet" /> Virtual try-on
+              <Shirt size={15} className="text-lime" /> Virtual try-on
             </Link>
             <Link href="/studio/local" className="flex items-center gap-2.5 rounded-xl px-3.5 py-2.5 text-xs font-semibold text-muted transition-colors duration-200 hover:bg-white/5 hover:text-white">
               <Cpu size={15} className="text-cyan" /> Local companion
@@ -562,7 +567,7 @@ export function Workspace() {
           </div>
 
           <div className="mt-5 flex items-center gap-3 rounded-2xl border border-line bg-white/[0.02] px-3.5 py-3">
-            <span className="grid h-8 w-8 shrink-0 place-items-center rounded-full bg-gradient-to-br from-violet/40 to-cyan/25 text-[11px] font-bold text-white">
+            <span className="grid h-8 w-8 shrink-0 place-items-center rounded-full bg-gradient-to-br from-lime/40 to-cyan/25 text-[11px] font-bold text-white">
               {displayEmail.slice(0, 1).toUpperCase()}
             </span>
             <div className="min-w-0 flex-1">
@@ -599,7 +604,7 @@ export function Workspace() {
         <div className="mx-auto max-w-[1500px] px-6 pb-16 pt-10">
           {/* ------------------------------ hero strip ----------------------------- */}
           <div id="create" className="scroll-mt-24">
-            <p className="text-[10px] font-semibold uppercase tracking-[0.28em] text-violet">The creative engine</p>
+            <p className="text-[10px] font-semibold uppercase tracking-[0.28em] text-lime">The creative engine</p>
             <h1 className="mt-3 font-display text-3xl font-extrabold tracking-tight text-white sm:text-4xl">
               Imagine it. <span className="gradient-text">Bring it to life.</span>
             </h1>
@@ -615,7 +620,7 @@ export function Workspace() {
               <div className="glass-strong rounded-3xl p-6">
                 <div className="flex flex-wrap items-center justify-between gap-3">
                   <div className="flex items-center gap-2.5">
-                    <span className="grid h-8 w-8 place-items-center rounded-xl bg-violet/12 text-violet">
+                    <span className="grid h-8 w-8 place-items-center rounded-xl bg-lime/12 text-lime">
                       {isVideo ? <Film size={15} /> : <ImageIcon size={15} />}
                     </span>
                     <h2 className="font-display text-base font-semibold text-white/95">
@@ -626,7 +631,7 @@ export function Workspace() {
                     <button
                       type="button"
                       onClick={() => (endEnabled ? clearEnd() : setEndEnabled(true))}
-                      className={cn("pill cursor-pointer", endEnabled ? "border-violet/40 bg-violet/15 text-white" : "")}
+                      className={cn("pill cursor-pointer", endEnabled ? "border-lime/40 bg-lime/15 text-white" : "")}
                     >
                       Add End Frame
                     </button>
@@ -660,9 +665,9 @@ export function Workspace() {
                     ) : (
                       <label
                         htmlFor="reference-image"
-                        className="flex cursor-pointer flex-col items-center justify-center gap-2 rounded-2xl border border-dashed border-white/12 bg-white/[0.015] px-4 py-7 text-center transition-colors hover:border-violet/35"
+                        className="flex cursor-pointer flex-col items-center justify-center gap-2 rounded-2xl border border-dashed border-white/12 bg-white/[0.015] px-4 py-7 text-center transition-colors hover:border-lime/35"
                       >
-                        <span className="grid h-10 w-10 place-items-center rounded-xl bg-violet/10 text-violet">
+                        <span className="grid h-10 w-10 place-items-center rounded-xl bg-lime/10 text-lime">
                           <UploadCloud size={17} />
                         </span>
                         <span className="text-xs font-semibold text-white/80">
@@ -704,9 +709,9 @@ export function Workspace() {
                         ) : (
                           <label
                             htmlFor="end-image"
-                            className="flex cursor-pointer items-center gap-3 rounded-2xl border border-dashed border-white/12 bg-white/[0.015] px-4 py-4 text-xs text-muted hover:border-violet/35"
+                            className="flex cursor-pointer items-center gap-3 rounded-2xl border border-dashed border-white/12 bg-white/[0.015] px-4 py-4 text-xs text-muted hover:border-lime/35"
                           >
-                            <Plus size={15} className="text-violet" /> End frame image
+                            <Plus size={15} className="text-lime" /> End frame image
                             <input
                               id="end-image"
                               ref={endInputRef}
@@ -758,11 +763,11 @@ export function Workspace() {
                 </div>
                 <div className="mt-2 flex flex-wrap items-center justify-between gap-2">
                   <div className="flex flex-wrap gap-1.5">
-                    <button type="button" onClick={enhancePrompt} disabled={assistBusy || prompt.trim().length < 1} className="pill cursor-pointer hover:border-violet/40">
+                    <button type="button" onClick={enhancePrompt} disabled={assistBusy || prompt.trim().length < 1} className="pill cursor-pointer hover:border-lime/40">
                       {assistBusy ? <LoaderCircle size={11} className="animate-spin" /> : <WandSparkles size={11} />}
                       {assistBusy ? "Enhancing…" : "Enhance prompt"}
                     </button>
-                    <button type="button" onClick={() => setPresetOpen((v) => !v)} className="pill cursor-pointer hover:border-violet/40">
+                    <button type="button" onClick={() => setPresetOpen((v) => !v)} className="pill cursor-pointer hover:border-lime/40">
                       <Sparkles size={11} /> Inspiration
                     </button>
                   </div>
@@ -775,7 +780,7 @@ export function Workspace() {
                         key={preset.slice(0, 30)}
                         type="button"
                         onClick={() => { setPrompt(preset); setPresetOpen(false); }}
-                        className="block w-full rounded-xl border border-line bg-white/[0.02] px-3.5 py-2.5 text-left text-[11px] leading-relaxed text-muted hover:border-violet/35 hover:text-white/85"
+                        className="block w-full rounded-xl border border-line bg-white/[0.02] px-3.5 py-2.5 text-left text-[11px] leading-relaxed text-muted hover:border-lime/35 hover:text-white/85"
                       >
                         {preset}
                       </button>
@@ -795,7 +800,7 @@ export function Workspace() {
                 {/* Model */}
                 <label className="mt-5 block">
                   <span className="mb-2 flex items-center gap-2 text-xs font-semibold text-white/80">
-                    <Cpu size={12} className="text-violet" /> Model
+                    <Cpu size={12} className="text-lime" /> Model
                   </span>
                   <div className="relative">
                     <select
@@ -804,11 +809,33 @@ export function Workspace() {
                       className="field appearance-none pr-10"
                     >
                       {modelsForKind.length === 0 && <option value="">No {kind} models in this catalog</option>}
-                      {modelsForKind.map((model) => (
-                        <option key={model.id} value={model.id}>
-                          {model.label}{model.ready ? "" : " — not configured"}
-                        </option>
-                      ))}
+                      {(["custom-image", "custom-llm"] as const).some((p) => modelsForKind.some((m) => m.provider === p)) && (
+                        <optgroup label="Local & self-hosted — your machine">
+                          {modelsForKind
+                            .filter((model) => model.provider === "custom-image" || model.provider === "custom-llm")
+                            .map((model) => (
+                              <option key={model.id} value={model.id}>
+                                {model.label}{model.ready ? "" : " — endpoint not configured"}
+                              </option>
+                            ))}
+                        </optgroup>
+                      )}
+                      <optgroup label="Cloud GPU (Replicate)">
+                        {modelsForKind
+                          .filter((model) => model.provider === "replicate")
+                          .map((model) => (
+                            <option key={model.id} value={model.id}>
+                              {model.label}{model.ready ? "" : " — not configured"}
+                            </option>
+                          ))}
+                      </optgroup>
+                      {modelsForKind
+                        .filter((model) => model.provider !== "custom-image" && model.provider !== "custom-llm" && model.provider !== "replicate")
+                        .map((model) => (
+                          <option key={model.id} value={model.id}>
+                            {model.label}{model.ready ? "" : " — not configured"}
+                          </option>
+                        ))}
                     </select>
                     <ChevronDown size={15} className="pointer-events-none absolute right-3.5 top-1/2 -translate-y-1/2 text-dim" />
                   </div>
@@ -823,7 +850,7 @@ export function Workspace() {
                 {isVideo && (
                   <div className="mt-5">
                     <p className="mb-2 flex items-center gap-2 text-xs font-semibold text-white/80">
-                      <Timer size={12} className="text-violet" /> Duration
+                      <Timer size={12} className="text-lime" /> Duration
                     </p>
                     <div className="flex flex-wrap gap-2">
                       {[5, 10].map((value) => {
@@ -837,7 +864,7 @@ export function Workspace() {
                             className={cn(
                               "rounded-full border px-4 py-2 text-[11px] font-semibold transition-all duration-200",
                               duration === value
-                                ? "border-violet/50 bg-violet/15 text-white"
+                                ? "border-lime/50 bg-lime/15 text-white"
                                 : "border-line bg-white/[0.02] text-muted hover:border-white/20 hover:text-white",
                               !enabled && "cursor-not-allowed opacity-35"
                             )}
@@ -868,7 +895,7 @@ export function Workspace() {
                           className={cn(
                             "rounded-full border px-4 py-2 text-[11px] font-semibold transition-all duration-200",
                             resolution === value
-                              ? "border-violet/50 bg-violet/15 text-white"
+                              ? "border-lime/50 bg-lime/15 text-white"
                               : "border-line bg-white/[0.02] text-muted hover:border-white/20 hover:text-white",
                             !enabled && "cursor-not-allowed opacity-35"
                           )}
@@ -892,7 +919,7 @@ export function Workspace() {
                         className={cn(
                           "rounded-full border px-3.5 py-2 text-[11px] font-semibold transition-all duration-200",
                           aspect === value
-                            ? "border-violet/50 bg-violet/15 text-white"
+                            ? "border-lime/50 bg-lime/15 text-white"
                             : "border-line bg-white/[0.02] text-muted hover:border-white/20 hover:text-white"
                         )}
                       >
@@ -915,7 +942,7 @@ export function Workspace() {
                     max={10}
                     value={guidance}
                     onChange={(event) => setGuidance(Number(event.target.value))}
-                    className="mt-2.5 w-full accent-violet"
+                    className="mt-2.5 w-full accent-lime"
                     aria-label="Creativity versus relevance"
                   />
                 </div>
@@ -932,11 +959,11 @@ export function Workspace() {
                         className={cn(
                           "flex items-center gap-2 rounded-full border px-4 py-2 text-[11px] font-semibold capitalize transition-all duration-200",
                           mode === value
-                            ? "border-violet/50 bg-violet/15 text-white"
+                            ? "border-lime/50 bg-lime/15 text-white"
                             : "border-line bg-white/[0.02] text-muted hover:border-white/20 hover:text-white"
                         )}
                       >
-                        <span className={cn("grid h-3.5 w-3.5 place-items-center rounded-full border", mode === value ? "border-violet bg-violet" : "border-white/25")}>
+                        <span className={cn("grid h-3.5 w-3.5 place-items-center rounded-full border", mode === value ? "border-lime bg-lime" : "border-white/25")}>
                           {mode === value && <Check size={8} className="text-ink" />}
                         </span>
                         {value} {value === "professional" && <span className="text-[9px] text-amber">×2 credits</span>}
@@ -948,7 +975,7 @@ export function Workspace() {
                 {/* Camera */}
                 <label className="mt-6 block">
                   <span className="mb-2 flex items-center gap-2 text-xs font-semibold text-white/80">
-                    <Camera size={12} className="text-violet" /> Camera movement
+                    <Camera size={12} className="text-lime" /> Camera movement
                     {!isVideo && <span className="text-[9px] font-normal text-dim">— disabled in image generation</span>}
                   </span>
                   <div className="relative">
@@ -986,7 +1013,7 @@ export function Workspace() {
                       onClick={() => setAudio((v) => !v)}
                       className={cn(
                         "relative h-6 w-11 rounded-full transition-colors duration-200",
-                        caps?.audio && audio ? "bg-violet" : "bg-white/12",
+                        caps?.audio && audio ? "bg-lime" : "bg-white/12",
                         !caps?.audio && "cursor-not-allowed opacity-40"
                       )}
                     >
@@ -1099,7 +1126,7 @@ export function Workspace() {
                     </div>
                   </div>
                   <div className="flex min-h-[300px] flex-col items-center justify-center gap-4 px-8 py-14 text-center">
-                    <span className="grid h-16 w-16 place-items-center rounded-3xl border border-violet/25 bg-violet/8 text-violet">
+                    <span className="grid h-16 w-16 place-items-center rounded-3xl border border-lime/25 bg-lime/8 text-lime">
                       <Sparkles size={26} />
                     </span>
                     <div>
@@ -1117,7 +1144,7 @@ export function Workspace() {
               <section id="library" className="scroll-mt-24">
                 <div className="flex flex-wrap items-center justify-between gap-4">
                   <div>
-                    <p className="text-[10px] font-semibold uppercase tracking-[0.22em] text-violet">Your work</p>
+                    <p className="text-[10px] font-semibold uppercase tracking-[0.22em] text-lime">Your work</p>
                     <h2 className="mt-2 font-display text-xl font-semibold text-white/95">Recent generations</h2>
                   </div>
                   <span className="text-[10px] uppercase tracking-[0.18em] text-dim">
@@ -1157,7 +1184,7 @@ export function Workspace() {
           </div>
 
           <footer className="mt-16 flex flex-wrap items-center justify-between gap-3 border-t border-line pt-6 text-[10px] uppercase tracking-[0.16em] text-dim">
-            <span className="font-display font-bold tracking-[0.22em] text-violet/80">NEXORA</span>
+            <span className="font-display font-bold tracking-[0.22em] text-lime/80">NEXORA</span>
             <span>Real models. Real work. No placeholders.</span>
             <span>© {new Date().getFullYear()}</span>
           </footer>

@@ -104,7 +104,7 @@ export function CreditsPage() {
         <div className="grid gap-6 md:grid-cols-3">
           {principles.map((item, index) => (
             <Reveal key={item.title} delay={index * 120} className="glass-strong rounded-[1.75rem] p-8">
-              <span className="grid h-12 w-12 place-items-center rounded-2xl bg-violet/12 text-violet">
+              <span className="grid h-12 w-12 place-items-center rounded-2xl bg-lime/12 text-lime">
                 <item.icon size={21} />
               </span>
               <h3 className="mt-5 font-display text-lg font-semibold text-white/95">{item.title}</h3>

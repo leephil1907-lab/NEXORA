@@ -18,7 +18,7 @@ export function Accordion({ items, className }: { items: FaqItem[]; className?: 
             key={item.question}
             className={cn(
               "glass rounded-2xl transition-colors duration-300",
-              isOpen && "border-violet/30 bg-white/[0.04]"
+              isOpen && "border-lime/30 bg-white/[0.04]"
             )}
           >
             <button
@@ -33,7 +33,7 @@ export function Accordion({ items, className }: { items: FaqItem[]; className?: 
               <span
                 className={cn(
                   "grid h-8 w-8 shrink-0 place-items-center rounded-full border border-line text-muted transition-transform duration-300 ease-swift",
-                  isOpen && "rotate-45 border-violet/40 text-violet"
+                  isOpen && "rotate-45 border-lime/40 text-lime"
                 )}
               >
                 <Plus size={15} />

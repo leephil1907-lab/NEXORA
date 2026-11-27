@@ -40,11 +40,12 @@ async function execute(command) {
   const messages = [];
   if (input.systemPrompt) messages.push({ role: "system", content: input.systemPrompt });
   messages.push({ role: "user", content: input.prompt });
+  const requestedModel = typeof input.model === "string" && input.model.trim() ? input.model.trim() : model;
   const response = await fetch(`${localUrl}/chat/completions`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({
-      model, messages, stream: false,
+      model: requestedModel, messages, stream: false,
       max_tokens: input.maxTokens || 512,
       temperature: input.temperature ?? 0.7,
     }),

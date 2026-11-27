@@ -81,7 +81,7 @@ export function SignInForm() {
               { icon: Mail, text: "Passwordless sign-in — one tap from your inbox" }
             ].map((item) => (
               <li key={item.text} className="flex items-start gap-3.5">
-                <span className="grid h-10 w-10 shrink-0 place-items-center rounded-2xl bg-gradient-to-br from-violet/20 to-cyan/10 text-violet">
+                <span className="grid h-10 w-10 shrink-0 place-items-center rounded-2xl bg-gradient-to-br from-lime/20 to-cyan/10 text-lime">
                   <item.icon size={17} />
                 </span>
                 <span className="pt-2 text-sm leading-relaxed text-muted">{item.text}</span>
@@ -133,7 +133,7 @@ export function SignInForm() {
                 <button
                   type="button"
                   onClick={() => setSent(false)}
-                  className="mt-4 text-xs text-violet underline-offset-4 hover:underline"
+                  className="mt-4 text-xs text-lime underline-offset-4 hover:underline"
                 >
                   Use a different email
                 </button>
@@ -181,9 +181,9 @@ export function SignInForm() {
 
           <p className="mt-6 text-center text-xs text-dim">
             By continuing you agree to our{" "}
-            <a href="/legal/terms" className="text-violet underline-offset-4 hover:underline">Terms</a>{" "}
+            <a href="/legal/terms" className="text-lime underline-offset-4 hover:underline">Terms</a>{" "}
             and{" "}
-            <a href="/legal/privacy" className="text-violet underline-offset-4 hover:underline">Privacy Policy</a>.
+            <a href="/legal/privacy" className="text-lime underline-offset-4 hover:underline">Privacy Policy</a>.
           </p>
         </section>
       </div>

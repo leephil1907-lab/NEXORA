@@ -34,18 +34,11 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
   return (
     <html lang="en" className={`${display.variable} ${sans.variable}`}>
       <body className="font-sans antialiased">
-        {/* Ambient background: aurora blobs + grid + film grain */}
+        {/* Tool-interface background: flat charcoal + faint grid */}
         <div aria-hidden className="fixed inset-0 z-0 overflow-hidden">
           <div className="absolute inset-0 bg-ink" />
-          <div className="absolute inset-0 grid-lines" />
-          <div className="absolute -top-[30vh] left-1/2 h-[80vh] w-[80vw] max-w-[1100px] -translate-x-1/2 rounded-full opacity-60 blur-[120px] animate-aurora-a"
-            style={{ background: "radial-gradient(ellipse at center, rgba(124,92,255,.32), transparent 65%)" }} />
-          <div className="absolute top-[45vh] -left-[20vw] h-[60vh] w-[55vw] rounded-full opacity-40 blur-[130px] animate-aurora-b"
-            style={{ background: "radial-gradient(ellipse at center, rgba(34,211,238,.22), transparent 65%)" }} />
-          <div className="absolute bottom-[-20vh] right-[-10vw] h-[55vh] w-[50vw] rounded-full opacity-35 blur-[130px] animate-aurora-b"
-            style={{ background: "radial-gradient(ellipse at center, rgba(232,121,249,.2), transparent 65%)" }} />
+          <div className="absolute inset-0 grid-lines opacity-60" />
         </div>
-        <div aria-hidden className="grain" />
         <div className="relative z-10">{children}</div>
       </body>
     </html>

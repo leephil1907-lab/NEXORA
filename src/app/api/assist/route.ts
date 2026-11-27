@@ -2,7 +2,8 @@ import { NextResponse } from "next/server";
 import { z } from "zod";
 import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
-import { chatComplete, assistantConfigured, ProviderNotConfiguredError } from "@/lib/providers";
+import { ProviderNotConfiguredError } from "@/lib/providers";
+import { chatWithChain, ChatUnavailableError } from "@/lib/chat/chain";
 
 export const runtime = "nodejs";
 export const maxDuration = 60;
@@ -10,13 +11,15 @@ export const maxDuration = 60;
 const assistSchema = z.object({
   prompt: z.string().trim().min(1).max(2500),
   mode: z.enum(["enhance", "direct"]).default("enhance"),
+  modelId: z.string().trim().max(120).optional(),
 });
 
 /**
- * Real prompt-assistant inference against the operator's own GPU endpoint
- * (OpenAI-compatible /v1/chat/completions) — e.g. a llama.cpp server hosting
- * Inkling-2-Mini or Dongfangshuo Qwen3.8. Never a canned response: when the
- * endpoint is not configured this returns an explicit unavailability error.
+ * Real prompt-assistant inference on the local-first engine chain: the user's
+ * own machine (Local Companion), then a self-hosted OpenAI-compatible endpoint
+ * (e.g. llama.cpp serving Inkling-2-Mini or Dongfangshuo Qwen3.8), then the
+ * optional hosted fallbacks. Never a canned response: when no engine is
+ * connected this returns an explicit unavailability error.
  */
 export async function POST(request: Request) {
   let body: unknown;
@@ -25,13 +28,6 @@ export async function POST(request: Request) {
   }
   const parsed = assistSchema.safeParse(body);
   if (!parsed.success) return NextResponse.json({ error: "Invalid assistance request." }, { status: 422 });
-
-  if (!assistantConfigured()) {
-    return NextResponse.json({
-      code: "PROVIDER_NOT_CONFIGURED",
-      error: new ProviderNotConfiguredError("custom-llm").message,
-    }, { status: 503 });
-  }
 
   let supabase;
   try { supabase = await createClient(); } catch {
@@ -44,17 +40,22 @@ export async function POST(request: Request) {
   if (ageProfileError || !ageProfile?.age_verified_at) return NextResponse.json({ code: "AGE_VERIFICATION_REQUIRED", error: "Complete NEXORA's 18+ age verification before using the studio." }, { status: 403 });
 
   try {
-    const text = await chatComplete([
-      {
-        role: "system",
-        content:
-          "You are a prompt engineer for a photorealistic image and video generation studio. Rewrite the user's idea into a single vivid production prompt: subject, setting, lighting, lens language, motion (if video), mood. Return only the rewritten prompt, no preamble.",
-      },
-      { role: "user", content: parsed.data.prompt },
-    ], 400);
-    return NextResponse.json({ text });
+    const result = await chatWithChain({
+      userId: user.id,
+      modelId: parsed.data.modelId,
+      maxTokens: 400,
+      messages: [
+        {
+          role: "system",
+          content:
+            "You are a prompt engineer for a photorealistic image and video generation studio. Rewrite the user's idea into a single vivid production prompt: subject, setting, lighting, lens language, motion (if video), mood. Return only the rewritten prompt, no preamble.",
+        },
+        { role: "user", content: parsed.data.prompt },
+      ],
+    });
+    return NextResponse.json({ text: result.text, via: result.via });
   } catch (error) {
-    if (error instanceof ProviderNotConfiguredError) {
+    if (error instanceof ProviderNotConfiguredError || error instanceof ChatUnavailableError) {
       return NextResponse.json({ code: "PROVIDER_NOT_CONFIGURED", error: error.message }, { status: 503 });
     }
     return NextResponse.json({

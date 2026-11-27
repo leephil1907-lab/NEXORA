@@ -1,0 +1,327 @@
+"use client";
+
+import { useCallback, useEffect, useRef, useState } from "react";
+import Link from "next/link";
+import {
+  AlertTriangle, ArrowUpRight, Bot, CheckCircle2, Cpu, LoaderCircle, MessageSquare,
+  Send, Server, ShieldCheck, Sparkles,
+} from "lucide-react";
+
+type LlmPublic = {
+  id: string;
+  label: string;
+  family: string;
+  sizeNote: string;
+  runtime: "local" | "hosted";
+  hfRepo?: string;
+  hfRepoVerified: boolean;
+  pullHint?: string;
+  vramNote?: string;
+  hostedVia?: "omega" | "venice";
+  note?: string;
+};
+
+type Engines = {
+  selfHostedLlm?: boolean;
+  omega?: boolean;
+  venice?: boolean;
+};
+
+type Device = { id: string; name: string; status: string; last_seen_at: string | null };
+
+type ChatMessage = {
+  role: "user" | "assistant";
+  content: string;
+  via?: string;
+  detail?: string;
+};
+
+const VIA_LABEL: Record<string, string> = {
+  "local-device": "Your machine · local companion",
+  "local-endpoint": "Self-hosted endpoint",
+  omega: "Omega AI hosted",
+  venice: "Venice.ai hosted",
+};
+
+export function ChatClient() {
+  const [models, setModels] = useState<LlmPublic[]>([]);
+  const [engines, setEngines] = useState<Engines>({});
+  const [devices, setDevices] = useState<Device[] | null>(null);
+  const [modelId, setModelId] = useState("");
+  const [messages, setMessages] = useState<ChatMessage[]>([]);
+  const [input, setInput] = useState("");
+  const [busy, setBusy] = useState(false);
+  const [authState, setAuthState] = useState<"loading" | "signed-out" | "age-required" | "ready">("loading");
+  const [error, setError] = useState<string | null>(null);
+  const threadEndRef = useRef<HTMLDivElement | null>(null);
+
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      try {
+        const configResponse = await fetch("/api/config", { cache: "no-store" });
+        const config = await configResponse.json();
+        if (cancelled) return;
+        setModels(Array.isArray(config.llmCatalog) ? config.llmCatalog : []);
+        setEngines(config.engines ?? {});
+        if (Array.isArray(config.llmCatalog) && config.llmCatalog.length > 0) {
+          setModelId((current) => current || config.llmCatalog[0].id);
+        }
+      } catch { /* engine list stays empty — shown honestly */ }
+
+      const devicesResponse = await fetch("/api/local/devices", { cache: "no-store" });
+      if (cancelled) return;
+      if (devicesResponse.status === 401) { setAuthState("signed-out"); return; }
+      if (devicesResponse.status === 403) { setAuthState("age-required"); return; }
+      const devicesPayload = await devicesResponse.json().catch(() => ({}));
+      setDevices(Array.isArray(devicesPayload.devices) ? devicesPayload.devices : []);
+      setAuthState("ready");
+    })();
+    return () => { cancelled = true; };
+  }, []);
+
+  useEffect(() => {
+    threadEndRef.current?.scrollIntoView({ behavior: "smooth", block: "end" });
+  }, [messages, busy]);
+
+  const activeDevice = devices?.find(
+    (device) => device.status === "active" && device.last_seen_at &&
+      Date.now() - new Date(device.last_seen_at).getTime() < 90_000
+  );
+
+  const send = useCallback(async () => {
+    const content = input.trim();
+    if (!content || busy) return;
+    setError(null);
+    setInput("");
+    const nextMessages: ChatMessage[] = [...messages, { role: "user", content }];
+    setMessages(nextMessages);
+    setBusy(true);
+    try {
+      const response = await fetch("/api/chat", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          modelId: modelId || undefined,
+          messages: nextMessages
+            .filter((message) => message.role === "user" || message.role === "assistant")
+            .map((message) => ({ role: message.role, content: message.content })),
+        }),
+      });
+      const payload = await response.json();
+      if (!response.ok) {
+        if (payload.code === "AGE_VERIFICATION_REQUIRED") { setAuthState("age-required"); return; }
+        if (response.status === 401) { setAuthState("signed-out"); return; }
+        throw new Error(payload.error || "The chat request failed.");
+      }
+      setMessages((current) => [
+        ...current,
+        { role: "assistant", content: String(payload.text || ""), via: payload.via, detail: payload.detail },
+      ]);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "The chat request failed.");
+    } finally {
+      setBusy(false);
+    }
+  }, [busy, input, messages, modelId]);
+
+  const selected = models.find((model) => model.id === modelId);
+
+  return (
+    <main className="mx-auto grid w-full max-w-[1400px] flex-1 gap-6 px-5 py-8 lg:grid-cols-[320px_minmax(0,1fr)]">
+      {/* ------------------------------- sidebar ------------------------------ */}
+      <aside className="space-y-5">
+        <div className="rounded-2xl border border-line bg-panel p-5">
+          <p className="flex items-center gap-2 text-[10px] font-semibold uppercase tracking-[0.22em] text-dim">
+            <Cpu size={12} className="text-lime" /> Engine chain — local first
+          </p>
+          <ul className="mt-3 space-y-2 text-[11px]">
+            <li className="flex items-center gap-2">
+              {activeDevice ? (
+                <><CheckCircle2 size={13} className="text-mint" /><span className="text-white/85">Local companion · <strong>{activeDevice.name}</strong></span></>
+              ) : (
+                <><AlertTriangle size={13} className="text-amber" /><span className="text-muted">Local companion — no device online (<Link className="text-cyan hover:underline" href="/studio/local">pair one</Link>)</span></>
+              )}
+            </li>
+            <li className="flex items-center gap-2">
+              {engines.selfHostedLlm ? (
+                <><CheckCircle2 size={13} className="text-mint" /><span className="text-white/85">Self-hosted endpoint connected</span></>
+              ) : (
+                <><Server size={13} className="text-dim" /><span className="text-muted">Self-hosted endpoint not configured</span></>
+              )}
+            </li>
+            <li className="flex items-center gap-2">
+              {engines.omega ? (
+                <><CheckCircle2 size={13} className="text-mint" /><span className="text-white/85">Omega AI fallback connected</span></>
+              ) : (
+                <><Sparkles size={13} className="text-dim" /><span className="text-muted">Omega AI fallback not configured</span></>
+              )}
+            </li>
+            <li className="flex items-center gap-2">
+              {engines.venice ? (
+                <><CheckCircle2 size={13} className="text-mint" /><span className="text-white/85">Venice fallback connected</span></>
+              ) : (
+                <><ShieldCheck size={13} className="text-dim" /><span className="text-muted">Venice fallback not configured</span></>
+              )}
+            </li>
+          </ul>
+          <p className="mt-3 border-t border-line pt-3 text-[10px] leading-relaxed text-dim">
+            Requests always try your machine first. Hosted engines only run when your local engine is offline or fails.
+          </p>
+        </div>
+
+        <div className="rounded-2xl border border-line bg-panel p-5">
+          <p className="flex items-center gap-2 text-[10px] font-semibold uppercase tracking-[0.22em] text-dim">
+            <MessageSquare size={12} className="text-lime" /> Uncensored models
+          </p>
+          <div className="mt-3 space-y-1.5">
+            {models.map((model) => {
+              const active = model.id === modelId;
+              return (
+                <button
+                  key={model.id}
+                  type="button"
+                  onClick={() => setModelId(model.id)}
+                  className={`w-full rounded-xl border px-3 py-2.5 text-left transition-colors duration-200 ${
+                    active ? "border-lime/40 bg-lime/10" : "border-line bg-white/[0.02] hover:border-white/15"
+                  }`}
+                >
+                  <span className="flex items-center justify-between gap-2">
+                    <span className="text-[11px] font-semibold text-white/90">{model.label}</span>
+                    <span className={`rounded-full px-1.5 py-0.5 text-[8px] font-bold uppercase tracking-wider ${model.runtime === "local" ? "bg-lime/15 text-lime" : "bg-cyan/15 text-cyan"}`}>
+                      {model.runtime === "local" ? "local" : "hosted"}
+                    </span>
+                  </span>
+                  <span className="mt-1 block text-[9px] text-dim">{model.sizeNote} · {model.vramNote || "—"}</span>
+                </button>
+              );
+            })}
+          </div>
+          {selected?.hfRepo && (
+            <a
+              href={`https://huggingface.co/${selected.hfRepo}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="mt-3 inline-flex items-center gap-1 text-[10px] font-semibold text-cyan hover:underline"
+            >
+              {selected.hfRepoVerified ? "Verified build" : "Build"}: {selected.hfRepo} <ArrowUpRight size={10} />
+            </a>
+          )}
+          {selected?.note && <p className="mt-2 text-[9px] leading-relaxed text-dim">{selected.note}</p>}
+        </div>
+      </aside>
+
+      {/* -------------------------------- thread ------------------------------ */}
+      <section className="flex min-h-[60vh] flex-col rounded-2xl border border-line bg-panel">
+        <div className="flex items-center justify-between gap-3 border-b border-line px-5 py-3.5">
+          <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-dim">
+            Chat <span className="mx-1.5 text-white/20">/</span>
+            <span className="text-white/80">{selected?.label ?? "uncensored model"}</span>
+          </p>
+          {selected && (
+            <span className="pill border-lime/25 bg-lime/10 text-lime">
+              <Bot size={11} /> {selected.runtime === "local" ? "Runs on your machine" : "Hosted"}
+            </span>
+          )}
+        </div>
+
+        <div className="flex-1 space-y-4 overflow-y-auto px-5 py-6" style={{ maxHeight: "62vh" }}>
+          {authState === "loading" && (
+            <p className="py-10 text-center text-xs text-dim">Checking engines…</p>
+          )}
+
+          {authState === "signed-out" && (
+            <div className="py-14 text-center">
+              <MessageSquare size={28} className="mx-auto text-lime" />
+              <p className="mt-4 text-sm font-semibold text-white">Sign in to chat with your local models</p>
+              <p className="mx-auto mt-2 max-w-sm text-xs leading-relaxed text-muted">
+                Chat runs real inference — your machine first, hosted engines as fallback. Sign in and complete the 18+ check to start.
+              </p>
+              <Link href="/sign-in" className="btn-primary mt-5 inline-flex !px-5 !py-2.5 text-xs">Sign in</Link>
+            </div>
+          )}
+
+          {authState === "age-required" && (
+            <div className="py-14 text-center">
+              <ShieldCheck size={28} className="mx-auto text-amber" />
+              <p className="mt-4 text-sm font-semibold text-white">18+ verification required</p>
+              <p className="mx-auto mt-2 max-w-sm text-xs leading-relaxed text-muted">
+                Adults only. Open the studio to complete NEXORA&apos;s age verification, then come back to chat.
+              </p>
+              <Link href="/" className="btn-primary mt-5 inline-flex !px-5 !py-2.5 text-xs">Open studio</Link>
+            </div>
+          )}
+
+          {authState === "ready" && messages.length === 0 && (
+            <div className="py-14 text-center">
+              <Sparkles size={26} className="mx-auto text-lime" />
+              <p className="mt-4 text-sm font-semibold text-white">No filters. Your hardware. Your rules.</p>
+              <p className="mx-auto mt-2 max-w-md text-xs leading-relaxed text-muted">
+                Pick an uncensored model on the left and start typing. If your local companion is offline, the
+                request falls back to hosted engines only when they are configured — never to canned responses.
+              </p>
+            </div>
+          )}
+
+          {messages.map((message, index) => (
+            <div key={index} className={message.role === "user" ? "flex justify-end" : "flex justify-start"}>
+              <div
+                className={`max-w-[85%] rounded-2xl px-4 py-3 text-[13px] leading-relaxed ${
+                  message.role === "user"
+                    ? "bg-lime/15 text-white"
+                    : "border border-line bg-white/[0.03] text-white/90"
+                }`}
+              >
+                {message.content}
+                {message.role === "assistant" && message.via && (
+                  <span className="mt-2 block text-[9px] uppercase tracking-[0.14em] text-dim">
+                    via {VIA_LABEL[message.via] || message.via}{message.detail ? ` · ${message.detail}` : ""}
+                  </span>
+                )}
+              </div>
+            </div>
+          ))}
+
+          {busy && (
+            <div className="flex justify-start">
+              <div className="flex items-center gap-2 rounded-2xl border border-line bg-white/[0.03] px-4 py-3 text-xs text-muted">
+                <LoaderCircle size={13} className="animate-spin text-lime" />
+                {activeDevice ? `Running on ${activeDevice.name}…` : "Running inference…"}
+              </div>
+            </div>
+          )}
+          <div ref={threadEndRef} />
+        </div>
+
+        {error && (
+          <div className="mx-5 mb-3 rounded-xl border border-rose/30 bg-rose/10 px-4 py-3 text-[11px] leading-relaxed text-rose">
+            {error}
+          </div>
+        )}
+
+        {authState === "ready" && (
+          <div className="border-t border-line p-4">
+            <div className="flex items-end gap-2">
+              <textarea
+                value={input}
+                onChange={(event) => setInput(event.target.value)}
+                onKeyDown={(event) => {
+                  if (event.key === "Enter" && !event.shiftKey) {
+                    event.preventDefault();
+                    void send();
+                  }
+                }}
+                rows={2}
+                placeholder="Message your uncensored model… (Enter to send, Shift+Enter for a new line)"
+                className="field min-h-[52px] flex-1 resize-y"
+              />
+              <button type="button" onClick={() => void send()} disabled={busy || !input.trim()} className="btn-primary !px-4 !py-3">
+                {busy ? <LoaderCircle size={15} className="animate-spin" /> : <Send size={15} />}
+              </button>
+            </div>
+          </div>
+        )}
+      </section>
+    </main>
+  );
+}

@@ -5,17 +5,21 @@ const config: Config = {
   theme: {
     extend: {
       colors: {
-        ink: "#06070d",
-        "ink-2": "#0a0c15",
-        "ink-3": "#0e1119",
-        panel: "rgba(255,255,255,0.03)",
-        line: "rgba(255,255,255,0.08)",
-        "line-strong": "rgba(255,255,255,0.14)",
-        muted: "#9ba3b8",
-        dim: "#6b7286",
-        violet: "#a78bfa",
-        cyan: "#67e8f9",
-        magenta: "#f0abfc",
+        ink: "#0b0c0e",
+        "ink-2": "#111316",
+        "ink-3": "#15171a",
+        panel: "#15171a",
+        line: "#262a30",
+        "line-strong": "#343a42",
+        muted: "#9aa3ad",
+        dim: "#6b737d",
+        // Primary action palette (green → cyan)
+        lime: "#a3e635",
+        green: "#4ade80",
+        cyan: "#22d3ee",
+        // Demoted accents (functional use only)
+        violet: "#a3e635", /* legacy token name kept working = lime */
+        magenta: "#e879f9",
         mint: "#7ee2b8",
         amber: "#f2c46d",
         rose: "#f28b9b"
@@ -25,24 +29,14 @@ const config: Config = {
         sans: ["var(--font-sans)", "ui-sans-serif", "sans-serif"]
       },
       boxShadow: {
-        glow: "0 0 90px rgba(139,92,246,.28)",
-        "glow-sm": "0 0 40px rgba(139,92,246,.18)",
-        "glow-cyan": "0 0 70px rgba(34,211,238,.16)",
-        card: "0 30px 90px rgba(0,0,0,.5)",
-        "inner-line": "inset 0 1px 0 rgba(255,255,255,.06)"
+        card: "0 12px 40px rgba(0,0,0,.35)",
+        "inner-line": "inset 0 1px 0 rgba(255,255,255,.04)",
+        btn: "0 4px 18px rgba(74,222,128,.18)"
       },
       borderRadius: {
         "4xl": "2rem"
       },
       keyframes: {
-        "aurora-a": {
-          "0%,100%": { transform: "translate3d(0,0,0) scale(1)" },
-          "50%": { transform: "translate3d(4vw,-3vh,0) scale(1.12)" }
-        },
-        "aurora-b": {
-          "0%,100%": { transform: "translate3d(0,0,0) scale(1.05)" },
-          "50%": { transform: "translate3d(-5vw,4vh,0) scale(.92)" }
-        },
         marquee: {
           "0%": { transform: "translateX(0)" },
           "100%": { transform: "translateX(-50%)" }
@@ -64,8 +58,6 @@ const config: Config = {
         }
       },
       animation: {
-        "aurora-a": "aurora-a 16s ease-in-out infinite",
-        "aurora-b": "aurora-b 20s ease-in-out infinite",
         marquee: "marquee 38s linear infinite",
         "spin-slow": "spin-slow 14s linear infinite",
         shimmer: "shimmer 2.4s linear infinite",

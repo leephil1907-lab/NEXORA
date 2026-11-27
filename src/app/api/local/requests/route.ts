@@ -10,6 +10,7 @@ const schema = z.object({
   systemPrompt: z.string().trim().max(4000).optional(),
   maxTokens: z.number().int().min(16).max(4096).default(512),
   temperature: z.number().min(0).max(2).default(0.7),
+  model: z.string().trim().max(120).optional(),
 });
 
 export async function POST(request: Request) {
@@ -49,6 +50,7 @@ export async function POST(request: Request) {
         systemPrompt: parsed.data.systemPrompt ?? "",
         maxTokens: parsed.data.maxTokens,
         temperature: parsed.data.temperature,
+        model: parsed.data.model ?? "",
       },
     }).select("id,status,created_at,expires_at").single();
     if (error || !data) return NextResponse.json({ error: "Could not queue local inference." }, { status: 500 });

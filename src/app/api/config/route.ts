@@ -2,6 +2,10 @@ import { NextResponse } from "next/server";
 import type { AppConfig } from "@/lib/generations/types";
 import { publicCatalog, getModel, providerReady, assistantConfigured, customImageConfigured, replicateConfigured } from "@/lib/providers";
 import { imageCreditCost, videoCreditBase, maxUploadMb } from "@/lib/generations/pricing";
+import { publicLlmCatalog } from "@/lib/models/uncensored-catalog";
+import { omegaConfigured } from "@/lib/providers/omega";
+import { vipeakConfigured } from "@/lib/providers/vipeak";
+import { ogaiCount } from "@/lib/data/ogai-catalog";
 
 export const runtime = "nodejs";
 
@@ -40,6 +44,20 @@ export async function GET() {
       replicate: replicateConfigured(),
       customImage: customImageConfigured(),
       customLlm: assistantConfigured(),
+      omega: omegaConfigured(),
+      venice: Boolean(process.env.VENICE_API_KEY),
+      vipeak: vipeakConfigured(),
     },
+    engines: {
+      localCompanion: true,
+      selfHostedLlm: assistantConfigured(),
+      selfHostedImage: customImageConfigured(),
+      omega: omegaConfigured(),
+      venice: Boolean(process.env.VENICE_API_KEY),
+      vipeak: vipeakConfigured(),
+      replicate: replicateConfigured(),
+    },
+    llmCatalog: publicLlmCatalog(),
+    catalogCount: ogaiCount(),
   }, { headers: { "Cache-Control": "no-store" } });
 }

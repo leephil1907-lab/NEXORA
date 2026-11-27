@@ -45,8 +45,8 @@ export function ConfigScreen() {
         <h1 className="mt-6 font-display text-2xl font-bold tracking-tight">Studio setup required</h1>
         <p className="mt-4 text-sm leading-relaxed text-muted">
           This NEXORA deployment is not connected to its backend services yet. Set the Supabase
-          environment variables (<code className="rounded bg-white/5 px-1.5 py-0.5 text-[11px] text-violet">NEXT_PUBLIC_SUPABASE_URL</code> and{" "}
-          <code className="rounded bg-white/5 px-1.5 py-0.5 text-[11px] text-violet">NEXT_PUBLIC_SUPABASE_ANON_KEY</code>) to enable
+          environment variables (<code className="rounded bg-white/5 px-1.5 py-0.5 text-[11px] text-lime">NEXT_PUBLIC_SUPABASE_URL</code> and{" "}
+          <code className="rounded bg-white/5 px-1.5 py-0.5 text-[11px] text-lime">NEXT_PUBLIC_SUPABASE_ANON_KEY</code>) to enable
           real authentication, jobs and storage.
         </p>
         <p className="mt-4 text-xs text-dim">
@@ -65,24 +65,25 @@ export function SignedOutScreen() {
         <div aria-hidden className="absolute inset-x-0 -top-24 h-48 opacity-60"
           style={{ background: "radial-gradient(ellipse at center, rgba(124,92,255,.35), transparent 70%)" }} />
         <div className="relative">
-          <span className="mx-auto grid h-14 w-14 place-items-center rounded-2xl bg-gradient-to-br from-violet/25 to-cyan/12 text-violet">
+          <span className="mx-auto grid h-14 w-14 place-items-center rounded-2xl bg-gradient-to-br from-lime/25 to-cyan/12 text-lime">
             <Sparkles size={24} />
           </span>
           <h1 className="mt-6 font-display text-3xl font-extrabold tracking-tight">
             Your studio awaits.
           </h1>
           <p className="mt-4 text-sm leading-relaxed text-muted">
-            Sign in to compose prompts, run real generations, and keep every asset in your
-            private library. No demo data — just your work.
+            Sign in to run real generations on your own machine first, chat with uncensored
+            models, and keep every asset in your private library. No demo data — just your work.
           </p>
-          <div className="mt-8 flex flex-col items-center justify-center gap-3 sm:flex-row">
-            <Link href="/sign-in?next=%2Fstudio" className="btn-primary whitespace-nowrap">
+          <div className="mt-8 flex flex-col items-center justify-center gap-3 sm:flex-row sm:flex-wrap">
+            <Link href="/sign-in?next=%2F" className="btn-primary whitespace-nowrap">
               Sign in to continue <ArrowUpRight size={16} />
             </Link>
-            <Link href="/" className="btn-secondary whitespace-nowrap">Explore the product</Link>
+            <Link href="/models" className="btn-secondary whitespace-nowrap">Browse models</Link>
+            <Link href="/chat" className="btn-secondary whitespace-nowrap">Uncensored chat</Link>
           </div>
           <p className="mt-7 text-[11px] text-dim">
-            Passwordless access · Private storage · Automatic failure refunds
+            Local-first engines · Passwordless access · Private storage · Automatic failure refunds
           </p>
         </div>
       </div>
@@ -113,11 +114,11 @@ export function SensitiveGate({ onAccept, onCancel }: { onAccept: () => void; on
         </p>
         <div className="mt-5 space-y-3">
           <label className="flex cursor-pointer items-start gap-3 rounded-xl border border-line bg-white/[0.02] p-3.5 text-xs leading-relaxed text-white/85">
-            <input type="checkbox" checked={adult} onChange={(e) => setAdult(e.target.checked)} className="mt-0.5 accent-violet" />
+            <input type="checkbox" checked={adult} onChange={(e) => setAdult(e.target.checked)} className="mt-0.5 accent-lime" />
             I am 18 years of age or older.
           </label>
           <label className="flex cursor-pointer items-start gap-3 rounded-xl border border-line bg-white/[0.02] p-3.5 text-xs leading-relaxed text-white/85">
-            <input type="checkbox" checked={rules} onChange={(e) => setRules(e.target.checked)} className="mt-0.5 accent-violet" />
+            <input type="checkbox" checked={rules} onChange={(e) => setRules(e.target.checked)} className="mt-0.5 accent-lime" />
             I will not generate sexual content involving minors, real people without their
             consent, or any non-consensual intimate imagery. Violations end my access.
           </label>
@@ -192,7 +193,7 @@ export function JobView({
         <div className="relative flex min-h-[300px] flex-col items-center justify-center gap-4 px-8 py-14 text-center">
           <div aria-hidden className="absolute inset-0 opacity-60"
             style={{ background: "radial-gradient(ellipse at center, rgba(124,92,255,.14), transparent 65%)" }} />
-          <span className="relative grid h-16 w-16 place-items-center rounded-3xl border border-violet/25 bg-violet/8 text-violet">
+          <span className="relative grid h-16 w-16 place-items-center rounded-3xl border border-lime/25 bg-lime/8 text-lime">
             {pending ? <LoaderCircle size={26} className="animate-spin" /> : <Sparkles size={26} />}
           </span>
           <div className="relative">
@@ -297,7 +298,7 @@ export function LibraryTabs({ value, onChange, counts }: {
           className={cn(
             "rounded-full border px-3.5 py-1.5 text-[11px] font-semibold transition-all duration-200",
             value === tab.id
-              ? "border-violet/50 bg-violet/15 text-white"
+              ? "border-lime/50 bg-lime/15 text-white"
               : "border-line bg-white/[0.02] text-muted hover:border-white/20 hover:text-white"
           )}
         >
@@ -321,7 +322,7 @@ export function LibraryGrid({
   if (jobs.length === 0) {
     return (
       <div className="glass rounded-3xl border-dashed px-8 py-16 text-center">
-        <span className="mx-auto grid h-12 w-12 place-items-center rounded-2xl bg-violet/10 text-violet">
+        <span className="mx-auto grid h-12 w-12 place-items-center rounded-2xl bg-lime/10 text-lime">
           <Plus size={20} />
         </span>
         <p className="mt-5 font-display text-base font-semibold text-white/90">
@@ -346,7 +347,7 @@ export function LibraryGrid({
             onClick={() => onSelect(job)}
             className={cn(
               "glass-strong card-hover group overflow-hidden rounded-2xl text-left",
-              isActive && "border-violet/45 shadow-glow-sm"
+              isActive && "border-lime/45 shadow-glow-sm"
             )}
           >
             <div className="relative aspect-[4/3] overflow-hidden bg-ink-2">
@@ -426,7 +427,7 @@ export function CreditsPanel({ credits, imageCost, videoCost }: {
     <div className="glass-strong rounded-3xl p-7">
       <div className="flex flex-wrap items-center justify-between gap-4">
         <div>
-          <p className="text-[10px] font-semibold uppercase tracking-[0.22em] text-violet">Account</p>
+          <p className="text-[10px] font-semibold uppercase tracking-[0.22em] text-lime">Account</p>
           <h3 className="mt-2 font-display text-lg font-semibold text-white/95">Credit ledger</h3>
         </div>
         <div className="text-right">
@@ -469,7 +470,7 @@ export function AdminPanel({
     <form onSubmit={onSubmit} className="glass-strong rounded-3xl p-7">
       <div className="flex items-center justify-between gap-4">
         <div>
-          <p className="text-[10px] font-semibold uppercase tracking-[0.22em] text-violet">Administration</p>
+          <p className="text-[10px] font-semibold uppercase tracking-[0.22em] text-lime">Administration</p>
           <h3 className="mt-2 font-display text-lg font-semibold text-white/95">Manage user credits</h3>
         </div>
         <span className="pill border-amber/25 bg-amber/8 text-amber">
