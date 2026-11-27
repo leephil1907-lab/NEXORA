@@ -1,18 +1,13 @@
-# LUMI AI production setup
+# NEXORA production setup
 
 ## Required services
-
 1. Create a Supabase project and configure its URL, anon key, and service-role key in the deployment environment.
-2. Apply every SQL migration in `supabase/migrations` in filename order using the Supabase SQL editor or Supabase CLI.
-3. Configure Replicate API token, image/video model identifiers, and each model's exact JSON input template. The model templates must use `{{prompt}}`, `{{aspect_ratio}}`, and optionally `{{image_url}}` placeholders.
-4. Configure Stripe in live mode only after testing in Stripe test mode:
-   - `STRIPE_SECRET_KEY`
-   - `STRIPE_WEBHOOK_SECRET`
-   - Register `https://YOUR_LUMI_DOMAIN/api/billing/webhook` for `checkout.session.completed`.
-5. Set `NEXT_PUBLIC_APP_URL` to the final HTTPS domain.
+2. Apply every SQL migration in `supabase/migrations` in filename order. This includes the age-assurance fields and the account-scoped fashion-job table used by virtual try-on.
+3. Configure a Replicate API token for the models enabled in the catalog. Add `FASHN_API_KEY` if enabling the `/studio/try-on` feature; the FASHN API requires separately purchased credits.
+4. Set `NEXT_PUBLIC_APP_URL` to the final HTTPS domain.
+5. Configure optional OpenAI-compatible assistant/image endpoints only when the corresponding GPU services are deployed and tested.
 
 ## Admin bootstrap
-
 After the first account has signed in and its profile row exists, promote the intended operator explicitly in Supabase SQL:
 
 ```sql
@@ -23,18 +18,14 @@ where id = 'THE_AUTH_USER_UUID';
 
 Do not expose the service-role key in browser code. Admin adjustments are recorded in the credit ledger with a reason and an idempotency key.
 
-## Credit packages
-
-- Starter: 100 credits for USD $4.99
-- Creator: 550 credits for USD $19.99
-- Studio: 1,600 credits for USD $49.99
-
-Checkout creates a Stripe-hosted one-time payment. Credits are granted only after a verified, paid `checkout.session.completed` webhook and are idempotent per Checkout Session.
+## Credits
+The current generation application reserves credits transactionally and refunds failed provider jobs. The repository currently documents operator-granted credits; do not advertise card checkout until a verified payment checkout and webhook flow are implemented and tested end to end.
 
 ## Deployment
+The Render Blueprint targets the `main` branch and uses the Pro web-service plan. Add the required secret values in Render before syncing the Blueprint. The health check uses `/api/config`, which reports public readiness flags without exposing credentials. Replicate and GPU inference usage may incur separate usage charges.
 
-The Render Blueprint is configured for the `main` branch and uses Render's Free web-service plan to avoid a paid hosting subscription. Free instances can sleep after inactivity and have limited memory/compute, so expect cold starts and treat this as a test deployment rather than production-grade hosting. Add required secrets to the service before approving the first sync. The Free plan does not remove the need for Supabase and Replicate accounts or any usage-based charges from external providers.
+## Age assurance
+The studio requires an 18+ date-of-birth self-declaration. The server calculates the age and stores only the verification timestamp and method, not the date of birth. This is not independent identity verification; select and configure a specialist age-assurance provider before representing the flow as third-party verified.
 
 ## Verification
-
-GitHub Actions runs install, TypeScript type-check, lint, and production build. A passing CI build does not replace live tests for Supabase auth, storage, Replicate model compatibility, Stripe webhooks, and credit accounting.
+GitHub Actions runs install, TypeScript type-check, lint, and production build. A passing CI build does not replace live tests for Supabase auth, storage, Replicate model compatibility, fashion GPU jobs, and credit accounting.

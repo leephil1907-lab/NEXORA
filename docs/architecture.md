@@ -1,7 +1,7 @@
-# LUMI AI architecture
+# NEXORA architecture
 
 ## Boundaries
-LUMI is an independent product. It must not import Spectra application code, share Spectra credentials, or depend on Spectra databases. Future integration should happen through documented APIs and explicit identity/entitlement mapping.
+NEXORA is an independent product. It must not import unrelated application code, share credentials, or depend on another product's database. Integrations happen through documented APIs and explicit identity/entitlement mapping.
 
 ## Request lifecycle
 1. An authenticated user submits a generation request.
@@ -20,6 +20,16 @@ LUMI is an independent product. It must not import Spectra application code, sha
 - `src/app/studio`: customer workspace
 - `supabase/migrations`: schema, RLS, credit ledger and RPC functions
 
+## Fashion pipeline boundary
+Fashion tools are separate inference workflows, not aliases for the image/video generator:
+- Garment extraction: isolate a garment from a clothed reference photo and produce a product-style garment image.
+- Garment segmentation: return masks/regions for tops, bottoms, dresses and accessories.
+- Virtual try-on: apply a supplied garment image to a person image, with explicit image-owner/subject consent.
+- Garment replacement: a try-on/edit workflow that uses a supplied replacement garment.
+- Video generation: animate an image or generate a clip using the Wan/LTX provider adapters.
+
+The Hugging Face `Xabsurd/Clothing-Extractor` adapter is based on `Qwen/Qwen-Image-Edit-2511` plus a LoRA. It requires a dedicated compatible GPU worker that loads both the base model and adapter. The model is not currently deployed by a Hugging Face Inference Provider; do not wire it as though a standard hosted inference URL exists. The worker must expose an authenticated, asynchronous job API and return a durable output URL. Keep its GPU credentials server-side.
+
 ## Security
 - Provider tokens and service-role keys are server-only.
 - User-owned rows use Row Level Security.
@@ -28,6 +38,7 @@ LUMI is an independent product. It must not import Spectra application code, sha
 - Admin permissions are checked server-side.
 - Uploads have size/type limits and private storage policies.
 - Webhook signatures must be verified before they can mutate jobs.
+- Fashion workflows must verify ownership/authorization for uploaded person and garment assets and must not generate non-consensual intimate imagery.
 
 ## Reliability
 - Provider errors are explicit, never replaced with successful placeholder results.

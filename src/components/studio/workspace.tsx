@@ -8,7 +8,7 @@ import type { User } from "@supabase/supabase-js";
 import {
   AlertTriangle, ArrowUpRight, Camera, Check, ChevronDown, Cpu, Film,
   Gauge, Home, Image as ImageIcon, Library, LoaderCircle, LogOut, Plus, ShieldAlert,
-  ShieldCheck, Sparkles, Timer, Trash2, UploadCloud, Volume2, WandSparkles, X, Zap
+  ShieldCheck, Shirt, Sparkles, Timer, Trash2, UploadCloud, Volume2, WandSparkles, Zap
 } from "lucide-react";
 import { createClient } from "@/lib/supabase/browser";
 import { Logo } from "@/components/ui/logo";
@@ -65,6 +65,10 @@ export function Workspace() {
   }, []);
 
   const [ready, setReady] = useState(false);
+  const [ageVerified, setAgeVerified] = useState(false);
+  const [dateOfBirth, setDateOfBirth] = useState("");
+  const [ageBusy, setAgeBusy] = useState(false);
+  const [ageError, setAgeError] = useState("");
   const [user, setUser] = useState<User | null>(null);
   const [config, setConfig] = useState<AppConfig>(defaultConfig);
   const [credits, setCredits] = useState<number | null>(null);
@@ -74,7 +78,7 @@ export function Workspace() {
   const [libraryFilter, setLibraryFilter] = useState<LibraryFilter>("all");
 
   // Compose state
-  const [kind, setKind] = useState<"image" | "video">("image");
+  const [kind] = useState<"image" | "video">("image");
   const [prompt, setPrompt] = useState(initialPrompt);
   const [modelId, setModelId] = useState("");
   const [duration, setDuration] = useState(5);
@@ -171,8 +175,9 @@ export function Workspace() {
     const { data: { user: currentUser } } = await supabase.auth.getUser();
     setUser(currentUser);
     if (!currentUser) return;
-    const { data } = await supabase.from("profiles").select("credits,role").eq("id", currentUser.id).single();
+    const { data } = await supabase.from("profiles").select("credits,role,age_verified_at").eq("id", currentUser.id).single();
     if (data) {
+      setAgeVerified(Boolean(data.age_verified_at));
       setCredits(data.credits);
       const isAdmin = data.role === "admin";
       setRole(isAdmin ? "admin" : "customer");
@@ -418,6 +423,26 @@ export function Workspace() {
     }
   }
 
+  async function verifyAge(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    setAgeBusy(true);
+    setAgeError("");
+    try {
+      const response = await fetch("/api/age-verification", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ dateOfBirth, confirm: true }),
+      });
+      const payload = await response.json();
+      if (!response.ok) throw new Error(payload.error || "Age verification failed.");
+      setAgeVerified(true);
+    } catch (error) {
+      setAgeError(error instanceof Error ? error.message : "Age verification failed.");
+    } finally {
+      setAgeBusy(false);
+    }
+  }
+
   async function signOut() {
     if (!supabase) return;
     await supabase.auth.signOut();
@@ -439,6 +464,35 @@ export function Workspace() {
     );
   }
   if (!user) return <SignedOutScreen />;
+  if (!ageVerified) {
+    return (
+      <main className="flex min-h-screen items-center justify-center px-5 py-10">
+        <section className="glass-strong w-full max-w-lg rounded-[1.75rem] p-7 sm:p-10">
+          <div className="flex h-14 w-14 items-center justify-center rounded-2xl border border-violet/25 bg-violet/10 text-violet">
+            <ShieldCheck size={26} />
+          </div>
+          <p className="mt-6 text-[10px] font-semibold uppercase tracking-[0.2em] text-violet">NEXORA · Age assurance</p>
+          <h1 className="mt-3 font-display text-3xl font-bold tracking-tight text-white">Adults only. 18+</h1>
+          <p className="mt-3 text-sm leading-relaxed text-muted">Confirm your date of birth to enter the studio. Your date of birth is checked on the server and is not stored; NEXORA records only the confirmation timestamp and verification method.</p>
+          <form onSubmit={verifyAge} className="mt-7 space-y-4">
+            <label className="block text-xs font-semibold text-white/80" htmlFor="nexora-dob">Date of birth</label>
+            <input id="nexora-dob" type="date" required max={new Date().toISOString().slice(0,10)} value={dateOfBirth} onChange={(event) => setDateOfBirth(event.target.value)} className="w-full rounded-xl border border-line bg-white/[0.04] px-4 py-3 text-sm text-white [color-scheme:dark]" />
+            <label className="flex items-start gap-3 rounded-xl border border-line bg-white/[0.02] p-3.5 text-xs leading-relaxed text-white/80">
+              <input type="checkbox" required className="mt-0.5 accent-violet" />
+              I confirm that this date of birth is accurate and that I am at least 18 years old.
+            </label>
+            {ageError && <p role="alert" className="text-xs text-rose">{ageError}</p>}
+            <button type="submit" disabled={ageBusy || !dateOfBirth} className="btn-primary w-full justify-center disabled:cursor-not-allowed disabled:opacity-50">
+              {ageBusy ? <LoaderCircle size={16} className="animate-spin" /> : <ShieldCheck size={16} />}
+              {ageBusy ? "Checking age…" : "Confirm and enter NEXORA"}
+            </button>
+          </form>
+          <p className="mt-5 text-[11px] leading-relaxed text-dim">This is a date-of-birth self-declaration, not an identity-document or biometric age check. A stronger third-party age-assurance provider can be connected before launch.</p>
+          <button type="button" onClick={signOut} className="btn-ghost mt-4 w-full justify-center text-xs">Sign out</button>
+        </section>
+      </main>
+    );
+  }
 
   const displayEmail = user.email || "NEXORA creator";
   const promptReady = prompt.trim().length >= 3;
@@ -486,6 +540,9 @@ export function Workspace() {
                 <item.icon size={15} className="text-violet" /> {item.label}
               </a>
             ))}
+            <Link href="/studio/try-on" className="flex items-center gap-2.5 rounded-xl px-3.5 py-2.5 text-xs font-semibold text-muted transition-colors duration-200 hover:bg-white/5 hover:text-white">
+              <Shirt size={15} className="text-violet" /> Virtual try-on
+            </Link>
           </nav>
 
           <div className="mt-auto hidden rounded-2xl border border-line bg-white/[0.02] p-4 lg:block">

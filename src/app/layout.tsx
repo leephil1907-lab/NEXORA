@@ -16,16 +16,16 @@ const sans = Inter({
 
 export const metadata: Metadata = {
   title: {
-    default: "NEXORA — Real AI Image & Video Studio",
+    default: "NEXORA — Image & Video Studio",
     template: "%s · NEXORA"
   },
   description:
-    "NEXORA is a production-grade AI generation studio: photorealistic image synthesis and cinematic video from real cloud GPUs — Wan 2.2/2.5, LTX-Video and FLUX. Auditable jobs, persistent libraries, credit accounting. No placeholders.",
+    "NEXORA is a cloud image and video creation studio for photorealistic imagery and cinematic motion. Real model inference, auditable jobs, private libraries and transparent credit accounting.",
   applicationName: "NEXORA",
   keywords: ["AI image generation", "AI video generation", "image to video", "Wan", "LTX-Video", "FLUX", "photorealistic", "cinematic AI", "generative media"],
   openGraph: {
     title: "NEXORA — Real AI Image & Video Studio",
-    description: "Photorealistic images. Cinematic video. Real model inference on real GPUs — with auditable jobs and honest status, end to end.",
+    description: "Photorealistic images. Cinematic video. Real model inference with auditable jobs and honest status, end to end.",
     type: "website"
   }
 };

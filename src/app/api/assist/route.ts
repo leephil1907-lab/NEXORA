@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
 import { createClient } from "@/lib/supabase/server";
+import { createAdminClient } from "@/lib/supabase/admin";
 import { chatComplete, assistantConfigured, ProviderNotConfiguredError } from "@/lib/providers";
 
 export const runtime = "nodejs";
@@ -38,6 +39,9 @@ export async function POST(request: Request) {
   }
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return NextResponse.json({ error: "Sign in to use the prompt assistant." }, { status: 401 });
+  const ageAdmin = createAdminClient();
+  const { data: ageProfile, error: ageProfileError } = await ageAdmin.from("profiles").select("age_verified_at").eq("id", user.id).single();
+  if (ageProfileError || !ageProfile?.age_verified_at) return NextResponse.json({ code: "AGE_VERIFICATION_REQUIRED", error: "Complete NEXORA's 18+ age verification before using the studio." }, { status: 403 });
 
   try {
     const text = await chatComplete([
