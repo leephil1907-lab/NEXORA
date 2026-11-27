@@ -5,7 +5,7 @@ import { createAdminClient } from "@/lib/supabase/admin";
 export const runtime = "nodejs";
 
 function isAtLeast18(value: string): boolean {
-  if (!/^\\d{4}-\\d{2}-\\d{2}$/.test(value)) return false;
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(value)) return false;
   const dob = new Date(`${value}T00:00:00.000Z`);
   if (Number.isNaN(dob.getTime()) || dob.toISOString().slice(0, 10) !== value) return false;
   const now = new Date();
