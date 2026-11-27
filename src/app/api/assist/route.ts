@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
 import { createClient } from "@/lib/supabase/server";
+import { createAdminClient } from "@/lib/supabase/admin";
 import { chatComplete, assistantConfigured, ProviderNotConfiguredError } from "@/lib/providers";
 
 export const runtime = "nodejs";
