@@ -2,8 +2,8 @@
 
 ## Required services
 1. Create a Supabase project and configure its URL, anon key, and service-role key in the deployment environment.
-2. Apply every SQL migration in `supabase/migrations` in filename order, including `202611270004_age_assurance.sql`. This adds the age-assurance fields used by the server-side 18+ gate.
-3. Configure a Replicate API token for the models enabled in the catalog.
+2. Apply every SQL migration in `supabase/migrations` in filename order. This includes the age-assurance fields and the account-scoped fashion-job table used by virtual try-on.
+3. Configure a Replicate API token for the models enabled in the catalog. Add `FASHN_API_KEY` if enabling the `/studio/try-on` feature; the FASHN API requires separately purchased credits.
 4. Set `NEXT_PUBLIC_APP_URL` to the final HTTPS domain.
 5. Configure optional OpenAI-compatible assistant/image endpoints only when the corresponding GPU services are deployed and tested.
 
