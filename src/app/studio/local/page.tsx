@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useState, type FormEvent } from "react";
 import Link from "next/link";
-import { ArrowLeft, Check, Copy, Laptop, LoaderCircle, Plus, RefreshCw, ShieldCheck, Smartphone, Trash2, Wifi } from "lucide-react";
+import { ArrowLeft, Copy, Laptop, LoaderCircle, Plus, RefreshCw, ShieldCheck, Smartphone, Trash2, Wifi } from "lucide-react";
 
 type Device = { id: string; name: string; platform: string; status: "active" | "revoked"; last_seen_at: string | null; created_at: string };
 type LocalRequest = { id: string; status: "queued" | "running" | "completed" | "failed" | "expired"; output?: string | null; error_message?: string | null; created_at?: string };
