@@ -16,7 +16,7 @@ type JobRow = {
 async function account() {
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
-  return { supabase, user };
+  return { user };
 }
 
 async function ageAllowed(userId: string) {
@@ -34,7 +34,7 @@ export async function POST(request: Request) {
   try { auth = await account(); } catch {
     return NextResponse.json({ error: "Authentication service is unavailable." }, { status: 503 });
   }
-  const { supabase, user } = auth;
+  const { user } = auth;
   if (!user) return NextResponse.json({ error: "Sign in to use virtual try-on." }, { status: 401 });
   if (!(await ageAllowed(user.id))) return NextResponse.json({ code: "AGE_VERIFICATION_REQUIRED", error: "Complete 18+ age assurance first." }, { status: 403 });
   if (!process.env.FASHN_API_KEY) return NextResponse.json({ code: "PROVIDER_NOT_CONFIGURED", error: "FASHN_API_KEY is not configured. Add it to the NEXORA production environment." }, { status: 503 });
