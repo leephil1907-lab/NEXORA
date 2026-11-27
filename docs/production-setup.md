@@ -2,7 +2,7 @@
 
 ## Required services
 1. Create a Supabase project and configure its URL, anon key, and service-role key in the deployment environment.
-2. Apply every SQL migration in `supabase/migrations` in filename order.
+2. Apply every SQL migration in `supabase/migrations` in filename order, including `202611270004_age_assurance.sql`. This adds the age-assurance fields used by the server-side 18+ gate.
 3. Configure a Replicate API token for the models enabled in the catalog.
 4. Set `NEXT_PUBLIC_APP_URL` to the final HTTPS domain.
 5. Configure optional OpenAI-compatible assistant/image endpoints only when the corresponding GPU services are deployed and tested.
@@ -23,6 +23,9 @@ The current generation application reserves credits transactionally and refunds 
 
 ## Deployment
 The Render Blueprint targets the `main` branch and uses the Pro web-service plan. Add the required secret values in Render before syncing the Blueprint. The health check uses `/api/config`, which reports public readiness flags without exposing credentials. Replicate and GPU inference usage may incur separate usage charges.
+
+## Age assurance
+The studio requires an 18+ date-of-birth self-declaration. The server calculates the age and stores only the verification timestamp and method, not the date of birth. This is not independent identity verification; select and configure a specialist age-assurance provider before representing the flow as third-party verified.
 
 ## Verification
 GitHub Actions runs install, TypeScript type-check, lint, and production build. A passing CI build does not replace live tests for Supabase auth, storage, Replicate model compatibility, fashion GPU jobs, and credit accounting.
