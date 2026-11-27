@@ -18,6 +18,9 @@ export async function POST(request: Request) {
   }
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return NextResponse.json({ error: "Sign in before uploading a reference image." }, { status: 401 });
+  const ageAdmin = createAdminClient();
+  const { data: ageProfile, error: ageProfileError } = await ageAdmin.from("profiles").select("age_verified_at").eq("id", user.id).single();
+  if (ageProfileError || !ageProfile?.age_verified_at) return NextResponse.json({ code: "AGE_VERIFICATION_REQUIRED", error: "Complete NEXORA's 18+ age verification before uploading media." }, { status: 403 });
 
   const form = await request.formData().catch(() => null);
   const file = form?.get("file");
