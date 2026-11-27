@@ -543,6 +543,9 @@ export function Workspace() {
             <Link href="/studio/try-on" className="flex items-center gap-2.5 rounded-xl px-3.5 py-2.5 text-xs font-semibold text-muted transition-colors duration-200 hover:bg-white/5 hover:text-white">
               <Shirt size={15} className="text-violet" /> Virtual try-on
             </Link>
+            <Link href="/studio/local" className="flex items-center gap-2.5 rounded-xl px-3.5 py-2.5 text-xs font-semibold text-muted transition-colors duration-200 hover:bg-white/5 hover:text-white">
+              <Cpu size={15} className="text-cyan" /> Local companion
+            </Link>
           </nav>
 
           <div className="mt-auto hidden rounded-2xl border border-line bg-white/[0.02] p-4 lg:block">
