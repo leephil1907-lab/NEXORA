@@ -8,7 +8,7 @@ import type { User } from "@supabase/supabase-js";
 import {
   AlertTriangle, ArrowUpRight, Camera, Check, ChevronDown, Cpu, Film,
   Gauge, Home, Image as ImageIcon, Library, LoaderCircle, LogOut, Plus, ShieldAlert,
-  ShieldCheck, Shirt, Sparkles, Timer, Trash2, UploadCloud, Volume2, WandSparkles, X, Zap
+  ShieldCheck, Shirt, Sparkles, Timer, Trash2, UploadCloud, Volume2, WandSparkles, Zap
 } from "lucide-react";
 import { createClient } from "@/lib/supabase/browser";
 import { Logo } from "@/components/ui/logo";
@@ -78,7 +78,7 @@ export function Workspace() {
   const [libraryFilter, setLibraryFilter] = useState<LibraryFilter>("all");
 
   // Compose state
-  const [kind, setKind] = useState<"image" | "video">("image");
+  const [kind] = useState<"image" | "video">("image");
   const [prompt, setPrompt] = useState(initialPrompt);
   const [modelId, setModelId] = useState("");
   const [duration, setDuration] = useState(5);
