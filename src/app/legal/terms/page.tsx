@@ -18,7 +18,7 @@ const sections: LegalSection[] = [
     heading: "2. Your account",
     paragraphs: [
       "Access requires an account secured by passwordless email sign-in. You are responsible for keeping access to your email account and for all activity that occurs under your NEXORA account.",
-      "You must be old enough to form a binding agreement in your jurisdiction to use NEXORA. Accounts are personal and may not be shared or resold."
+      "NEXORA is an adults-only service. You must be at least 18 years old to create or use an account. Before entering the studio, you must submit a date of birth for server-side age calculation and confirm that it is accurate. The current flow records the confirmation timestamp and method, not the date of birth; it is a self-declaration and may be supplemented by independent age-assurance checks. Accounts are personal and may not be shared or resold."
     ]
   },
   {
@@ -32,7 +32,7 @@ const sections: LegalSection[] = [
     heading: "4. Your content",
     paragraphs: [
       "You retain rights to the prompts, reference images and media you create with NEXORA, subject to the terms of the underlying model providers and applicable law. You grant NEXORA the limited license needed to process, store and deliver your media to you.",
-      "You are responsible for the content you submit. Do not create unlawful, harassing, defamatory, or infringing content, or content that depicts real individuals in a non-consensual sexual, violent, or deceptive way."
+      "You are responsible for the content you submit. Do not create unlawful, harassing, defamatory, or infringing content, sexual content involving anyone under 18, or intimate imagery of real people without their explicit consent. You must have the rights and permissions needed for every person and asset you upload."
     ]
   },
   {
