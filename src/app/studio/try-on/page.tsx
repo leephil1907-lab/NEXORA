@@ -2,7 +2,7 @@
 
 import { useEffect, useState, type FormEvent } from "react";
 import Link from "next/link";
-import { ArrowLeft, CheckCircle2, ImagePlus, LoaderCircle, Shirt, Sparkles } from "lucide-react";
+import { ArrowLeft, ImagePlus, LoaderCircle, Shirt, Sparkles } from "lucide-react";
 
 type JobState = { id: string; status: "processing" | "completed" | "failed"; outputUrl?: string | null; error?: string };
 
@@ -23,13 +23,15 @@ export default function TryOnPage() {
   const [job, setJob] = useState<JobState | null>(null);
   const [error, setError] = useState("");
 
+  const activeJobId = job?.status === "processing" ? job.id : null;
+
   useEffect(() => {
-    if (!job || job.status !== "processing") return;
+    if (!activeJobId) return;
     let active = true;
     let timer: ReturnType<typeof setTimeout>;
     const poll = async () => {
       try {
-        const response = await fetch(`/api/fashion/try-on?id=${encodeURIComponent(job.id)}`, { cache: "no-store" });
+        const response = await fetch(`/api/fashion/try-on?id=${encodeURIComponent(activeJobId)}`, { cache: "no-store" });
         const payload = await response.json();
         if (!response.ok) throw new Error(payload.error || "Could not check generation status.");
         if (!active) return;
@@ -41,7 +43,7 @@ export default function TryOnPage() {
     };
     timer = setTimeout(poll, 2500);
     return () => { active = false; clearTimeout(timer); };
-  }, [job?.id, job?.status]);
+  }, [activeJobId]);
 
   async function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -80,7 +82,7 @@ export default function TryOnPage() {
             <form onSubmit={submit} className="mt-8 space-y-5">
               <label className="block rounded-2xl border border-line bg-white/[0.025] p-4">
                 <span className="mb-2 block text-sm font-semibold">Person image</span>
-                <span className="mb-3 block text-xs text-muted">Use your own photo or an adult's photo with their explicit permission.</span>
+                <span className="mb-3 block text-xs text-muted">Use your own photo or an adult&apos;s photo with their explicit permission.</span>
                 <input type="file" accept="image/jpeg,image/png,image/webp" onChange={e => setPerson(e.target.files?.[0] ?? null)} className="block w-full text-xs text-muted file:mr-3 file:rounded-lg file:border-0 file:bg-violet/15 file:px-3 file:py-2 file:text-xs file:font-semibold file:text-white" />
                 {person && <span className="mt-2 block text-xs text-cyan">{person.name}</span>}
               </label>
