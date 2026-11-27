@@ -10,13 +10,13 @@ const sections: LegalSection[] = [
   {
     heading: "1. What we collect",
     paragraphs: [
-      "Account data: your email address and a display name derived at signup. Generation data: prompts, optional reference images, chosen settings, job status and errors. Media: the outputs generated for you. Billing data: credit purchases and ledger entries — payment card details are collected by Stripe, not by NEXORA."
+      "Account data: your email address and a display name derived at signup. Age assurance data: the timestamp and method used to record your 18+ confirmation. When you enter a date of birth, NEXORA checks it transiently on the server and does not store the date itself. The current flow is a self-declaration, not an identity-document or biometric check. Generation data: prompts, optional reference images, chosen settings, job status and errors. Media: the outputs generated for you. Credit data: account balances and ledger entries."
     ]
   },
   {
     heading: "2. How it is used",
     paragraphs: [
-      "Your data is used to operate the studio: authenticate you, submit generation jobs to providers, persist your media, track credits, and provide support. We do not sell your personal data, and we do not use your prompts or media to train models."
+      "Your data is used to operate the studio: authenticate you, enforce the 18+ access requirement, submit generation jobs to providers, persist your media, track credits, and provide support. We do not sell your personal data, and we do not use your prompts or media to train models."
     ]
   },
   {
