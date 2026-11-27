@@ -1,0 +1,1120 @@
+"use client";
+
+import { useCallback, useEffect, useMemo, useRef, useState, type FormEvent } from "react";
+import { useSearchParams } from "next/navigation";
+import Image from "next/image";
+import Link from "next/link";
+import type { User } from "@supabase/supabase-js";
+import {
+  AlertTriangle, ArrowUpRight, Camera, Check, ChevronDown, Cpu, Film,
+  Gauge, Home, Image as ImageIcon, Library, LoaderCircle, LogOut, Plus, ShieldAlert,
+  ShieldCheck, Sparkles, Timer, Trash2, UploadCloud, Volume2, WandSparkles, X, Zap
+} from "lucide-react";
+import { createClient } from "@/lib/supabase/browser";
+import { Logo } from "@/components/ui/logo";
+import {
+  AdminPanel, ConfigScreen, CreditsPanel, JobView, LibraryGrid, LibraryTabs,
+  SensitiveGate, SignedOutScreen, type LibraryFilter
+} from "@/components/studio/panels";
+import type { AdminUser, AppConfig, CatalogModelPublic, Job } from "@/lib/generations/types";
+import type { GenerationSettingsSnapshot } from "@/lib/generations/types";
+import { cn, formatDate } from "@/lib/utils";
+
+const ASPECTS = ["16:9", "9:16", "1:1", "4:3", "3:4", "21:9"];
+const CAMERAS = [
+  { id: "static", label: "Static" },
+  { id: "pan-left", label: "Pan left" },
+  { id: "pan-right", label: "Pan right" },
+  { id: "tilt-up", label: "Tilt up" },
+  { id: "tilt-down", label: "Tilt down" },
+  { id: "dolly-in", label: "Dolly in" },
+  { id: "dolly-out", label: "Dolly out" },
+  { id: "orbit-left", label: "Orbit left" },
+  { id: "orbit-right", label: "Orbit right" },
+  { id: "handheld", label: "Handheld" },
+];
+
+const PRESETS = [
+  "A cinematic editorial portrait at golden hour, soft directional light, 85mm lens, shallow depth of field, rich skin texture, natural grain.",
+  "A slow aerial push over a rain-soaked neon city at blue hour, reflections on wet asphalt, volumetric fog, anamorphic flares.",
+  "A product macro on black glass: brushed metal, single hard key light, subtle rim highlight, ultra-detailed surface texture.",
+];
+
+const defaultConfig: AppConfig = {
+  authEnabled: true,
+  generationEnabled: false,
+  assistantEnabled: false,
+  sensitiveEnabled: false,
+  imageCreditCost: 1,
+  videoCreditCost: 10,
+  maxUploadMb: 20,
+  models: [],
+};
+
+export function Workspace() {
+  const searchParams = useSearchParams();
+  const initialPrompt = searchParams.get("prompt")?.slice(0, 2500) ?? "";
+
+  const supabase = useMemo(() => {
+    if (!process.env.NEXT_PUBLIC_SUPABASE_URL || !process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY) return null;
+    try {
+      return createClient();
+    } catch {
+      return null;
+    }
+  }, []);
+
+  const [ready, setReady] = useState(false);
+  const [user, setUser] = useState<User | null>(null);
+  const [config, setConfig] = useState<AppConfig>(defaultConfig);
+  const [credits, setCredits] = useState<number | null>(null);
+  const [role, setRole] = useState<"customer" | "admin">("customer");
+  const [jobs, setJobs] = useState<Job[]>([]);
+  const [activeJob, setActiveJob] = useState<Job | null>(null);
+  const [libraryFilter, setLibraryFilter] = useState<LibraryFilter>("all");
+
+  // Compose state
+  const [kind, setKind] = useState<"image" | "video">("image");
+  const [prompt, setPrompt] = useState(initialPrompt);
+  const [modelId, setModelId] = useState("");
+  const [duration, setDuration] = useState(5);
+  const [resolution, setResolution] = useState("480p");
+  const [aspect, setAspect] = useState("16:9");
+  const [mode, setMode] = useState<"standard" | "professional">("standard");
+  const [guidance, setGuidance] = useState(5);
+  const [camera, setCamera] = useState("static");
+  const [audio, setAudio] = useState(false);
+  const [sensitive, setSensitive] = useState(false);
+  const [sensitiveConsent, setSensitiveConsent] = useState(false);
+  const [gateOpen, setGateOpen] = useState(false);
+  const [presetOpen, setPresetOpen] = useState(false);
+
+  const [referenceFile, setReferenceFile] = useState<File | null>(null);
+  const [referencePreview, setReferencePreview] = useState<string | null>(null);
+  const [endEnabled, setEndEnabled] = useState(false);
+  const [endFile, setEndFile] = useState<File | null>(null);
+  const [endPreview, setEndPreview] = useState<string | null>(null);
+
+  const [busy, setBusy] = useState(false);
+  const [assistBusy, setAssistBusy] = useState(false);
+  const [message, setMessage] = useState<{ type: "info" | "error"; text: string } | null>(null);
+  const [adminUsers, setAdminUsers] = useState<AdminUser[]>([]);
+  const [adminBusy, setAdminBusy] = useState(false);
+  const [adminMessage, setAdminMessage] = useState("");
+
+  const fileInputRef = useRef<HTMLInputElement | null>(null);
+  const endInputRef = useRef<HTMLInputElement | null>(null);
+
+  useEffect(() => {
+    return () => {
+      if (referencePreview) URL.revokeObjectURL(referencePreview);
+    };
+  }, [referencePreview]);
+  useEffect(() => {
+    return () => {
+      if (endPreview) URL.revokeObjectURL(endPreview);
+    };
+  }, [endPreview]);
+
+  function clearReference() {
+    setReferenceFile(null);
+    setReferencePreview(null);
+    if (fileInputRef.current) fileInputRef.current.value = "";
+  }
+  function clearEnd() {
+    setEndEnabled(false);
+    setEndFile(null);
+    setEndPreview(null);
+    if (endInputRef.current) endInputRef.current.value = "";
+  }
+
+  /* ------------------------------- model state ------------------------------ */
+
+  const modelsForKind = useMemo(
+    () => config.models.filter((m) => m.modality === kind),
+    [config.models, kind]
+  );
+  const currentModel: CatalogModelPublic | undefined = useMemo(
+    () => config.models.find((m) => m.id === modelId) ?? modelsForKind[0],
+    [config.models, modelId, modelsForKind]
+  );
+
+  useEffect(() => {
+    if (!currentModel && modelsForKind.length > 0) setModelId(modelsForKind[0].id);
+    if (currentModel && currentModel.modality !== kind) {
+      const fallback = modelsForKind[0];
+      if (fallback) setModelId(fallback.id);
+    }
+  }, [currentModel, modelsForKind, kind]);
+
+  useEffect(() => {
+    if (!currentModel) return;
+    if (currentModel.durations.length > 0 && !currentModel.durations.includes(duration)) {
+      setDuration(currentModel.durations[currentModel.durations.length - 1]);
+    }
+    if (currentModel.resolutions.length > 0 && !currentModel.resolutions.includes(resolution)) {
+      setResolution(currentModel.resolutions[0]);
+    }
+  }, [currentModel, duration, resolution]);
+
+  const caps = currentModel?.capabilities;
+  const isVideo = kind === "video";
+  const modeMultiplier = mode === "professional" ? 2 : 1;
+  const cost = isVideo
+    ? Math.max(1, Math.ceil((config.videoCreditCost * duration) / 5)) * modeMultiplier
+    : config.imageCreditCost * modeMultiplier;
+
+  /* ------------------------------- data loading ------------------------------ */
+
+  const refreshAccount = useCallback(async () => {
+    if (!supabase) return;
+    const { data: { user: currentUser } } = await supabase.auth.getUser();
+    setUser(currentUser);
+    if (!currentUser) return;
+    const { data } = await supabase.from("profiles").select("credits,role").eq("id", currentUser.id).single();
+    if (data) {
+      setCredits(data.credits);
+      const isAdmin = data.role === "admin";
+      setRole(isAdmin ? "admin" : "customer");
+      if (isAdmin) {
+        const adminResponse = await fetch("/api/admin/credits", { cache: "no-store" });
+        if (adminResponse.ok) {
+          const adminPayload = await adminResponse.json();
+          setAdminUsers(adminPayload.users || []);
+        }
+      } else {
+        setAdminUsers([]);
+      }
+    }
+    const response = await fetch("/api/generations?limit=18", { cache: "no-store" });
+    if (response.ok) {
+      const payload = await response.json();
+      setJobs(payload.generations || []);
+    }
+  }, [supabase]);
+
+  useEffect(() => {
+    void fetch("/api/config", { cache: "no-store" })
+      .then((response) => response.json())
+      .then((payload: AppConfig) => setConfig({ ...defaultConfig, ...payload }))
+      .catch(() => undefined);
+  }, []);
+
+  useEffect(() => {
+    if (!supabase) {
+      setReady(true);
+      return;
+    }
+    void refreshAccount().finally(() => setReady(true));
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(() => {
+      void refreshAccount();
+    });
+    return () => subscription.unsubscribe();
+  }, [supabase, refreshAccount]);
+
+  /* ------------------------------- job polling ------------------------------- */
+
+  useEffect(() => {
+    if (!activeJob || !["queued", "processing", "storage_failed"].includes(activeJob.status)) return;
+    const jobId = activeJob.id;
+    const timer = window.setInterval(async () => {
+      try {
+        const response = await fetch(`/api/generations/${jobId}`, { cache: "no-store" });
+        const payload = await response.json();
+        if (response.ok) {
+          setActiveJob(payload);
+          if (!["queued", "processing", "storage_failed"].includes(payload.status)) {
+            window.clearInterval(timer);
+            await refreshAccount();
+          }
+        }
+      } catch {
+        // Transient network error — polling continues; state is never fabricated.
+      }
+    }, 3500);
+    return () => window.clearInterval(timer);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [activeJob?.id, activeJob?.status]);
+
+  /* --------------------------------- actions -------------------------------- */
+
+  async function uploadOne(file: File): Promise<string> {
+    const upload = new FormData();
+    upload.append("file", file);
+    const response = await fetch("/api/uploads", { method: "POST", body: upload });
+    const payload = await response.json();
+    if (!response.ok) throw new Error(payload.error || "Reference image upload failed.");
+    return payload.path as string;
+  }
+
+  function buildSettings() {
+    return {
+      modelId: currentModel?.id ?? "",
+      durationSeconds: isVideo ? duration : 0,
+      resolution,
+      aspectRatio: aspect,
+      mode,
+      cameraMovement: camera,
+      guidance,
+      audio: Boolean(caps?.audio && audio),
+      sensitive,
+    };
+  }
+
+  async function generate(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    setMessage(null);
+    if (!currentModel) {
+      setMessage({ type: "error", text: "Choose a model before generating." });
+      return;
+    }
+    setBusy(true);
+    try {
+      let referenceAssetPath: string | undefined;
+      let endAssetPath: string | undefined;
+      if (referenceFile) referenceAssetPath = await uploadOne(referenceFile);
+      if (endEnabled && endFile) endAssetPath = await uploadOne(endFile);
+
+      const response = await fetch("/api/generations", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          kind,
+          prompt,
+          settings: buildSettings(),
+          referenceAssetPath,
+          endAssetPath,
+          sensitiveConsent: sensitive ? sensitiveConsent || undefined : undefined,
+        })
+      });
+      const payload = await response.json();
+      if (!response.ok) throw new Error(payload.error || "Generation request failed.");
+      setActiveJob({
+        id: payload.id,
+        kind,
+        prompt,
+        aspect_ratio: aspect,
+        status: payload.status,
+        model_id: currentModel.id,
+        created_at: new Date().toISOString()
+      });
+      setMessage({ type: "info", text: "Your request was accepted by the configured provider." });
+      await refreshAccount();
+    } catch (error) {
+      setMessage({ type: "error", text: error instanceof Error ? error.message : "Could not start generation." });
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  async function extend(job: Job) {
+    setMessage(null);
+    setBusy(true);
+    try {
+      const jobSettings = job.settings as GenerationSettingsSnapshot | null;
+      const response = await fetch("/api/generations", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          kind: "video",
+          prompt: job.prompt,
+          settings: {
+            modelId: jobSettings?.modelId || job.model_id || currentModel?.id || "",
+            durationSeconds: 5,
+            resolution: jobSettings?.resolution || "480p",
+            aspectRatio: job.aspect_ratio,
+            mode: jobSettings?.mode || "standard",
+            cameraMovement: jobSettings?.cameraMovement || "static",
+            guidance: jobSettings?.guidance ?? 5,
+            audio: false,
+            sensitive: jobSettings?.sensitive ?? false,
+          },
+          videoAssetPath: job.asset_path || undefined,
+          extendedFrom: job.id,
+        })
+      });
+      const payload = await response.json();
+      if (!response.ok) throw new Error(payload.error || "Extension request failed.");
+      setActiveJob({
+        id: payload.id,
+        kind: "video",
+        prompt: job.prompt,
+        aspect_ratio: job.aspect_ratio,
+        status: payload.status,
+        model_id: job.model_id,
+        extended_from: job.id,
+        created_at: new Date().toISOString(),
+      });
+      setMessage({ type: "info", text: "Continuation job accepted — extending the clip by 5 seconds." });
+      await refreshAccount();
+    } catch (error) {
+      setMessage({ type: "error", text: error instanceof Error ? error.message : "Could not extend the clip." });
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  async function patchJob(job: Job, patch: { favorite?: boolean; rating?: 1 | -1 | null }) {
+    try {
+      const response = await fetch(`/api/generations/${job.id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(patch),
+      });
+      const payload = await response.json();
+      if (!response.ok) throw new Error(payload.error || "Update failed.");
+      const merge = (j: Job): Job => (j.id === job.id ? { ...j, ...payload } : j);
+      setJobs((prev) => prev.map(merge));
+      setActiveJob((prev) => (prev ? merge(prev) : prev));
+    } catch (error) {
+      setMessage({ type: "error", text: error instanceof Error ? error.message : "Update failed." });
+    }
+  }
+
+  async function enhancePrompt() {
+    setAssistBusy(true);
+    setMessage(null);
+    try {
+      const response = await fetch("/api/assist", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ prompt, mode: "enhance" }),
+      });
+      const payload = await response.json();
+      if (!response.ok) throw new Error(payload.error || "Prompt assistant failed.");
+      setPrompt(String(payload.text || "").slice(0, 2500));
+    } catch (error) {
+      setMessage({ type: "error", text: error instanceof Error ? error.message : "Prompt assistant failed." });
+    } finally {
+      setAssistBusy(false);
+    }
+  }
+
+  async function adjustCredits(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    const formElement = event.currentTarget;
+    const form = new FormData(formElement);
+    setAdminBusy(true);
+    setAdminMessage("");
+    try {
+      const response = await fetch("/api/admin/credits", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          userId: String(form.get("userId") || ""),
+          amount: Number(form.get("amount")),
+          reason: String(form.get("reason") || "")
+        })
+      });
+      const payload = await response.json();
+      if (!response.ok) throw new Error(payload.error || "Credit adjustment failed.");
+      setAdminMessage("Credit adjustment applied.");
+      formElement.reset();
+      await refreshAccount();
+    } catch (error) {
+      setAdminMessage(error instanceof Error ? error.message : "Credit adjustment failed.");
+    } finally {
+      setAdminBusy(false);
+    }
+  }
+
+  async function signOut() {
+    if (!supabase) return;
+    await supabase.auth.signOut();
+    setUser(null);
+    setCredits(null);
+    setJobs([]);
+    setActiveJob(null);
+    window.location.assign("/");
+  }
+
+  /* -------------------------------- rendering -------------------------------- */
+
+  if (!supabase) return <ConfigScreen />;
+  if (!ready) {
+    return (
+      <main className="flex min-h-screen items-center justify-center">
+        <LoaderCircle size={22} className="animate-spin text-violet" />
+      </main>
+    );
+  }
+  if (!user) return <SignedOutScreen />;
+
+  const displayEmail = user.email || "NEXORA creator";
+  const promptReady = prompt.trim().length >= 3;
+  const providersReady = config.models.some((m) => m.ready);
+  const visibleJobs = activeJob
+    ? [activeJob, ...jobs.filter((job) => job.id !== activeJob.id)]
+    : jobs;
+  const filteredJobs = visibleJobs.filter((job) =>
+    libraryFilter === "all" ? true :
+    libraryFilter === "images" ? job.kind === "image" :
+    libraryFilter === "videos" ? job.kind === "video" :
+    Boolean(job.favorite)
+  );
+  const filterCounts: Record<LibraryFilter, number> = {
+    all: visibleJobs.length,
+    images: visibleJobs.filter((j) => j.kind === "image").length,
+    videos: visibleJobs.filter((j) => j.kind === "video").length,
+    favorites: visibleJobs.filter((j) => j.favorite).length,
+  };
+  const canExtend = Boolean(activeJob?.model_id
+    ? config.models.find((m) => m.id === activeJob?.model_id)?.capabilities.videoExtend
+    : false);
+
+  return (
+    <main className="min-h-screen lg:grid lg:grid-cols-[264px_minmax(0,1fr)]">
+      {/* ------------------------------- sidebar ------------------------------- */}
+      <aside className="border-b border-line bg-ink/60 backdrop-blur-xl lg:sticky lg:top-0 lg:h-screen lg:border-b-0 lg:border-r">
+        <div className="flex h-full flex-col p-5">
+          <div className="flex items-center justify-between gap-3">
+            <Link href="/" aria-label="NEXORA home"><Logo /></Link>
+            <Link href="/" className="btn-ghost !p-2 lg:hidden" aria-label="Homepage"><Home size={16} /></Link>
+          </div>
+
+          <nav className="mt-8 flex flex-row gap-1.5 overflow-x-auto scrollbar-none lg:flex-col" aria-label="Studio">
+            {[
+              { href: "#create", label: "Create", icon: WandSparkles },
+              { href: "#library", label: "Library", icon: Library },
+              { href: "#credits", label: "Credits", icon: Zap },
+            ].map((item) => (
+              <a
+                key={item.href}
+                href={item.href}
+                className="flex items-center gap-2.5 rounded-xl px-3.5 py-2.5 text-xs font-semibold text-muted transition-colors duration-200 hover:bg-white/5 hover:text-white"
+              >
+                <item.icon size={15} className="text-violet" /> {item.label}
+              </a>
+            ))}
+          </nav>
+
+          <div className="mt-auto hidden rounded-2xl border border-line bg-white/[0.02] p-4 lg:block">
+            <div className="flex items-center justify-between">
+              <p className="text-[9px] font-semibold uppercase tracking-[0.22em] text-dim">Available credits</p>
+              <Zap size={12} className="text-cyan" />
+            </div>
+            <p className="mt-2 font-display text-3xl font-extrabold text-white">
+              {credits === null ? "—" : credits.toLocaleString()}
+            </p>
+            <a href="#credits" className="mt-2 inline-flex items-center gap-1 text-[10px] font-semibold text-cyan hover:underline">
+              How credits work <ArrowUpRight size={11} />
+            </a>
+          </div>
+
+          <div className="mt-5 flex items-center gap-3 rounded-2xl border border-line bg-white/[0.02] px-3.5 py-3">
+            <span className="grid h-8 w-8 shrink-0 place-items-center rounded-full bg-gradient-to-br from-violet/40 to-cyan/25 text-[11px] font-bold text-white">
+              {displayEmail.slice(0, 1).toUpperCase()}
+            </span>
+            <div className="min-w-0 flex-1">
+              <p className="truncate text-[11px] font-semibold text-white/85">{displayEmail}</p>
+              <p className="flex items-center gap-1 text-[9px] uppercase tracking-[0.14em] text-dim">
+                <ShieldCheck size={9} className="text-mint" /> {role === "admin" ? "Operator" : "Signed in"}
+              </p>
+            </div>
+            <button type="button" onClick={signOut} className="btn-ghost !p-1.5" aria-label="Sign out">
+              <LogOut size={13} />
+            </button>
+          </div>
+        </div>
+      </aside>
+
+      {/* -------------------------------- content ------------------------------- */}
+      <section className="min-w-0">
+        <header className="sticky top-0 z-40 flex items-center justify-between gap-4 border-b border-line bg-ink/70 px-6 py-4 backdrop-blur-xl">
+          <p className="text-[11px] uppercase tracking-[0.2em] text-dim">
+            Studio <span className="mx-1.5 text-white/20">/</span> <span className="text-white/80">Create</span>
+          </p>
+          <div className="flex items-center gap-2.5">
+            {providersReady ? (
+              <span className="pill border-mint/25 bg-mint/10 text-mint"><Cpu size={11} /> Providers ready</span>
+            ) : (
+              <span className="pill border-amber/25 bg-amber/10 text-amber"><AlertTriangle size={11} /> Provider not configured</span>
+            )}
+            {config.sensitiveEnabled && sensitive && (
+              <span className="pill border-rose/25 bg-rose/10 text-rose"><ShieldAlert size={11} /> Sensitive</span>
+            )}
+          </div>
+        </header>
+
+        <div className="mx-auto max-w-[1500px] px-6 pb-16 pt-10">
+          {/* ------------------------------ hero strip ----------------------------- */}
+          <div id="create" className="scroll-mt-24">
+            <p className="text-[10px] font-semibold uppercase tracking-[0.28em] text-violet">The creative engine</p>
+            <h1 className="mt-3 font-display text-3xl font-extrabold tracking-tight text-white sm:text-4xl">
+              Imagine it. <span className="gradient-text">Bring it to life.</span>
+            </h1>
+            <p className="mt-3 text-sm text-muted">
+              Signed in as {displayEmail} · {formatDate(new Date().toISOString())}
+            </p>
+          </div>
+
+          <div className="mt-8 grid gap-6 xl:grid-cols-[minmax(0,460px)_minmax(0,1fr)]">
+            {/* ============================ compose column ============================ */}
+            <form onSubmit={generate} className="space-y-5">
+              {/* Image and Prompt */}
+              <div className="glass-strong rounded-3xl p-6">
+                <div className="flex flex-wrap items-center justify-between gap-3">
+                  <div className="flex items-center gap-2.5">
+                    <span className="grid h-8 w-8 place-items-center rounded-xl bg-violet/12 text-violet">
+                      {isVideo ? <Film size={15} /> : <ImageIcon size={15} />}
+                    </span>
+                    <h2 className="font-display text-base font-semibold text-white/95">
+                      {isVideo ? "Image and Prompt" : "Image Generation"}
+                    </h2>
+                  </div>
+                  {caps?.startEndFrame && (
+                    <button
+                      type="button"
+                      onClick={() => (endEnabled ? clearEnd() : setEndEnabled(true))}
+                      className={cn("pill cursor-pointer", endEnabled ? "border-violet/40 bg-violet/15 text-white" : "")}
+                    >
+                      Add End Frame
+                    </button>
+                  )}
+                </div>
+
+                <p className="mt-3 text-[10px] text-dim">
+                  JPEG / PNG / WebP files up to {config.maxUploadMb}MB
+                </p>
+
+                {caps?.imageToVideo || !isVideo ? (
+                  <div className="mt-3">
+                    {referenceFile ? (
+                      <div className="flex items-center gap-3 rounded-2xl border border-line bg-white/[0.03] p-3">
+                        <Image
+                          src={referencePreview || ""}
+                          alt="Selected input"
+                          width={72}
+                          height={72}
+                          unoptimized
+                          className="h-[72px] w-[72px] rounded-xl object-cover"
+                        />
+                        <div className="min-w-0 flex-1">
+                          <p className="truncate text-xs font-semibold text-white/85">{referenceFile.name}</p>
+                          <p className="mt-0.5 text-[10px] text-dim">{(referenceFile.size / 1024 / 1024).toFixed(2)} MB · ready</p>
+                        </div>
+                        <button type="button" onClick={clearReference} className="btn-ghost !p-2" aria-label="Remove">
+                          <Trash2 size={14} />
+                        </button>
+                      </div>
+                    ) : (
+                      <label
+                        htmlFor="reference-image"
+                        className="flex cursor-pointer flex-col items-center justify-center gap-2 rounded-2xl border border-dashed border-white/12 bg-white/[0.015] px-4 py-7 text-center transition-colors hover:border-violet/35"
+                      >
+                        <span className="grid h-10 w-10 place-items-center rounded-xl bg-violet/10 text-violet">
+                          <UploadCloud size={17} />
+                        </span>
+                        <span className="text-xs font-semibold text-white/80">
+                          {isVideo ? "Start frame (optional)" : "Reference image (optional)"}
+                        </span>
+                        <span className="text-[10px] text-dim">Click / Drop / Paste</span>
+                        <input
+                          id="reference-image"
+                          ref={fileInputRef}
+                          type="file"
+                          accept="image/jpeg,image/png,image/webp"
+                          onChange={(event) => {
+                            const file = event.target.files?.[0] || null;
+                            setReferenceFile(file);
+                            setReferencePreview(file ? URL.createObjectURL(file) : null);
+                          }}
+                          className="hidden"
+                        />
+                      </label>
+                    )}
+
+                    {endEnabled && (
+                      <div className="mt-3">
+                        {endFile ? (
+                          <div className="flex items-center gap-3 rounded-2xl border border-line bg-white/[0.03] p-3">
+                            <Image
+                              src={endPreview || ""}
+                              alt="Selected end frame"
+                              width={56}
+                              height={56}
+                              unoptimized
+                              className="h-14 w-14 rounded-xl object-cover"
+                            />
+                            <p className="flex-1 truncate text-xs text-white/85">{endFile.name}</p>
+                            <button type="button" onClick={clearEnd} className="btn-ghost !p-2" aria-label="Remove end frame">
+                              <Trash2 size={13} />
+                            </button>
+                          </div>
+                        ) : (
+                          <label
+                            htmlFor="end-image"
+                            className="flex cursor-pointer items-center gap-3 rounded-2xl border border-dashed border-white/12 bg-white/[0.015] px-4 py-4 text-xs text-muted hover:border-violet/35"
+                          >
+                            <Plus size={15} className="text-violet" /> End frame image
+                            <input
+                              id="end-image"
+                              ref={endInputRef}
+                              type="file"
+                              accept="image/jpeg,image/png,image/webp"
+                              onChange={(event) => {
+                                const file = event.target.files?.[0] || null;
+                                setEndFile(file);
+                                setEndPreview(file ? URL.createObjectURL(file) : null);
+                              }}
+                              className="hidden"
+                            />
+                          </label>
+                        )}
+                      </div>
+                    )}
+                  </div>
+                ) : (
+                  <p className="mt-3 rounded-xl border border-line bg-white/[0.02] px-3.5 py-2.5 text-[10px] text-dim">
+                    {currentModel?.label} is a pure text-to-video model — reference images stay disabled for it.
+                  </p>
+                )}
+              </div>
+
+              {/* Prompt */}
+              <div className="glass-strong rounded-3xl p-6">
+                <h2 className="font-display text-base font-semibold text-white/95">
+                  Prompt {isVideo ? "(optional with an image)" : ""}
+                </h2>
+                <div className="relative mt-3">
+                  <textarea
+                    value={prompt}
+                    onChange={(event) => setPrompt(event.target.value.slice(0, 2500))}
+                    maxLength={2500}
+                    rows={5}
+                    placeholder="A cinematic editorial portrait, soft directional light, rich natural textures, shot on medium format…"
+                    className="field resize-y leading-relaxed"
+                  />
+                  {prompt && (
+                    <button
+                      type="button"
+                      onClick={() => setPrompt("")}
+                      className="absolute right-3 top-3 btn-ghost !p-1"
+                      aria-label="Clear prompt"
+                    >
+                      <Trash2 size={13} />
+                    </button>
+                  )}
+                </div>
+                <div className="mt-2 flex flex-wrap items-center justify-between gap-2">
+                  <div className="flex flex-wrap gap-1.5">
+                    <button type="button" onClick={enhancePrompt} disabled={assistBusy || prompt.trim().length < 1} className="pill cursor-pointer hover:border-violet/40">
+                      {assistBusy ? <LoaderCircle size={11} className="animate-spin" /> : <WandSparkles size={11} />}
+                      {assistBusy ? "Enhancing…" : "Enhance prompt"}
+                    </button>
+                    <button type="button" onClick={() => setPresetOpen((v) => !v)} className="pill cursor-pointer hover:border-violet/40">
+                      <Sparkles size={11} /> Inspiration
+                    </button>
+                  </div>
+                  <span className="text-[10px] text-dim">{prompt.length}/2500</span>
+                </div>
+                {presetOpen && (
+                  <div className="mt-3 space-y-2">
+                    {PRESETS.map((preset) => (
+                      <button
+                        key={preset.slice(0, 30)}
+                        type="button"
+                        onClick={() => { setPrompt(preset); setPresetOpen(false); }}
+                        className="block w-full rounded-xl border border-line bg-white/[0.02] px-3.5 py-2.5 text-left text-[11px] leading-relaxed text-muted hover:border-violet/35 hover:text-white/85"
+                      >
+                        {preset}
+                      </button>
+                    ))}
+                  </div>
+                )}
+                <p className="mt-2 text-[10px] text-dim">Be specific about lighting, composition, camera and mood.</p>
+              </div>
+
+              {/* Settings */}
+              <div className="glass-strong rounded-3xl p-6">
+                <div className="flex items-center gap-2.5">
+                  <span className="grid h-8 w-8 place-items-center rounded-xl bg-cyan/12 text-cyan"><Gauge size={15} /></span>
+                  <h2 className="font-display text-base font-semibold text-white/95">Setting</h2>
+                </div>
+
+                {/* Model */}
+                <label className="mt-5 block">
+                  <span className="mb-2 flex items-center gap-2 text-xs font-semibold text-white/80">
+                    <Cpu size={12} className="text-violet" /> Model
+                  </span>
+                  <div className="relative">
+                    <select
+                      value={currentModel?.id ?? ""}
+                      onChange={(event) => setModelId(event.target.value)}
+                      className="field appearance-none pr-10"
+                    >
+                      {modelsForKind.length === 0 && <option value="">No {kind} models in this catalog</option>}
+                      {modelsForKind.map((model) => (
+                        <option key={model.id} value={model.id}>
+                          {model.label}{model.ready ? "" : " — not configured"}
+                        </option>
+                      ))}
+                    </select>
+                    <ChevronDown size={15} className="pointer-events-none absolute right-3.5 top-1/2 -translate-y-1/2 text-dim" />
+                  </div>
+                  {currentModel && (
+                    <p className="mt-2 text-[10px] leading-relaxed text-dim">
+                      {currentModel.tagline} <span className="text-white/40">· {currentModel.source}</span>
+                    </p>
+                  )}
+                </label>
+
+                {/* Duration (video only) */}
+                {isVideo && (
+                  <div className="mt-5">
+                    <p className="mb-2 flex items-center gap-2 text-xs font-semibold text-white/80">
+                      <Timer size={12} className="text-violet" /> Duration
+                    </p>
+                    <div className="flex flex-wrap gap-2">
+                      {[5, 10].map((value) => {
+                        const enabled = currentModel ? currentModel.durations.includes(value) : true;
+                        return (
+                          <button
+                            key={value}
+                            type="button"
+                            disabled={!enabled}
+                            onClick={() => setDuration(value)}
+                            className={cn(
+                              "rounded-full border px-4 py-2 text-[11px] font-semibold transition-all duration-200",
+                              duration === value
+                                ? "border-violet/50 bg-violet/15 text-white"
+                                : "border-line bg-white/[0.02] text-muted hover:border-white/20 hover:text-white",
+                              !enabled && "cursor-not-allowed opacity-35"
+                            )}
+                          >
+                            {value}s
+                          </button>
+                        );
+                      })}
+                    </div>
+                    {currentModel && !currentModel.capabilities.directDuration && isVideo && (
+                      <p className="mt-1.5 text-[9px] text-dim">Duration conditions the prompt for this model.</p>
+                    )}
+                  </div>
+                )}
+
+                {/* Resolution */}
+                <div className="mt-5">
+                  <p className="mb-2 text-xs font-semibold text-white/80">Resolution</p>
+                  <div className="flex flex-wrap gap-2">
+                    {["480p", "720p", "1080p"].map((value) => {
+                      const enabled = currentModel ? currentModel.resolutions.includes(value) : true;
+                      return (
+                        <button
+                          key={value}
+                          type="button"
+                          disabled={!enabled}
+                          onClick={() => setResolution(value)}
+                          className={cn(
+                            "rounded-full border px-4 py-2 text-[11px] font-semibold transition-all duration-200",
+                            resolution === value
+                              ? "border-violet/50 bg-violet/15 text-white"
+                              : "border-line bg-white/[0.02] text-muted hover:border-white/20 hover:text-white",
+                            !enabled && "cursor-not-allowed opacity-35"
+                          )}
+                        >
+                          {value}
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+
+                {/* Aspect */}
+                <div className="mt-5">
+                  <p className="mb-2 text-xs font-semibold text-white/80">Aspect ratio</p>
+                  <div className="flex flex-wrap gap-2">
+                    {ASPECTS.map((value) => (
+                      <button
+                        key={value}
+                        type="button"
+                        onClick={() => setAspect(value)}
+                        className={cn(
+                          "rounded-full border px-3.5 py-2 text-[11px] font-semibold transition-all duration-200",
+                          aspect === value
+                            ? "border-violet/50 bg-violet/15 text-white"
+                            : "border-line bg-white/[0.02] text-muted hover:border-white/20 hover:text-white"
+                        )}
+                      >
+                        {value}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Creativity slider */}
+                <div className="mt-6">
+                  <div className="flex items-center justify-between text-xs font-semibold text-white/80">
+                    <span>Creativity</span>
+                    <span className="text-[10px] font-normal text-dim">{guidance <= 4 ? "loose interpretation" : guidance >= 8 ? "strict prompt adherence" : "balanced"}</span>
+                    <span>Relevance</span>
+                  </div>
+                  <input
+                    type="range"
+                    min={1}
+                    max={10}
+                    value={guidance}
+                    onChange={(event) => setGuidance(Number(event.target.value))}
+                    className="mt-2.5 w-full accent-violet"
+                    aria-label="Creativity versus relevance"
+                  />
+                </div>
+
+                {/* Mode */}
+                <div className="mt-6">
+                  <p className="mb-2 text-xs font-semibold text-white/80">Mode</p>
+                  <div className="flex flex-wrap gap-2">
+                    {(["standard", "professional"] as const).map((value) => (
+                      <button
+                        key={value}
+                        type="button"
+                        onClick={() => setMode(value)}
+                        className={cn(
+                          "flex items-center gap-2 rounded-full border px-4 py-2 text-[11px] font-semibold capitalize transition-all duration-200",
+                          mode === value
+                            ? "border-violet/50 bg-violet/15 text-white"
+                            : "border-line bg-white/[0.02] text-muted hover:border-white/20 hover:text-white"
+                        )}
+                      >
+                        <span className={cn("grid h-3.5 w-3.5 place-items-center rounded-full border", mode === value ? "border-violet bg-violet" : "border-white/25")}>
+                          {mode === value && <Check size={8} className="text-ink" />}
+                        </span>
+                        {value} {value === "professional" && <span className="text-[9px] text-amber">×2 credits</span>}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Camera */}
+                <label className="mt-6 block">
+                  <span className="mb-2 flex items-center gap-2 text-xs font-semibold text-white/80">
+                    <Camera size={12} className="text-violet" /> Camera movement
+                    {!isVideo && <span className="text-[9px] font-normal text-dim">— disabled in image generation</span>}
+                  </span>
+                  <div className="relative">
+                    <select
+                      value={camera}
+                      disabled={!isVideo}
+                      onChange={(event) => setCamera(event.target.value)}
+                      className="field appearance-none pr-10 disabled:opacity-40"
+                    >
+                      {CAMERAS.map((item) => (
+                        <option key={item.id} value={item.id}>{item.label}</option>
+                      ))}
+                    </select>
+                    <ChevronDown size={15} className="pointer-events-none absolute right-3.5 top-1/2 -translate-y-1/2 text-dim" />
+                  </div>
+                </label>
+
+                {/* Audio + sensitive */}
+                <div className="mt-6 space-y-3">
+                  <div className="flex items-center justify-between gap-4 rounded-2xl border border-line bg-white/[0.02] px-4 py-3">
+                    <div className="flex items-center gap-2.5">
+                      <Volume2 size={14} className={caps?.audio ? "text-cyan" : "text-dim"} />
+                      <div>
+                        <p className="text-xs font-semibold text-white/85">Synchronized audio</p>
+                        <p className="text-[9px] text-dim">
+                          {caps?.audio ? `${currentModel?.label} generates A/V-synced output` : "This model produces silent video"}
+                        </p>
+                      </div>
+                    </div>
+                    <button
+                      type="button"
+                      role="switch"
+                      aria-checked={Boolean(caps?.audio && audio)}
+                      disabled={!caps?.audio}
+                      onClick={() => setAudio((v) => !v)}
+                      className={cn(
+                        "relative h-6 w-11 rounded-full transition-colors duration-200",
+                        caps?.audio && audio ? "bg-violet" : "bg-white/12",
+                        !caps?.audio && "cursor-not-allowed opacity-40"
+                      )}
+                    >
+                      <span className={cn(
+                        "absolute top-0.5 h-5 w-5 rounded-full bg-white transition-transform duration-200",
+                        caps?.audio && audio ? "translate-x-[22px]" : "translate-x-0.5"
+                      )} />
+                    </button>
+                  </div>
+
+                  <div className="flex items-center justify-between gap-4 rounded-2xl border border-line bg-white/[0.02] px-4 py-3">
+                    <div className="flex items-center gap-2.5">
+                      <ShieldAlert size={14} className={sensitive ? "text-rose" : "text-dim"} />
+                      <div>
+                        <p className="text-xs font-semibold text-white/85">Sensitive content · 18+</p>
+                        <p className="text-[9px] text-dim">
+                          {config.sensitiveEnabled ? "Requires the consent gate on every run" : "Disabled on this deployment"}
+                        </p>
+                      </div>
+                    </div>
+                    <button
+                      type="button"
+                      role="switch"
+                      aria-checked={sensitive}
+                      disabled={!config.sensitiveEnabled}
+                      onClick={() => {
+                        if (sensitive) {
+                          setSensitive(false);
+                        } else if (sensitiveConsent) {
+                          setSensitive(true);
+                        } else {
+                          setGateOpen(true);
+                        }
+                      }}
+                      className={cn(
+                        "relative h-6 w-11 rounded-full transition-colors duration-200",
+                        sensitive ? "bg-rose" : "bg-white/12",
+                        !config.sensitiveEnabled && "cursor-not-allowed opacity-40"
+                      )}
+                    >
+                      <span className={cn(
+                        "absolute top-0.5 h-5 w-5 rounded-full bg-white transition-transform duration-200",
+                        sensitive ? "translate-x-[22px]" : "translate-x-0.5"
+                      )} />
+                    </button>
+                  </div>
+                </div>
+              </div>
+
+              {/* Generate bar */}
+              <div className="glass-strong flex flex-wrap items-center justify-between gap-4 rounded-3xl p-5">
+                <div>
+                  <p className="flex items-center gap-2 text-sm font-bold text-white">
+                    <Zap size={14} className="text-cyan" /> {cost} credit{cost === 1 ? "" : "s"}
+                  </p>
+                  <p className="mt-1 text-[10px] text-dim">
+                    {isVideo ? `${config.videoCreditCost} per 5s${mode === "professional" ? " · professional ×2" : ""}` : `per image${mode === "professional" ? " · professional ×2" : ""}`}
+                    {" · "}deducted on submit, refunded on failure
+                  </p>
+                </div>
+                <button
+                  type="submit"
+                  disabled={busy || !promptReady || !currentModel}
+                  className="btn-primary min-w-[190px]"
+                >
+                  {busy ? (
+                    <><LoaderCircle size={16} className="animate-spin" /> Submitting…</>
+                  ) : (
+                    <>Generate <ArrowUpRight size={16} /></>
+                  )}
+                </button>
+              </div>
+
+              {!providersReady && (
+                <p className="rounded-xl border border-amber/25 bg-amber/8 px-4 py-3 text-[11px] leading-relaxed text-amber">
+                  No generation provider is configured on this deployment (REPLICATE_API_TOKEN /
+                  NEXORA_IMAGE_ENDPOINT). Submitting returns an explicit unavailability error —
+                  NEXORA never simulates results.
+                </p>
+              )}
+            </form>
+
+            {/* ============================= preview column ============================ */}
+            <div className="min-w-0 space-y-8">
+              {message && (
+                <p className={cn(
+                  "rounded-xl border px-4 py-3 text-xs leading-relaxed",
+                  message.type === "error"
+                    ? "border-rose/25 bg-rose/10 text-rose"
+                    : "border-mint/25 bg-mint/10 text-mint"
+                )}>
+                  {message.text}
+                </p>
+              )}
+
+              {activeJob ? (
+                <JobView
+                  job={activeJob}
+                  canExtend={canExtend}
+                  onFavorite={(job) => void patchJob(job, { favorite: !job.favorite })}
+                  onRate={(job, rating) => void patchJob(job, { rating })}
+                  onExtend={(job) => void extend(job)}
+                />
+              ) : (
+                <div className="glass-strong rounded-3xl">
+                  <div className="flex items-center justify-between gap-3 border-b border-line px-5 py-3.5">
+                    <div className="flex items-center gap-2.5">
+                      <span className="text-[10px] font-semibold uppercase tracking-[0.18em] text-dim">Preview</span>
+                      <span className="pill border-white/12 bg-white/5 text-white/60">Idle</span>
+                    </div>
+                  </div>
+                  <div className="flex min-h-[300px] flex-col items-center justify-center gap-4 px-8 py-14 text-center">
+                    <span className="grid h-16 w-16 place-items-center rounded-3xl border border-violet/25 bg-violet/8 text-violet">
+                      <Sparkles size={26} />
+                    </span>
+                    <div>
+                      <p className="font-display text-lg font-semibold text-white/95">Your result lands here</p>
+                      <p className="mx-auto mt-2 max-w-md text-sm leading-relaxed text-muted">
+                        Choose a model, describe your vision and hit Generate. The player shows the
+                        real provider output — with download, favorites and extensions on completed clips.
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* Library */}
+              <section id="library" className="scroll-mt-24">
+                <div className="flex flex-wrap items-center justify-between gap-4">
+                  <div>
+                    <p className="text-[10px] font-semibold uppercase tracking-[0.22em] text-violet">Your work</p>
+                    <h2 className="mt-2 font-display text-xl font-semibold text-white/95">Recent generations</h2>
+                  </div>
+                  <span className="text-[10px] uppercase tracking-[0.18em] text-dim">
+                    {jobs.length} record{jobs.length === 1 ? "" : "s"}
+                  </span>
+                </div>
+                <div className="mt-4">
+                  <LibraryTabs value={libraryFilter} onChange={setLibraryFilter} counts={filterCounts} />
+                </div>
+                <div className="mt-5">
+                  <LibraryGrid jobs={filteredJobs} activeId={activeJob?.id ?? null} onSelect={setActiveJob} />
+                </div>
+              </section>
+
+              {/* Credits */}
+              <section id="credits" className="scroll-mt-24">
+                <CreditsPanel credits={credits} imageCost={config.imageCreditCost} videoCost={config.videoCreditCost} />
+              </section>
+
+              {/* Admin */}
+              {role === "admin" && (
+                <section id="admin" className="scroll-mt-24">
+                  <AdminPanel users={adminUsers} busy={adminBusy} onSubmit={adjustCredits} />
+                  {adminMessage && (
+                    <p className={cn(
+                      "mt-4 rounded-xl border px-4 py-3 text-xs",
+                      adminMessage.includes("applied")
+                        ? "border-mint/25 bg-mint/10 text-mint"
+                        : "border-rose/25 bg-rose/10 text-rose"
+                    )}>
+                      {adminMessage}
+                    </p>
+                  )}
+                </section>
+              )}
+            </div>
+          </div>
+
+          <footer className="mt-16 flex flex-wrap items-center justify-between gap-3 border-t border-line pt-6 text-[10px] uppercase tracking-[0.16em] text-dim">
+            <span className="font-display font-bold tracking-[0.22em] text-violet/80">NEXORA</span>
+            <span>Real models. Real work. No placeholders.</span>
+            <span>© {new Date().getFullYear()}</span>
+          </footer>
+        </div>
+      </section>
+
+      {gateOpen && (
+        <SensitiveGate
+          onCancel={() => setGateOpen(false)}
+          onAccept={() => {
+            setSensitiveConsent(true);
+            setSensitive(true);
+            setGateOpen(false);
+            setMessage({ type: "info", text: "Sensitive mode enabled for this session. The consent is sent with every sensitive run." });
+          }}
+        />
+      )}
+    </main>
+  );
+}
