@@ -7,6 +7,17 @@ import { getModel, pollProviderJob } from "@/lib/providers";
 export const runtime = "nodejs";
 export const maxDuration = 60;
 type Context = { params: Promise<{ id: string }> };
+async function hasAgeAssurance(userId: string): Promise<boolean> {
+  try {
+    const admin = createAdminClient();
+    const { data, error } = await admin.from("profiles")
+      .select("age_verified_at").eq("id", userId).single();
+    return !error && Boolean(data?.age_verified_at);
+  } catch {
+    return false;
+  }
+}
+
 
 function outputUrl(value: unknown): string | null {
   const candidate = Array.isArray(value) ? value[0] : value;
@@ -98,6 +109,7 @@ export async function GET(_request: Request, context: Context) {
   }
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return NextResponse.json({ error: "Sign in to view this generation." }, { status: 401 });
+  if (!(await hasAgeAssurance(user.id))) return NextResponse.json({ code: "AGE_VERIFICATION_REQUIRED", error: "Complete NEXORA's 18+ age verification before using the studio." }, { status: 403 });
 
   const { data: job, error } = await supabase.from("generations")
     .select("id,user_id,kind,prompt,aspect_ratio,status,provider_status,provider_prediction_id,provider_output,error_message,created_at,updated_at,asset_path,asset_mime_type,asset_bytes,credits_reserved,model_id,settings,favorite,rating,extended_from")
@@ -197,6 +209,7 @@ export async function PATCH(request: Request, context: Context) {
   }
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return NextResponse.json({ error: "Sign in to update this generation." }, { status: 401 });
+  if (!(await hasAgeAssurance(user.id))) return NextResponse.json({ code: "AGE_VERIFICATION_REQUIRED", error: "Complete NEXORA's 18+ age verification before using the studio." }, { status: 403 });
 
   const patch: Record<string, unknown> = { updated_at: new Date().toISOString() };
   if (parsed.data.favorite !== undefined) patch.favorite = parsed.data.favorite;
