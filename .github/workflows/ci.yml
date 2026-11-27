@@ -1,4 +1,4 @@
-name: LUMI CI
+name: NEXORA CI
 
 on:
   push:
@@ -10,7 +10,7 @@ permissions:
   contents: read
 
 concurrency:
-  group: lumi-ci-${{ github.ref }}
+  group: nexora-ci-${{ github.ref }}
   cancel-in-progress: true
 
 jobs:
@@ -24,7 +24,7 @@ jobs:
         with:
           node-version: 20
       - name: Install dependencies
-        run: npm install
+        run: npm ci
       - name: Type check
         run: npm run typecheck
       - name: Lint
