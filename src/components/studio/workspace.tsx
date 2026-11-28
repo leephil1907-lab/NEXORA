@@ -668,7 +668,6 @@ export function Workspace({ view = "create", tool }: { view?: "create" | "librar
             {/* ============================ compose column ============================ */}
             {view === "create" && (<form onSubmit={generate} className="space-y-5">
               {!tool && (
-              {/* Modality switch */}
               <div className="flex items-center gap-2 rounded-2xl border border-line bg-panel p-1.5" role="group" aria-label="Generation type">
                 {(["image", "video"] as const).map((value) => {
                   const active = kind === value;
