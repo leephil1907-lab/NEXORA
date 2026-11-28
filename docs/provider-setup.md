@@ -1,46 +1,38 @@
 # Provider setup
 
-## Replicate
-NEXORA's video and image adapters use the Replicate HTTP API. Configure this server-side variable:
-- `REPLICATE_API_TOKEN`: Replicate API token.
+## Google Gemini generation
 
-The model catalog in `src/lib/providers/catalog.ts` contains the model identifiers and capabilities. Availability, input schemas, dimensions, durations and pricing vary by model. Verify each model's current published input schema before enabling it. A missing token must produce `PROVIDER_NOT_CONFIGURED`. Never return fabricated media.
+NEXORA's active image and video tools use the Google Gemini Developer API. Configure this server-side variable in Render:
 
-## Custom OpenAI-compatible backends
-- `NEXORA_LLM_ENDPOINT`: base URL for a `/v1/chat/completions` endpoint.
-- `NEXORA_LLM_API_KEY`: optional bearer token.
-- `NEXORA_LLM_MODEL`: model name sent to the endpoint.
-- `NEXORA_IMAGE_ENDPOINT`: base URL for a `/v1/images/generations` endpoint.
-- `NEXORA_IMAGE_API_KEY`: optional bearer token.
-- `NEXORA_IMAGE_MODEL`: model name sent to the endpoint.
+- GEMINI_API_KEY: Google Gemini API key for the project with image and video generation access.
 
-These are distinct from the clothing-extraction pipeline below.
+The active catalog contains:
 
-## Hugging Face clothing extraction
-Model: [Xabsurd/Clothing-Extractor](https://huggingface.co/Xabsurd/Clothing-Extractor)
+- gemini-3.1-flash-lite-image for text-to-image and reference-image editing.
+- gemini-omni-1.2-flash for text-to-video and image-to-video.
 
-This is a LoRA adapter for `Qwen/Qwen-Image-Edit-2511`, not a standalone model server. Its model card demonstrates loading the base Diffusers pipeline and then loading the LoRA weights. Hugging Face currently reports no hosted Inference Provider for this adapter.
+Image generation uses the Gemini generateContent endpoint with image output enabled. Video generation uses the Gemini Interactions API, asynchronous job polling, and the Google Files API for returned video URIs. The server copies completed output into the user's private Supabase storage.
 
-A dedicated GPU worker must:
-1. Load `Qwen/Qwen-Image-Edit-2511` and the `Xabsurd/Clothing-Extractor` LoRA.
-2. Accept an authenticated image reference and extraction category (full outfit, upper-body garment, lower-body garment, or bag).
-3. Run the model with the model-card extraction instruction.
-4. Persist the output to private object storage and return a durable job ID/status/output reference.
-5. Enforce request size limits, per-user isolation, timeouts and bounded concurrency.
+Image and video generation require a Gemini API project with the applicable paid-tier access and billing enabled. A text-only free-tier key is not sufficient. Do not add a Replicate fallback or advertise an engine that is not present in the active model catalog.
 
-Do not point `NEXORA_IMAGE_ENDPOINT` at this LoRA: the current generic image adapter only supports text-to-image and does not submit a reference image. The clothing worker needs its own adapter and API contract. Do not mark the feature ready until a real GPU smoke test completes.
+## Hosted chat
 
-## Production virtual try-on (FASHN)
-NEXORA includes a dedicated, account-scoped clothing try-on route at `/api/fashion/try-on` and a studio screen at `/studio/try-on`.
+Gemini is the primary hosted chat engine and uses GEMINI_API_KEY plus GEMINI_MODEL. Optional fallbacks:
 
-Configure this server-side secret in Render:
-- `FASHN_API_KEY`: API key from the [FASHN Developer API dashboard](https://app.fashn.ai/).
+- OMEGA_API_KEY and OMEGA_BASE_URL
+- VENICE_API_KEY and VENICE_BASE_URL
 
-The adapter calls `POST https://api.fashn.ai/v1/run` with `model_name: tryon-max`, then polls `GET /v1/status/{id}`. It accepts signed private Supabase image URLs, requires an explicit adult-subject consent declaration, checks that both assets belong to the signed-in account, and copies completed output into the private `lumi-assets` bucket so NEXORA does not depend on FASHN's expiring CDN links. It requests 2K quality output. FASHN charges its own API credits; NEXORA's existing generation-credit ledger is not currently applied to this separate try-on workflow.
+Fallbacks are for hosted text chat only; they are not image/video generation providers. Users do not choose models manually.
 
-Before enabling the feature, apply `202611270002_fashion_jobs.sql` and verify that the Supabase `lumi-assets` bucket exists and is private. FASHN requires its own prepaid API credits and key. If `FASHN_API_KEY` is absent, the route returns `PROVIDER_NOT_CONFIGURED` and does not fabricate an output.
+## Launch verification
 
-This workflow is intentionally limited to ordinary clothing and accessories. It is not an undressing, intimate-image, or sexualized face-swap feature. Users must have the pictured adult's explicit permission.
+Before enabling public generation, verify all of the following in the live Render environment:
 
-## Launch gate
-Run a real generation smoke test for every enabled model and modality before advertising it as available. Record model version, settings, prediction/job ID, output dimensions/duration and stored asset URL.
+1. GEMINI_API_KEY is present and belongs to a billing-enabled Google AI project.
+2. GET /api/config reports both Gemini generation models as ready.
+3. Text-to-image returns a real PNG/JPEG/WebP stored in the private lumi-assets bucket.
+4. Image-to-image accepts a user-owned reference asset and returns a real edited image.
+5. Text-to-video and image-to-video complete, return an authenticated Google video URI, and store the MP4 in private storage.
+6. A failed provider job refunds its reserved credits.
+
+Never display sample output as a completed generation. Provider errors must remain explicit.
