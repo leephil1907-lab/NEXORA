@@ -1,7 +1,7 @@
 "use client";
 import { useCallback,useEffect,useState, type FormEvent } from "react";
 import Link from "next/link";
-import { Bookmark, Clapperboard, Image as ImageIcon, Layers, Plus, Trash2 } from "lucide-react";
+import { Clapperboard, Image as ImageIcon, Layers, Plus, Trash2 } from "lucide-react";
 type CaseItem={id:string;title:string;category:string;description:string;prompt:string;kind:"image"|"video";is_public?:boolean};
 const STARTERS:CaseItem[]=[
 {id:"s1",title:"Cinematic portrait",category:"Portrait",description:"Editorial portrait with controlled light and shallow depth.",prompt:"A cinematic editorial portrait at golden hour, soft directional key light, 85mm lens, shallow depth of field, natural skin texture, subtle film grain, premium color grading.",kind:"image",is_public:true},
