@@ -55,6 +55,7 @@ async function chatViaLocalDevice(
     .select("id,name")
     .eq("user_id", userId)
     .eq("status", "active")
+    .gte("last_seen_at", new Date(Date.now() - 90_000).toISOString())
     .order("last_seen_at", { ascending: false, nullsFirst: false })
     .limit(1)
     .maybeSingle();
@@ -66,7 +67,7 @@ async function chatViaLocalDevice(
     .insert({
       user_id: userId,
       device_id: device.id,
-      kind: "chat",
+      kind: "chat_completion",
       input: {
         prompt,
         systemPrompt,

@@ -2,7 +2,7 @@
 create or replace function public.apply_credit_purchase(p_user_id uuid,p_credits integer,p_checkout_session_id text)
 returns void language plpgsql security definer set search_path = public as $$
 begin
-  if auth.role() <> 'service_role' then raise exception 'SERVICE_ROLE_REQUIRED'; end if;
+  if coalesce(auth.jwt() ->> 'role', '') <> 'service_role' then raise exception 'SERVICE_ROLE_REQUIRED'; end if;
   if p_credits < 1 or p_credits > 100000 or length(p_checkout_session_id) < 5 then raise exception 'INVALID_PURCHASE'; end if;
   if exists(select 1 from public.credit_ledger where idempotency_key='stripe:'||p_checkout_session_id) then return; end if;
   perform 1 from public.profiles where id=p_user_id for update;
@@ -18,7 +18,7 @@ end; $$;
 create or replace function public.admin_adjust_credits(p_admin_id uuid,p_user_id uuid,p_amount integer,p_reason text,p_request_id text)
 returns void language plpgsql security definer set search_path = public as $$
 begin
-  if auth.role() <> 'service_role' then raise exception 'SERVICE_ROLE_REQUIRED'; end if;
+  if coalesce(auth.jwt() ->> 'role', '') <> 'service_role' then raise exception 'SERVICE_ROLE_REQUIRED'; end if;
   if p_amount=0 or abs(p_amount)>100000 or length(trim(coalesce(p_reason,'')))<5 then raise exception 'INVALID_ADJUSTMENT'; end if;
   if not exists(select 1 from public.profiles where id=p_admin_id and role='admin') then raise exception 'ADMIN_REQUIRED'; end if;
   if exists(select 1 from public.credit_ledger where idempotency_key='admin:'||p_request_id) then return; end if;

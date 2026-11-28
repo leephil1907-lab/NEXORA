@@ -78,7 +78,7 @@ create or replace function public.refund_generation_credits(p_user_id uuid,p_gen
 returns void language plpgsql security definer set search_path = public as $$
 declare v_reserved integer;
 begin
-  if auth.role() <> 'service_role' then raise exception 'SERVICE_ROLE_REQUIRED'; end if;
+  if coalesce(auth.jwt() ->> 'role', '') <> 'service_role' then raise exception 'SERVICE_ROLE_REQUIRED'; end if;
   if p_amount < 1 then raise exception 'INVALID_REFUND'; end if;
   if not exists(select 1 from public.generations where id=p_generation_id and user_id=p_user_id and status='failed') then
     raise exception 'GENERATION_NOT_REFUNDABLE';
