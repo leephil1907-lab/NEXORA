@@ -25,7 +25,7 @@ export async function GET(request: Request) {
     return NextResponse.json({ code: "AGE_VERIFICATION_REQUIRED", error: "Complete 18+ verification first." }, { status: 403 });
   }
   const path = new URL(request.url).searchParams.get("path") || "";
-  if (!path.startsWith(`${user.id}/`) || path.includes("..") || path.startsWith("/") || path.includes("\\\\")) {
+  if (!path.startsWith(`${user.id}/`) || path.includes("..") || path.startsWith("/") || path.includes("\\")) {
     return NextResponse.json({ error: "Reference asset path is invalid." }, { status: 400 });
   }
   const { data, error } = await admin.storage.from("lumi-assets").createSignedUrl(path, 3600);
