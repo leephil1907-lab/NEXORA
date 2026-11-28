@@ -4,10 +4,23 @@ import Link from "next/link";
 import { useMemo, useState } from "react";
 import { Navbar } from "@/components/site/navbar";
 import { Footer } from "@/components/site/footer";
-import { ArrowUpRight, Clapperboard, Image as ImageIcon, Search, Sparkles } from "lucide-react";
+import { ArrowUpRight, Camera, Clapperboard, Image as ImageIcon, Layers, Paintbrush, PanelsTopLeft, Search, Shirt, Sparkles, UserRound } from "lucide-react";
 import { TOOLS, type ToolCategory } from "@/lib/tools/registry";
 
 const CATEGORIES: ("All" | ToolCategory)[] = ["All", "Images", "Video"];
+
+const TOOL_ICONS: Record<string, typeof ImageIcon> = {
+  "text-to-image": Sparkles,
+  "image-editor": ImageIcon,
+  "style-transfer": Layers,
+  "avatar-studio": UserRound,
+  "product-photography": Camera,
+  "fashion-studio": Shirt,
+  "background-editor": Paintbrush,
+  "poster-studio": PanelsTopLeft,
+  "text-to-video": Clapperboard,
+  "image-to-video": Clapperboard,
+};
 
 export default function ToolsPage() {
   const [category, setCategory] = useState<"All" | ToolCategory>("All");
@@ -74,7 +87,7 @@ export default function ToolsPage() {
 
         <div className="mt-4 grid gap-4 md:grid-cols-2 xl:grid-cols-3">
           {filtered.map((tool) => {
-            const Icon = tool.category === "Images" ? ImageIcon : Clapperboard;
+            const Icon = TOOL_ICONS[tool.slug] || (tool.category === "Images" ? ImageIcon : Clapperboard);
             return (
               <Link
                 key={tool.slug}
