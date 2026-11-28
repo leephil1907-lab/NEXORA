@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Manrope, Space_Grotesk } from "next/font/google";
 import "./globals.css";
+import { ScrollProgress } from "@/components/site/motion";
 
 const manrope = Manrope({ subsets: ["latin"], variable: "--font-manrope", display: "swap" });
 const spaceGrotesk = Space_Grotesk({ subsets: ["latin"], variable: "--font-space-grotesk", display: "swap" });
@@ -29,6 +30,7 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
           <div className="absolute inset-0 bg-ink" />
           <div className="absolute inset-0 grid-lines opacity-50" />
         </div>
+        <ScrollProgress />
         <div className="relative z-10">{children}</div>
       </body>
     </html>

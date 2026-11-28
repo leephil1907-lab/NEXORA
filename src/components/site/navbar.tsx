@@ -3,10 +3,11 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Logo } from "@/components/ui/logo";
-import { LayoutGrid, ListChecks, MessageSquareText, Sparkles, UserRound } from "lucide-react";
+import { LayoutGrid, Layers, ListChecks, MessageSquareText, Sparkles, UserRound } from "lucide-react";
 
 const LINKS = [
   { href: "/tools", label: "Tools", icon: LayoutGrid },
+  { href: "/templates", label: "Templates", icon: Layers },
   { href: "/tasks", label: "Tasks", icon: ListChecks },
   { href: "/chat", label: "Chat", icon: MessageSquareText },
   { href: "/profile", label: "Profile", icon: UserRound },
