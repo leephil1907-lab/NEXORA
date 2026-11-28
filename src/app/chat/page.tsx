@@ -9,7 +9,8 @@ export const metadata: Metadata = {
     "Chat with uncensored models (DeepSeek V4.1 Flash, GLM-5.3, Qwen3.8-27B Abliterated, Gemma 4 31B Heretic, Venice Uncensored 1.2). Local-first: your machine runs the models, hosted engines are optional fallbacks.",
 };
 
-export default async function ChatPage({ searchParams }: { searchParams: Promise<{ prompt?: string }> }) {\n  const { prompt = "" } = await searchParams;
+export default async function ChatPage({ searchParams }: { searchParams: Promise<{ prompt?: string }> }) {
+  const { prompt = "" } = await searchParams;
   return (
     <>
       <Navbar />
