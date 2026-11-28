@@ -55,6 +55,8 @@ const defaultConfig: AppConfig = {
 export function Workspace({ view = "create", tool }: { view?: "create" | "library" | "credits" | "admin"; tool?: ToolEntry }) {
   const searchParams = useSearchParams();
   const initialPrompt = (searchParams.get("prompt") ?? tool?.promptTemplate ?? "").slice(0, 2500);
+  const requestedKind = tool?.kind ?? (searchParams.get("kind") === "video" ? "video" : "image");
+  const referencePath = searchParams.get("referenceAssetPath") ?? "";
 
   const supabase = useMemo(() => {
     if (!process.env.NEXT_PUBLIC_SUPABASE_URL || !process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY) return null;
@@ -109,6 +111,22 @@ export function Workspace({ view = "create", tool }: { view?: "create" | "librar
 
   const fileInputRef = useRef<HTMLInputElement | null>(null);
   const endInputRef = useRef<HTMLInputElement | null>(null);
+
+  useEffect(() => {
+    setKind(requestedKind);
+    setPrompt(initialPrompt);
+    setModelId("");
+    setReferenceFile(null);
+    setSelectedReferenceAssetPath(null);
+    setReferencePreview(null);
+    setEndEnabled(false);
+    setEndFile(null);
+    setEndPreview(null);
+    setActiveJob(null);
+    setMessage(null);
+    if (fileInputRef.current) fileInputRef.current.value = "";
+    if (endInputRef.current) endInputRef.current.value = "";
+  }, [tool?.slug, requestedKind, initialPrompt, referencePath]);
 
   useEffect(() => {
     return () => {
@@ -243,7 +261,7 @@ export function Workspace({ view = "create", tool }: { view?: "create" | "librar
   }, []);
 
   useEffect(() => {
-    const path = searchParams.get("referenceAssetPath");
+    const path = referencePath;
     if (!path || !user || !ageVerified || !tool?.needsReference || selectedReferenceAssetPath === path) return;
     let cancelled = false;
     void fetch(`/api/uploads?path=${encodeURIComponent(path)}`, { cache: "no-store" })
@@ -260,7 +278,7 @@ export function Workspace({ view = "create", tool }: { view?: "create" | "librar
         if (!cancelled) setMessage({ type: "error", text: error instanceof Error ? error.message : "Could not load the saved reference image." });
       });
     return () => { cancelled = true; };
-  }, [searchParams, user, ageVerified, tool, selectedReferenceAssetPath]);
+  }, [referencePath, user, ageVerified, tool?.needsReference, selectedReferenceAssetPath]);
 
   useEffect(() => {
     if (!supabase) {
