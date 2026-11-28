@@ -38,7 +38,7 @@ export async function GET() {
   };
 
   const llmCatalog = chatReady
-    ? [{ id: "auto", label: "Automatic · connected AI" }]
+    ? [{ id: "auto", label: "Automatic · hosted AI" }]
     : [];
 
   return NextResponse.json({
