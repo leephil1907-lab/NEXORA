@@ -47,6 +47,7 @@ function trustedSource(source: string): { ok: boolean; bytes?: Buffer; mime?: st
       parsed.protocol === "https:" &&
       (parsed.hostname === "replicate.delivery" ||
         parsed.hostname.endsWith(".replicate.delivery") ||
+        parsed.hostname === "generativelanguage.googleapis.com" ||
         customHosts.includes(parsed.hostname));
     return { ok };
   } catch {
@@ -66,7 +67,15 @@ async function storeOutput(userId: string, jobId: string, kind: "image" | "video
     buffer = trusted.bytes;
     mime = trusted.mime;
   } else {
-    const response = await fetch(source, { cache: "no-store", redirect: "manual", signal: AbortSignal.timeout(45_000) });
+    const sourceHost = new URL(source).hostname;
+    const response = await fetch(source, {
+      cache: "no-store",
+      redirect: "manual",
+      signal: AbortSignal.timeout(45_000),
+      ...(sourceHost === "generativelanguage.googleapis.com"
+        ? { headers: { "x-goog-api-key": process.env.GEMINI_API_KEY || "" } }
+        : {}),
+    });
     if (response.status >= 300 && response.status < 400) throw new Error("Provider output attempted an unexpected redirect.");
     if (!response.ok) throw new Error(`Could not retrieve provider output (HTTP ${response.status}).`);
     mime = (response.headers.get("content-type") || "").split(";")[0].toLowerCase();
