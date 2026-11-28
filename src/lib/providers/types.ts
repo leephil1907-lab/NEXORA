@@ -9,7 +9,7 @@
 
 export type Modality = "image" | "video";
 
-export type ProviderKind = "replicate" | "custom-image" | "custom-llm";
+export type ProviderKind = "replicate" | "custom-image" | "custom-llm" | "gemini-image" | "gemini-video";
 
 export type AspectRatio = "16:9" | "9:16" | "1:1" | "4:3" | "3:4" | "21:9";
 export type Resolution = "480p" | "720p" | "1080p";
@@ -120,6 +120,8 @@ export class ProviderNotConfiguredError extends Error {
     super(
       provider === "replicate"
         ? "Replicate API token is not configured on this deployment. Set REPLICATE_API_TOKEN to enable generation."
+        : provider === "gemini-image" || provider === "gemini-video"
+          ? "Google Gemini generation is not configured. Set GEMINI_API_KEY on the server and enable billing for Gemini image/video generation."
         : provider === "custom-llm"
           ? "No custom LLM endpoint is configured on this deployment. Set NEXORA_LLM_ENDPOINT / NEXORA_LLM_API_KEY to enable the prompt assistant."
           : "No custom image endpoint is configured on this deployment. Set NEXORA_IMAGE_ENDPOINT / NEXORA_IMAGE_API_KEY to enable this model."
