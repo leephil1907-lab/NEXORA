@@ -5,10 +5,10 @@ import { ArrowUpRight, CheckCircle2, RefreshCcw, ShieldCheck, Zap } from "lucide
 import { Reveal } from "@/components/ui/reveal";
 
 const rows = [
-  { label: "Image generation", detail: "Any image model · professional mode ×2", value: "1 credit" },
-  { label: "Video · 5 seconds", detail: "Wan 2.2/2.5, LTX-Video · professional ×2", value: "10 credits" },
-  { label: "Video · 10 seconds", detail: "Wan 2.5, LTX-Video · professional ×2", value: "20 credits" },
-  { label: "Clip extension · +5s", detail: "LTX-Video distilled continuation jobs", value: "10 credits" },
+  { label: "Image generation", detail: "Configured image rate · shown before each run", value: "In studio" },
+  { label: "Video · 5 seconds", detail: "Configured video rate · shown before each run", value: "In studio" },
+  { label: "Video · 10 seconds", detail: "Calculated from the selected model and duration", value: "In studio" },
+  { label: "Clip extension", detail: "Available on supported video models only", value: "In studio" },
   { label: "Failed generations", detail: "Automatic refund to your balance", value: "Free" },
 ];
 
@@ -44,8 +44,8 @@ const faqs = [
     a: "You are not charged for failed work. The reservation is refunded automatically and the job keeps the failure reason so you can retry with adjusted settings.",
   },
   {
-    q: "Why does professional mode cost double?",
-    a: "Professional mode maps to more inference steps / higher-quality samplers on the provider side (for example 50 denoising steps instead of 30 on LTX, or go_fast off on Wan). You pay for the extra compute you actually use.",
+    q: "How is the generation cost calculated?",
+    a: "The studio calculates the credit cost from the configured image or video rate, the selected model and the clip duration. You see the cost before submitting a job.",
   },
 ];
 
