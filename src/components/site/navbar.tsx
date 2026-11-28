@@ -47,7 +47,7 @@ export function Navbar() {
           href="/credits"
           className="btn-primary hidden shrink-0 items-center gap-1.5 !px-4 !py-2 text-xs sm:inline-flex"
         >
-          <Sparkles size={12} /> Upgrade
+          <Sparkles size={12} /> Credits
         </Link>
         <Link href="/studio" className="btn-secondary hidden shrink-0 !px-4 !py-2 text-xs lg:inline-flex">
           Studio
