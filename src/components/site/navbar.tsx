@@ -7,7 +7,8 @@ import { Boxes, Cpu, LayoutGrid, MessageSquare, Shirt, WandSparkles, Zap } from 
 
 const LINKS = [
   { href: "/", label: "Studio", icon: WandSparkles },
-  { href: "/chat", label: "Chat", icon: MessageSquare },\n  { href: "/tools", label: "Tools", icon: LayoutGrid },
+  { href: "/chat", label: "Chat", icon: MessageSquare },
+  { href: "/tools", label: "Tools", icon: LayoutGrid },
   { href: "/models", label: "Models", icon: Boxes },
   { href: "/studio/try-on", label: "Try-on", icon: Shirt },
   { href: "/studio/local", label: "Local", icon: Cpu },
