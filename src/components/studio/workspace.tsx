@@ -805,7 +805,7 @@ export function Workspace() {
                         <select
                           value={assistantModelId}
                           onChange={(event) => setAssistantModelId(event.target.value)}
-                          className="max-w-[190px] rounded-full border border-line bg-panel-2 px-3 py-1.5 text-[10px] text-white outline-none focus:border-cyan/50"
+                          className="max-w-[190px] rounded-full border border-line bg-[#191c20] px-3 py-1.5 text-[10px] text-white outline-none focus:border-cyan/50"
                           aria-label="Prompt enhancer model"
                         >
                           {assistantModels.map((model) => <option key={model.id} value={model.id}>{model.label}</option>)}
