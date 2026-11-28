@@ -7,7 +7,7 @@ import Link from "next/link";
 import type { User } from "@supabase/supabase-js";
 import {
   AlertTriangle, ArrowUpRight, Boxes, Camera, Check, ChevronDown, Cpu, Film,
-  Gauge, Home, Image as ImageIcon, Library, LoaderCircle, LogOut, MessageSquare, Plus, ShieldAlert,
+  Gauge, Image as ImageIcon, LayoutGrid, Library, LoaderCircle, LogOut, MessageSquare, Plus, ShieldAlert,
   ShieldCheck, Shirt, Sparkles, Timer, Trash2, UploadCloud, Volume2, WandSparkles, Zap
 } from "lucide-react";
 import { createClient } from "@/lib/supabase/browser";
@@ -18,7 +18,7 @@ import {
 } from "@/components/studio/panels";
 import type { AdminUser, AppConfig, CatalogModelPublic, Job } from "@/lib/generations/types";
 import type { GenerationSettingsSnapshot } from "@/lib/generations/types";
-import { cn, formatDate } from "@/lib/utils";
+import { cn } from "@/lib/utils";
 
 const ASPECTS = ["16:9", "9:16", "1:1", "4:3", "3:4", "21:9"];
 const CAMERAS = [
