@@ -307,7 +307,15 @@ export function Workspace({ view = "create", tool }: { view?: "create" | "librar
     event.preventDefault();
     setMessage(null);
     if (!currentModel) {
-      setMessage({ type: "error", text: "Choose a model before generating." });
+      setMessage({ type: "error", text: "The generation engine for this tool is not ready. Check the Gemini connection and try again." });
+      return;
+    }
+    if (tool?.needsReference && !referenceFile && !selectedReferenceAssetPath) {
+      setMessage({ type: "error", text: `Upload a reference image before using ${tool.name}.` });
+      return;
+    }
+    if (endEnabled && !endFile) {
+      setMessage({ type: "error", text: "Upload the end frame or turn off the end-frame option." });
       return;
     }
     setBusy(true);
@@ -659,6 +667,7 @@ export function Workspace({ view = "create", tool }: { view?: "create" | "librar
           <div className={view === "create" ? "mt-8 grid gap-6 xl:grid-cols-[minmax(0,460px)_minmax(0,1fr)]" : "mt-2"}>
             {/* ============================ compose column ============================ */}
             {view === "create" && (<form onSubmit={generate} className="space-y-5">
+              {!tool && (
               {/* Modality switch */}
               <div className="flex items-center gap-2 rounded-2xl border border-line bg-panel p-1.5" role="group" aria-label="Generation type">
                 {(["image", "video"] as const).map((value) => {
@@ -686,6 +695,8 @@ export function Workspace({ view = "create", tool }: { view?: "create" | "librar
                   );
                 })}
               </div>
+
+              )}
 
               {/* Image and Prompt */}
               <div className="glass-strong rounded-3xl p-6">
@@ -1097,9 +1108,9 @@ export function Workspace({ view = "create", tool }: { view?: "create" | "librar
 
               {!providersReady && (
                 <p className="rounded-xl border border-amber/25 bg-amber/8 px-4 py-3 text-[11px] leading-relaxed text-amber">
-                  No generation provider is configured on this deployment (REPLICATE_API_TOKEN /
-                  NEXORA_IMAGE_ENDPOINT). Submitting returns an explicit unavailability error —
-                  NEXORA never simulates results.
+                  Gemini generation is not configured for this deployment yet. Add a valid GEMINI_API_KEY
+                  with image/video generation access in Render environment settings. NEXORA will not
+                  display sample media or pretend a generation succeeded.
                 </p>
               )}
             </form>)}
