@@ -2,10 +2,7 @@ import { NextResponse } from "next/server";
 import type { AppConfig } from "@/lib/generations/types";
 import { publicCatalog, getModel, providerReady, assistantConfigured, customImageConfigured, replicateConfigured } from "@/lib/providers";
 import { imageCreditCost, videoCreditBase, maxUploadMb } from "@/lib/generations/pricing";
-import { publicLlmCatalog } from "@/lib/models/uncensored-catalog";
 import { omegaConfigured } from "@/lib/providers/omega";
-import { vipeakConfigured } from "@/lib/providers/vipeak";
-import { ogaiCount } from "@/lib/data/ogai-catalog";
 
 export const runtime = "nodejs";
 
@@ -14,30 +11,37 @@ function sensitiveEnabled(): boolean {
   return raw === "true" || raw === "1" || raw === "yes";
 }
 
-/**
- * Public, non-secret runtime configuration: the real model catalog with live
- * availability, the credit economy, and which subsystems are configured.
- * No credentials ever leave the server.
- */
+/** Only advertise models whose provider is actually configured on this deployment. */
 export async function GET() {
-  const models = publicCatalog().map((m) => ({
-    ...m,
-    ready: (() => {
-      const entry = getModel(m.id);
-      return entry ? providerReady(entry) : false;
-    })(),
-  }));
+  const models = publicCatalog()
+    .map((model) => {
+      const entry = getModel(model.id);
+      return { ...model, ready: entry ? providerReady(entry) : false };
+    })
+    .filter((model) => model.ready);
+
+  const chatReady = Boolean(
+    process.env.GEMINI_API_KEY ||
+    process.env.VENICE_API_KEY ||
+    omegaConfigured() ||
+    assistantConfigured()
+  );
 
   const config: AppConfig & { models: typeof models } = {
     authEnabled: Boolean(process.env.NEXT_PUBLIC_SUPABASE_URL && process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY),
-    generationEnabled: models.some((m) => m.ready),
-    assistantEnabled: assistantConfigured(),
+    generationEnabled: models.length > 0,
+    assistantEnabled: chatReady,
     sensitiveEnabled: sensitiveEnabled(),
     imageCreditCost: imageCreditCost(),
     videoCreditCost: videoCreditBase(),
     maxUploadMb: maxUploadMb(),
     models,
   };
+
+  const llmCatalog = process.env.GEMINI_API_KEY
+    ? [{ id: "gemini", label: process.env.GEMINI_MODEL || "Google Gemini" }]
+    : [];
+
   return NextResponse.json({
     ...config,
     providers: {
@@ -46,19 +50,15 @@ export async function GET() {
       customLlm: assistantConfigured(),
       omega: omegaConfigured(),
       venice: Boolean(process.env.VENICE_API_KEY),
-      vipeak: vipeakConfigured(),
     },
     engines: {
-      localCompanion: true,
-      selfHostedLlm: assistantConfigured(),
-      selfHostedImage: customImageConfigured(),
       gemini: Boolean(process.env.GEMINI_API_KEY),
       omega: omegaConfigured(),
       venice: Boolean(process.env.VENICE_API_KEY),
-      vipeak: vipeakConfigured(),
       replicate: replicateConfigured(),
+      customImage: customImageConfigured(),
+      customLlm: assistantConfigured(),
     },
-    llmCatalog: publicLlmCatalog(),
-    catalogCount: ogaiCount(),
+    llmCatalog,
   }, { headers: { "Cache-Control": "no-store" } });
 }
