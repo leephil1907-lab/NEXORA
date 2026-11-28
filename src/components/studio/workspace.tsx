@@ -842,7 +842,7 @@ export function Workspace({ view = "create", tool }: { view?: "create" | "librar
               {/* Prompt */}
               <div className="glass-strong rounded-3xl p-6">
                 <h2 className="font-display text-base font-semibold text-white/95">
-                  Prompt {isVideo ? "(optional with an image)" : ""}
+                  Prompt
                 </h2>
                 <div className="relative mt-3">
                   <textarea
@@ -954,7 +954,7 @@ export function Workspace({ view = "create", tool }: { view?: "create" | "librar
                             !enabled && "cursor-not-allowed opacity-35"
                           )}
                         >
-                          {value}
+                          {currentModel?.provider === "gemini-image" && value === "1080p" ? "1K" : value}
                         </button>
                       );
                     })}
@@ -1151,8 +1151,7 @@ export function Workspace({ view = "create", tool }: { view?: "create" | "librar
                     <div>
                       <p className="font-display text-lg font-semibold text-white/95">Your result lands here</p>
                       <p className="mx-auto mt-2 max-w-md text-sm leading-relaxed text-muted">
-                        Choose a model, describe your vision and hit Generate. The player shows the
-                        real provider output — with download, favorites and extensions on completed clips.
+                        Describe your vision and hit Generate. The preview will show the real provider output when the job completes.
                       </p>
                     </div>
                   </div>
