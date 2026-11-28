@@ -1,84 +1,103 @@
-# NEXORA — AI Image & Video Studio
+# NEXORA — Creative Image & Video Studio
 
-NEXORA is a focused creative workspace for generating images and videos, editing images with references, and turning generated images into video. It uses real provider jobs, private Supabase storage, persistent generation history and credit reservations/refunds.
+NEXORA is a focused creative studio for image generation, reference-based image editing, and text/image-to-video creation. The public creative tools use the configured Google Gemini engines, private Supabase storage, persistent job history, and account-scoped credit reservations/refunds.
 
-The interface only lists models whose provider is configured. Unsupported model choices and unfinished provider integrations are not presented as available features.
-
-## Product
+## Product areas
 
 | Route | Purpose |
 | --- | --- |
-| `/` | NEXORA home and supported creative entry points |
-| `/studio` | Main image and video creation workspace |
-| `/tools` | Supported image/video tools |
-| `/templates` | Prompt presets that open supported tools |\n| `/cases` | Reusable creative briefs, starter cases and user-saved cases |\n| `/characters` | Private fictional character profiles and character-aware hosted chat |\n| `/workflows` | Guided image, video, character and reference production flows |\n| `/api-access` | API key management and available authenticated API endpoints |
-| `/tasks` | Generation history, results and saved assets |
-| `/chat` | Hosted creative assistant (Gemini first; configured fallbacks only) |
-| `/profile` | Account and usage summary |
-| `/credits` | Credit rules and configured rates |
-| `/studio/admin` | Admin-only credit adjustments |
-| `/legal/terms`, `/legal/privacy` | Legal pages |
+| / | Creative studio dashboard and tool discovery |
+| /tools | Searchable library of dedicated creative tools |
+| /tools/[slug] | Focused workflow for one image or video tool |
+| /studio | General creation workspace |
+| /templates | Searchable prompt presets that open real tools |
+| /cases | Reusable creative briefs and saved prompts |
+| /characters | Private fictional character profiles and reference images |
+| /chat | Hosted creative assistant with automatic engine routing |
+| /workflows | Guided image, video, character and reference workflows |
+| /tasks | Generation history, results, favorites and saved assets |
+| /credits | Credit balance and configured generation rates |
+| /api-access | Personal API key management |
+| /profile | Account and usage summary |
+| /studio/admin | Admin-only credit adjustments |
+| /legal/terms, /legal/privacy | Legal pages |
 
-## Supported generation models
+## Dedicated creative tools
 
-All generation models use the server-side Replicate adapter. The public model list is filtered to providers that are configured on the deployment.
+- AI Image Generator — text-to-image
+- Image-to-Image Editor — reference-guided editing
+- Same Style Studio — reference-guided style direction
+- Avatar & Portrait Studio
+- Product Photography
+- Fashion & Design Studio
+- Background & Scene Editor
+- AI Image Enhancer
+- Poster & Thumbnail Maker
+- Text-to-Video Studio
+- Image-to-Video Studio
 
-| Model | Type | Supported workflow |
+Specialized image tools use focused prompt presets on the same configured Gemini image engine. They do not require users to choose a model. Tools that need a source image enforce that requirement before submission.
+
+## Active generation engines
+
+| Engine | Workflow | Model ID |
 | --- | --- | --- |
-| `black-forest-labs/flux-schnell` | Image | Text-to-image |
-| `black-forest-labs/flux-kontext-dev` | Image | Reference image editing |
-| `wan-video/wan-2.2-t2v-fast` | Video | Text-to-video |
-| `wan-video/wan-2.2-i2v-fast` | Video | Image-to-video |
-| `wan-video/wan-2.2-i2v-a14b` | Video | Higher-quality image-to-video |
-| `wan-video/wan-2.5-t2v` | Video | Text-to-video, 5 or 10 seconds |
-| `wan-video/wan-2.5-i2v` | Video | Image-to-video, 5 or 10 seconds |
-| `lightricks/ltx-video-0.9.7-distilled` | Video | Text/image-to-video and supported clip continuation |
+| Google Gemini image generation | Text-to-image and reference image editing | gemini-3.1-flash-lite-image |
+| Google Gemini Omni video | Text-to-video and image-to-video | gemini-omni-1.2-flash |
 
-The studio only enables controls supported by the selected model. Camera direction is prompt conditioning where the model has no dedicated camera parameter. Audio capability is shown as a model capability; the UI does not pretend a toggle can change a provider input when it cannot.
+The application does not route these tools to Replicate or require Replicate credits. The Gemini image engine uses the Gemini image generation API. The video engine uses the Gemini Interactions API and supports polling the provider task until its video output is ready. Completed video file URIs are downloaded through the authenticated Google Files API and saved into the user's private media library.
 
 ## Generation lifecycle
 
-1. The signed-in user submits a validated model request.
-2. The server verifies ownership of reference assets and creates a generation record.
+1. The signed-in user submits a validated prompt and supported settings.
+2. The server verifies account access and ownership of any reference assets.
 3. Credits are reserved transactionally.
-4. The provider prediction is created and its ID is persisted.
-5. The status endpoint polls the provider and stores successful media in the private `lumi-assets` bucket.
-6. Failed jobs are marked failed and reserved credits are refunded.
+4. The configured Gemini provider is called and the job ID is persisted.
+5. The status endpoint polls the real provider state.
+6. Completed media is saved to the private lumi-assets bucket and exposed through signed URLs.
+7. Failed jobs are marked failed and reserved credits are refunded.
 
-Generated image assets can be selected as image-to-video references. Clip continuation is available only on completed jobs whose selected model supports video input. Character profiles and saved cases are private to their owner. Character-aware chat prepends the selected character profile as creative context. Guided workflows link the supported stages; there is no drag-and-drop node canvas yet.
+Saved image results can be sent directly to Image-to-Video Studio from the task library. Character profiles can store reference images and open them in the Image-to-Image Editor. All generation history and saved assets are scoped to the signed-in user.
+
+## Capabilities that are not advertised as active
+
+NEXORA currently provides background/scene editing and generative image enhancement. It does not claim pixel-accurate transparent-background removal or dedicated super-resolution upscaling. Those require separate image-processing capabilities and should not be presented as completed tools until implemented and tested.
+
+The guided workflows are real step-by-step links into supported features. There is no drag-and-drop node canvas or simulated node execution.
 
 ## API
 
 | Endpoint | Purpose |
 | --- | --- |
-| `GET /api/config` | Public runtime configuration and only configured model entries |
-| `POST /api/generations` | Validate, reserve credits and submit a real provider job |
-| `GET /api/generations` | Private generation history with signed asset URLs |
-| `GET /api/generations/[id]` | Poll provider state and persist completed output |
-| `PATCH /api/generations/[id]` | Favorite/rating updates |
-| `POST /api/uploads` | Validate and store private reference images |
-| `POST /api/assist` | Prompt enhancement using the configured hosted chat chain |
-| `POST /api/chat` | Hosted AI chat |
-| `POST /api/admin/credits` | Admin-only credit adjustments |\n| `GET /api/keys`, `POST /api/keys`, `DELETE /api/keys?id=…` | Create, list and revoke personal API keys; raw keys are shown only once |\n| `GET /api/v1/account` | API-key authenticated account and credit balance |\n| `GET /api/v1/models` | API-key authenticated configured generation model catalog |
+| GET /api/config | Runtime configuration and configured model entries |
+| POST /api/generations | Validate, reserve credits and submit a real generation |
+| GET /api/generations | Private generation history with signed asset URLs |
+| GET /api/generations/[id] | Poll provider state and persist completed output |
+| PATCH /api/generations/[id] | Favorite/rating updates |
+| POST /api/uploads | Validate and store private reference images |
+| GET /api/uploads?path=... | Create a signed URL for an asset owned by the current user |
+| POST /api/assist | Prompt enhancement using the configured hosted chat chain |
+| POST /api/chat | Hosted AI chat |
+| /api/keys | Create, list and revoke personal API keys |
+| /api/v1/account | API-key authenticated account and credit balance |
+| /api/v1/models | API-key authenticated configured generation model catalog |
 
 ## Required environment
 
-- `NEXT_PUBLIC_SUPABASE_URL`
-- `NEXT_PUBLIC_SUPABASE_ANON_KEY`
-- `SUPABASE_SERVICE_ROLE_KEY`
-- `REPLICATE_API_TOKEN`
-- `GEMINI_API_KEY` (for hosted chat and prompt assistance)
+- NEXT_PUBLIC_SUPABASE_URL
+- NEXT_PUBLIC_SUPABASE_ANON_KEY
+- SUPABASE_SERVICE_ROLE_KEY
+- GEMINI_API_KEY
 
 Optional:
-- `GEMINI_MODEL`
-- `OMEGA_API_KEY` / Omega provider settings
-- `VENICE_API_KEY` / Venice provider settings
-- `NEXORA_IMAGE_CREDIT_COST`
-- `NEXORA_VIDEO_CREDIT_COST`
-- `NEXORA_MAX_UPLOAD_MB`
-- `NEXORA_ALLOW_SENSITIVE`
+- OMEGA_API_KEY and provider settings for hosted chat fallback
+- VENICE_API_KEY and provider settings for hosted chat fallback
+- NEXORA_IMAGE_CREDIT_COST
+- NEXORA_VIDEO_CREDIT_COST
+- NEXORA_MAX_UPLOAD_MB
+- NEXORA_ALLOW_SENSITIVE
 
-Never place provider secrets in browser code. Configure them only in the Render service environment.
+Provider secrets must remain server-side and must never be exposed in browser code. Configure them in the Render service environment.
 
 ## Credits and payments
 
@@ -86,17 +105,12 @@ Credit rates are configured on the deployment and shown in the studio before sub
 
 ## Development
 
-```bash
-npm install
+~~~bash
+npm ci
 cp .env.example .env.local
 npm run dev
 npm run typecheck
 npm run build
-```
+~~~
 
-Database migrations live in `supabase/migrations/` and must be applied in order.
-
-
-## Generation billing
-
-The active Studio catalog uses Google Gemini 3.1 Flash Lite Image for image generation and Gemini Omni 1.2 Flash for video generation. Replicate-dependent models have been removed from the active catalog. Google Gemini image and video generation are paid-tier features; a free-tier Gemini text API key does not include image/video generation. The Gemini API project must have billing enabled. NEXORA only submits a provider request after the user presses Generate.
+Database migrations live in supabase/migrations/ and must be applied in order.
