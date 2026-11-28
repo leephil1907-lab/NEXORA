@@ -952,7 +952,7 @@ export function Workspace({ view = "create", tool }: { view?: "create" | "librar
                   </div>
                   {currentModel && (
                     <p className="mt-2 text-[10px] leading-relaxed text-dim">
-                      {currentModel.tagline} <span className="text-white/40">· {currentModel.source}</span>
+                      {currentModel.tagline} <span className="text-white/40">· {currentModel.source}</span>{(currentModel.provider === "gemini-image" || currentModel.provider === "gemini-video") && <span className="mt-1 block text-amber">Google bills image/video generation separately to the Gemini API project. NEXORA credits do not cover Google API charges.</span>}
                     </p>
                   )}
                 </label>
@@ -1022,7 +1022,7 @@ export function Workspace({ view = "create", tool }: { view?: "create" | "librar
                 <div className="mt-5">
                   <p className="mb-2 text-xs font-semibold text-white/80">Aspect ratio</p>
                   <div className="flex flex-wrap gap-2">
-                    {ASPECTS.map((value) => (
+                    {(currentModel?.provider === "gemini-video" ? ["16:9", "9:16"] : ASPECTS).map((value) => (
                       <button
                         key={value}
                         type="button"
