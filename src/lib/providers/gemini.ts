@@ -103,11 +103,13 @@ export const geminiVideoProvider: GenerationProvider = {
     input.push({ type: "text", text: args.prompt + camera });
     const duration = Math.min(15, Math.max(3, args.settings.durationSeconds || 5));
     const resolution = args.settings.resolution === "1080p" ? "1080p" : "720p";
+    const task = args.imageUrl ? "image_to_video" : "text_to_video";
     const body = await request("/interactions", {
       method: "POST",
       body: JSON.stringify({
         model: model.endpointModelId || "gemini-omni-1.2-flash",
         input,
+        generation_config: { video_config: { task } },
         background: true,
         response_format: {
           type: "video",
