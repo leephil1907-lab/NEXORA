@@ -45,9 +45,7 @@ function trustedSource(source: string): { ok: boolean; bytes?: Buffer; mime?: st
       .filter(Boolean);
     const ok =
       parsed.protocol === "https:" &&
-      (parsed.hostname === "replicate.delivery" ||
-        parsed.hostname.endsWith(".replicate.delivery") ||
-        parsed.hostname === "generativelanguage.googleapis.com" ||
+      (parsed.hostname === "generativelanguage.googleapis.com" ||
         customHosts.includes(parsed.hostname));
     return { ok };
   } catch {
@@ -84,6 +82,10 @@ async function storeOutput(userId: string, jobId: string, kind: "image" | "video
     if (declaredSize > maxBytes) throw new Error("Generated media exceeds the configured storage size limit.");
     buffer = Buffer.from(await response.arrayBuffer());
     if (buffer.byteLength > maxBytes) throw new Error("Generated media exceeds the configured storage size limit.");
+    if (kind === "video" && (!mime || mime === "application/octet-stream") &&
+        buffer.length >= 12 && buffer.toString("ascii", 4, 8) === "ftyp") {
+      mime = "video/mp4";
+    }
   }
 
   const allowed = kind === "image"
