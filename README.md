@@ -1,139 +1,97 @@
-# NEXORA — Real AI Image & Video Studio
+# NEXORA — AI Image & Video Studio
 
-NEXORA is a production-grade AI generation studio: photorealistic image synthesis and
-cinematic video produced by **real model inference on real GPUs** — orchestrated with
-durable jobs, private storage, transparent credits and honest status at every step.
+NEXORA is a focused creative workspace for generating images and videos, editing images with references, and turning generated images into video. It uses real provider jobs, private Supabase storage, persistent generation history and credit reservations/refunds.
 
-> **No placeholders.** NEXORA never fabricates progress, sample outputs or simulated
-> provider responses. When a provider is not configured, the product says exactly that
-> and refuses the run — it never fakes one.
+The interface only lists models whose provider is configured. Unsupported model choices and unfinished provider integrations are not presented as available features.
 
----
+## Product
 
-## Product surface
-
-| Route | What it is |
+| Route | Purpose |
 | --- | --- |
-| `/` | Product site — hero with a live WebGL crystal core (Three.js core module), model roster, process, credit model, FAQ |
-| `/studio` | The creation console — image/video compose, model selection, live preview, library, credit ledger, admin tools |
-| `/credits` | Credit economics — rate card, refund policy, ledger principles |
-| `/sign-in` | Passwordless (magic-link) authentication |
+| `/` | NEXORA home and supported creative entry points |
+| `/studio` | Main image and video creation workspace |
+| `/tools` | Supported image/video tools |
+| `/templates` | Prompt presets that open supported tools |
+| `/tasks` | Generation history, results and saved assets |
+| `/chat` | Hosted creative assistant (Gemini first; configured fallbacks only) |
+| `/profile` | Account and usage summary |
+| `/credits` | Credit rules and configured rates |
+| `/studio/admin` | Admin-only credit adjustments |
 | `/legal/terms`, `/legal/privacy` | Legal pages |
 
-### API
+## Supported generation models
+
+All generation models use the server-side Replicate adapter. The public model list is filtered to providers that are configured on the deployment.
+
+| Model | Type | Supported workflow |
+| --- | --- | --- |
+| `black-forest-labs/flux-schnell` | Image | Text-to-image |
+| `black-forest-labs/flux-kontext-dev` | Image | Reference image editing |
+| `wan-video/wan-2.2-t2v-fast` | Video | Text-to-video |
+| `wan-video/wan-2.2-i2v-fast` | Video | Image-to-video |
+| `wan-video/wan-2.2-i2v-a14b` | Video | Higher-quality image-to-video |
+| `wan-video/wan-2.5-t2v` | Video | Text-to-video, 5 or 10 seconds |
+| `wan-video/wan-2.5-i2v` | Video | Image-to-video, 5 or 10 seconds |
+| `lightricks/ltx-video-0.9.7-distilled` | Video | Text/image-to-video and supported clip continuation |
+
+The studio only enables controls supported by the selected model. Camera direction is prompt conditioning where the model has no dedicated camera parameter. Audio capability is shown as a model capability; the UI does not pretend a toggle can change a provider input when it cannot.
+
+## Generation lifecycle
+
+1. The signed-in user submits a validated model request.
+2. The server verifies ownership of reference assets and creates a generation record.
+3. Credits are reserved transactionally.
+4. The provider prediction is created and its ID is persisted.
+5. The status endpoint polls the provider and stores successful media in the private `lumi-assets` bucket.
+6. Failed jobs are marked failed and reserved credits are refunded.
+
+Generated image assets can be selected as image-to-video references. Clip continuation is available only on completed jobs whose selected model supports video input.
+
+## API
 
 | Endpoint | Purpose |
 | --- | --- |
-| `GET /api/config` | Public runtime config: model catalog with live `ready` flags, credit costs, feature switches. No secrets. |
-| `POST /api/generations` | Create a real generation job: validates settings against the model catalog, reserves credits, submits to the provider |
-| `GET /api/generations?filter=all\|images\|videos\|favorites` | Job history with signed asset URLs |
-| `GET /api/generations/[id]` | Job status — polls the live provider, persists output to private storage, refunds on failure |
-| `PATCH /api/generations/[id]` | Favorite / rating feedback |
-| `POST /api/uploads` | Reference-image upload (JPEG/PNG/WebP, magic-byte checked, private bucket) |
-| `POST /api/assist` | Prompt assistant — real inference on the configured OpenAI-compatible LLM endpoint |
-| `POST /api/admin/credits` | Operator credit adjustments (server-side admin role check) |
+| `GET /api/config` | Public runtime configuration and only configured model entries |
+| `POST /api/generations` | Validate, reserve credits and submit a real provider job |
+| `GET /api/generations` | Private generation history with signed asset URLs |
+| `GET /api/generations/[id]` | Poll provider state and persist completed output |
+| `PATCH /api/generations/[id]` | Favorite/rating updates |
+| `POST /api/uploads` | Validate and store private reference images |
+| `POST /api/assist` | Prompt enhancement using the configured hosted chat chain |
+| `POST /api/chat` | Hosted AI chat |
+| `POST /api/admin/credits` | Admin-only credit adjustments |
 
-## The model catalog (all real)
+## Required environment
 
-| Studio entry | Backend | Modality | Notes |
-| --- | --- | --- | --- |
-| **Wan 2.2 T2V Fast** | `wan-video/wan-2.2-t2v-fast` (Replicate) | video | PrunaAI-optimized; 5 s clips in ~40 s at 480p |
-| **Wan 2.2 I2V Fast** | `wan-video/wan-2.2-i2v-fast` (Replicate) | video | Image-to-video workhorse, 10M+ runs |
-| **Wan 2.2 I2V A14B** | `wan-video/wan-2.2-i2v-a14b` (Replicate) | video | Full-quality I2V with step control |
-| **Wan 2.5 T2V / I2V** | `wan-video/wan-2.5-t2v`, `wan-video/wan-2.5-i2v` (Replicate) | video | Up to 10 s, 480/720/1080p, one-pass A/V sync + lip-sync, custom voice |
-| **LTX-Video** | `lightricks/ltx-video` (Replicate) | video | Full parameter control: guidance, frames, fps, seed, negative prompt |
-| **LTX-Video 0.9.7** | `lightricks/ltx-video-0.9.7` (Replicate) | video | 30 FPS up to 1216×704 |
-| **LTX-Video 0.9.7 Distilled** | `lightricks/ltx-video-0.9.7-distilled` (Replicate) | video | Fast 480/720p; accepts video input → **Extend +5s** |
-| **FLUX.1 [schnell]** | `black-forest-labs/flux-schnell` (Replicate) | image | Photorealistic stills, native aspect ratios |
-| **MOSS Image · Uncensored LoRA** | self-hosted endpoint (`NEXORA_IMAGE_ENDPOINT`) | image | `axiomofmind/Moss-image-nsfw-uncensored-lora-GGUF` |
-| **Inkling 2 Mini / Dongfangshuo Qwen3.8** | self-hosted endpoint (`NEXORA_LLM_ENDPOINT`) | assistant | `AtomicChat/Inkling-2-Mini-Uncensored-GGUF`, `dongfangshuo/Dongfangshuo-Qwen3.8-27B-NSFW-v4` |
+- `NEXT_PUBLIC_SUPABASE_URL`
+- `NEXT_PUBLIC_SUPABASE_ANON_KEY`
+- `SUPABASE_SERVICE_ROLE_KEY`
+- `REPLICATE_API_TOKEN`
+- `GEMINI_API_KEY` (for hosted chat and prompt assistance)
 
-Every setting in the console is mapped honestly: parameters a model exposes directly
-(duration, resolution, guidance…) are sent as schema fields; everything else (camera
-movement, aspect for models without a native ratio) **conditions the prompt** — a real
-mechanism, labelled as such in the UI. Unsupported controls are disabled, never faked.
+Optional:
+- `GEMINI_MODEL`
+- `OMEGA_API_KEY` / Omega provider settings
+- `VENICE_API_KEY` / Venice provider settings
+- `NEXORA_IMAGE_CREDIT_COST`
+- `NEXORA_VIDEO_CREDIT_COST`
+- `NEXORA_MAX_UPLOAD_MB`
+- `NEXORA_ALLOW_SENSITIVE`
 
-### Self-hosted HuggingFace backends
+Never place provider secrets in browser code. Configure them only in the Render service environment.
 
-The three GGUF models run on **your** GPU behind OpenAI-compatible HTTP APIs:
+## Credits and payments
 
-**Prompt assistant (`NEXORA_LLM_ENDPOINT` → `/v1/chat/completions`)**
-
-```bash
-# Inkling 2 Mini Uncensored (26.4B MoE, 3.4B active) — llama.cpp b12600+
-./llama-server -m Inkling-2-Mini-Uncensored-AD-Q4_K.gguf \
-  --mmproj mmproj-Inkling-2-Mini-Uncensored-F16.gguf --jinja -c 32768 -ngl 99
-
-# Dongfangshuo Qwen3.8 27B NSFW — any OpenAI-compatible runtime
-./llama-server -m Dongfangshuo-Qwen3.8-27B-NSFW-v4.gguf --jinja -c 8192 -ngl 99
-```
-
-**Image models (`NEXORA_IMAGE_ENDPOINT` → `/v1/images/generations`)**
-
-Serve `axiomofmind/Moss-image-nsfw-uncensored-lora-GGUF` through ComfyUI (openai node),
-LocalAI, or a custom diffusers gateway.
-
-**WebGL scene** — the hero crystal core is written against the Three.js core ES module
-conventions of the `ccore/ThreeJS-3D-Scenes-v2` dataset (custom shader material, inline
-camera controls, no addons).
-
-## Hosted chat
-
-Chat uses hosted Gemini inference first and does not require the Local Companion. Set `GEMINI_API_KEY` in the deployment environment. `GEMINI_MODEL` is optional and defaults to `gemini-3.8-flash`. If Gemini is unavailable, configured Omega and Venice providers are attempted as fallbacks.
-
-## Environment
-
-Copy `.env.example` to `.env.local`:
-
-| Variable | Purpose |
-| --- | --- |
-| `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY`, `SUPABASE_SERVICE_ROLE_KEY` | Supabase project (auth, Postgres, storage) |
-| `GEMINI_API_KEY`, `GEMINI_MODEL` | Hosted Gemini chat (model defaults to `gemini-3.8-flash`) |\n| `REPLICATE_API_TOKEN` | Enables the Replicate models (Wan / LTX / FLUX) |
-| `NEXORA_IMAGE_CREDIT_COST`, `NEXORA_VIDEO_CREDIT_COST`, `NEXORA_MAX_UPLOAD_MB` | Credit economy + upload limits |
-| `NEXORA_LLM_ENDPOINT`, `NEXORA_LLM_API_KEY`, `NEXORA_LLM_MODEL` | Prompt-assistant backend (llama.cpp etc.) |
-| `NEXORA_IMAGE_ENDPOINT`, `NEXORA_IMAGE_API_KEY`, `NEXORA_IMAGE_MODEL` | Custom image backend (ComfyUI/LocalAI etc.) |
-| `NEXORA_ALLOW_SENSITIVE` | Enables the 18+ sensitive-content mode (consent gate in-app) |
-
-## Credits
-
-Credits are reserved transactionally on submit and spent only on real provider runs.
-Failed jobs are refunded automatically (`refund_generation_credits`) with reason-tagged
-ledger entries. This deployment runs **no payment processor** — credits are granted by
-the operator (`/api/admin/credits`).
-
-## Content policy
-
-Sensitive-content mode is opt-in per run, locked behind an 18+ consent gate, and
-prohibits sexual content involving minors, real people without consent, or any
-non-consensual imagery. The gate acceptance is sent with every sensitive request and
-enforced server-side.
+Credit rates are configured on the deployment and shown in the studio before submission. Credits are granted by an administrator. This deployment does not expose a payment checkout; no purchase flow is advertised as active.
 
 ## Development
 
 ```bash
 npm install
-cp .env.example .env.local   # fill in your keys
-npm run dev                  # http://localhost:3000
-npm run build                # production build
-npx tsc --noEmit && npx next lint
+cp .env.example .env.local
+npm run dev
+npm run typecheck
+npm run build
 ```
 
-### Database
-
-Migrations in `supabase/migrations/` (run in order): generation jobs + private storage
-+ credit RPCs, billing/ledger tables, admin helpers, profile compatibility layer for
-shared projects, and generation controls (`favorite`, `rating`, `extended_from`,
-`model_id`, `settings`).
-
-### Acceptance test
-
-1. Sign in (magic link) → open `/studio`.
-2. Choose **Wan 2.5 I2V** or **LTX-Video**.
-3. Upload a real photograph as the start frame.
-4. Enter a motion prompt → set duration/resolution/camera.
-5. **Generate** — credits reserve, the job runs on a real cloud GPU.
-6. The result appears in the preview player — playable, downloadable, stored in your
-   private library with full job history.
-
-If any step is unavailable (missing key, provider outage) NEXORA tells you exactly why,
-refunds the reservation, and records the failure. It never simulates the output.
+Database migrations live in `supabase/migrations/` and must be applied in order.
