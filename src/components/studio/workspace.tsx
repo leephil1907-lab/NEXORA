@@ -72,8 +72,6 @@ export function Workspace({ view = "create", tool }: { view?: "create" | "librar
   const [ageError, setAgeError] = useState("");
   const [user, setUser] = useState<User | null>(null);
   const [config, setConfig] = useState<AppConfig>(defaultConfig);
-  const [assistantModels, setAssistantModels] = useState<{ id: string; label: string }[]>([]);
-  const [assistantModelId, setAssistantModelId] = useState("");
   const [credits, setCredits] = useState<number | null>(null);
   const [role, setRole] = useState<"customer" | "admin">("customer");
   const [jobs, setJobs] = useState<Job[]>([]);
@@ -238,11 +236,8 @@ export function Workspace({ view = "create", tool }: { view?: "create" | "librar
   useEffect(() => {
     void fetch("/api/config", { cache: "no-store" })
       .then((response) => response.json())
-      .then((payload: AppConfig & { llmCatalog?: { id: string; label: string }[] }) => {
+      .then((payload: AppConfig) => {
         setConfig({ ...defaultConfig, ...payload });
-        const available = Array.isArray(payload.llmCatalog) ? payload.llmCatalog : [];
-        setAssistantModels(available);
-        setAssistantModelId((current) => current || available[0]?.id || "");
       })
       .catch(() => undefined);
   }, []);
@@ -445,7 +440,7 @@ export function Workspace({ view = "create", tool }: { view?: "create" | "librar
       const response = await fetch("/api/assist", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ prompt, mode: "enhance", modelId: assistantModelId || undefined }),
+        body: JSON.stringify({ prompt, mode: "enhance" }),
       });
       const payload = await response.json();
       if (!response.ok) throw new Error(payload.error || "Prompt assistant failed.");
@@ -861,19 +856,6 @@ export function Workspace({ view = "create", tool }: { view?: "create" | "librar
                 </div>
                 <div className="mt-2 flex flex-wrap items-center justify-between gap-2">
                   <div className="flex flex-wrap items-center gap-1.5">
-                    {assistantModels.length > 0 && (
-                      <label className="flex items-center gap-2 text-[10px] text-dim">
-                        Enhancer model
-                        <select
-                          value={assistantModelId}
-                          onChange={(event) => setAssistantModelId(event.target.value)}
-                          className="max-w-[190px] rounded-full border border-line bg-[#191c20] px-3 py-1.5 text-[10px] text-white outline-none focus:border-cyan/50"
-                          aria-label="Prompt enhancer model"
-                        >
-                          {assistantModels.map((model) => <option key={model.id} value={model.id}>{model.label}</option>)}
-                        </select>
-                      </label>
-                    )}
                     <button type="button" onClick={enhancePrompt} disabled={assistBusy || prompt.trim().length < 1} className="pill cursor-pointer hover:border-lime/40">
                       {assistBusy ? <LoaderCircle size={11} className="animate-spin" /> : <WandSparkles size={11} />}
                       {assistBusy ? "Enhancing…" : "Enhance prompt"}
@@ -907,55 +889,6 @@ export function Workspace({ view = "create", tool }: { view?: "create" | "librar
                   <span className="grid h-8 w-8 place-items-center rounded-xl bg-cyan/12 text-cyan"><Gauge size={15} /></span>
                   <h2 className="font-display text-base font-semibold text-white/95">Setting</h2>
                 </div>
-
-                {/* Model */}
-                <label className="mt-5 block">
-                  <span className="mb-2 flex items-center gap-2 text-xs font-semibold text-white/80">
-                    <Cpu size={12} className="text-lime" /> Model
-                  </span>
-                  <div className="relative">
-                    <select
-                      value={currentModel?.id ?? ""}
-                      onChange={(event) => setModelId(event.target.value)}
-                      className="field appearance-none pr-10"
-                    >
-                      {modelsForKind.length === 0 && <option value="">No {kind} models in this catalog</option>}
-                      {(["custom-image", "custom-llm"] as const).some((p) => modelsForKind.some((m) => m.provider === p)) && (
-                        <optgroup label="Local & self-hosted — your machine">
-                          {modelsForKind
-                            .filter((model) => model.provider === "custom-image" || model.provider === "custom-llm")
-                            .map((model) => (
-                              <option key={model.id} value={model.id}>
-                                {model.label}{model.ready ? "" : " — endpoint not configured"}
-                              </option>
-                            ))}
-                        </optgroup>
-                      )}
-                      <optgroup label="Cloud GPU (Replicate)">
-                        {modelsForKind
-                          .filter((model) => model.provider === "replicate")
-                          .map((model) => (
-                            <option key={model.id} value={model.id}>
-                              {model.label}{model.ready ? "" : " — not configured"}
-                            </option>
-                          ))}
-                      </optgroup>
-                      {modelsForKind
-                        .filter((model) => model.provider !== "custom-image" && model.provider !== "custom-llm" && model.provider !== "replicate")
-                        .map((model) => (
-                          <option key={model.id} value={model.id}>
-                            {model.label}{model.ready ? "" : " — not configured"}
-                          </option>
-                        ))}
-                    </select>
-                    <ChevronDown size={15} className="pointer-events-none absolute right-3.5 top-1/2 -translate-y-1/2 text-dim" />
-                  </div>
-                  {currentModel && (
-                    <p className="mt-2 text-[10px] leading-relaxed text-dim">
-                      {currentModel.tagline} <span className="text-white/40">· {currentModel.source}</span>{(currentModel.provider === "gemini-image" || currentModel.provider === "gemini-video") && <span className="mt-1 block text-amber">Google bills image/video generation separately to the Gemini API project. NEXORA credits do not cover Google API charges.</span>}
-                    </p>
-                  )}
-                </label>
 
                 {/* Duration (video only) */}
                 {isVideo && (
