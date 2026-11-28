@@ -162,12 +162,6 @@ const VIDEO_TOOLS: ToolCard[] = [
     icon: Play,
     badge: { label: "Popular", tone: "amber" },
   },
-  {
-    slug: "video-extension",
-    name: "Video Extension",
-    description: "Continue a supported generated clip with a new prompt.",
-    icon: TimerReset,
-  },
 ];
 
 const BADGE_TONES = {
