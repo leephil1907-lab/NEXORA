@@ -74,19 +74,7 @@ export const TOOLS: ToolEntry[] = [
     preferredModelId: "wan-2.5-i2v",
     promptTemplate: "Natural subtle motion, smooth camera drift, realistic lighting preserved",
   },
-  {
-    slug: "video-extension",
-    name: "Video Extension",
-    category: "Video",
-    kind: "video",
-    workflow: "video-extension",
-    desc: "Continue a supported finished video with LTX Video Distilled and a new motion prompt.",
-    tag: "Continue a clip",
-    needsReference: true,
-    steps: ["Choose a finished clip", "Describe what happens next", "Generate the next segment", "Download the extension"],
-    preferredModelId: "ltx-video-0.9.7-distilled",
-    promptTemplate: "Continue the motion seamlessly, preserving the same visual style and lighting",
-  },
+
 ];
 
 export function getTool(slug: string): ToolEntry | undefined {
