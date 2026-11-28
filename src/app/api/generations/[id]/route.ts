@@ -153,7 +153,7 @@ export async function GET(_request: Request, context: Context) {
         try {
           const stored = await storeOutput(user.id, id, job.kind, providerJob.outputUrl ?? job.provider_output);
           const { error: assetError } = await admin.from("generations").update({
-            status: "succeeded", asset_path: stored.path, asset_mime_type: stored.mime,
+            status: "succeeded", provider_output: null, asset_path: stored.path, asset_mime_type: stored.mime,
             asset_bytes: stored.bytes, error_message: null, updated_at: new Date().toISOString(),
           }).eq("id", id).eq("user_id", user.id);
           if (assetError) throw new Error("Media was uploaded but the asset record could not be saved.");
