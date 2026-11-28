@@ -635,7 +635,7 @@ export function Workspace({ view = "create", tool }: { view?: "create" | "librar
         <header className="sticky top-0 z-30 flex min-h-[62px] items-center justify-between gap-3 border-b border-white/[.07] bg-[#0a0f19] px-4 sm:px-7">
           <div className="flex items-center gap-2 text-[11px] font-medium text-muted"><span className="text-white/90">{tool ? "Tools" : "Workspace"}</span><span className="text-white/20">/</span><span className="text-lime">{tool ? tool.name : view === "create" ? "Create" : view === "library" ? "Your library" : view === "credits" ? "Credits" : "Admin controls"}</span></div>
           <div className="flex items-center gap-2">
-            {providersReady ? <span className="pill border-mint/25 bg-mint/10 text-mint"><span className="dot-live"/> Engines connected</span> : <span className="pill border-amber/25 bg-amber/10 text-amber"><AlertTriangle size={11}/> Engines need setup</span>}
+            {providersReady ? <span className="pill border-mint/25 bg-mint/10 text-mint"><span className="dot-live"/> Providers configured</span> : <span className="pill border-amber/25 bg-amber/10 text-amber"><AlertTriangle size={11}/> Providers need setup</span>}
             {config.sensitiveEnabled && sensitive && <span className="pill border-rose/25 bg-rose/10 text-rose"><ShieldAlert size={11}/> 18+ mode</span>}
           </div>
         </header>
