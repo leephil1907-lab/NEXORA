@@ -598,7 +598,7 @@ export function Workspace({ view = "create", tool }: { view?: "create" | "librar
           </div>
         </header>
 
-        <div className="mx-auto max-w-[1540px] px-4 pb-12 pt-6 sm:px-7 sm:pt-8">
+        <div className="mx-auto w-full max-w-[1400px] px-5 pb-12 pt-6 sm:px-5 sm:pt-8">
           <div id="create" className="mb-6 flex flex-wrap items-end justify-between gap-4 scroll-mt-24">
             <div>
               <p className="text-[9px] font-bold uppercase tracking-[.22em] text-lime">{tool ? (tool.category === "Images" ? "Image tool" : "Video tool") : view === "create" ? "Creative workspace" : view === "library" ? "Your creations" : view === "credits" ? "Account" : "Management"}</p>
