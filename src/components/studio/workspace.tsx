@@ -718,6 +718,23 @@ export function Workspace({ view = "create", tool }: { view?: "create" | "librar
                             const file = event.target.files?.[0] || null;
                             setReferenceFile(file);
                             setReferencePreview(file ? URL.createObjectURL(file) : null);
+                            if (file) {
+                              const compatible = modelsForKind.find(
+                                (candidate) => candidate.capabilities.referenceImage && candidate.ready
+                              );
+                              if (compatible) {
+                                setModelId(compatible.id);
+                                setMessage({
+                                  type: "info",
+                                  text: `Switched to ${compatible.label}, which accepts reference images.`,
+                                });
+                              } else {
+                                setMessage({
+                                  type: "error",
+                                  text: "No configured image model currently accepts reference images. Your upload is preserved; configure a compatible image-editing provider to continue.",
+                                });
+                              }
+                            }
                           }}
                           className="hidden"
                         />
