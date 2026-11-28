@@ -12,6 +12,7 @@ import {
   AnimatedCounter, HoverLift, KineticWords, Magnetic, Reveal, StaggerGroup, StaggerItem,
 } from "@/components/site/motion";
 import { TEMPLATES } from "@/lib/tools/templates";
+import { TOOLS } from "@/lib/tools/registry";
 
 const HeroCanvas = dynamic(
   () => import("@/components/site/hero-canvas").then((module) => module.HeroCanvas),
@@ -261,203 +262,119 @@ function TemplatesRail() {
 }
 
 export function HomeHub() {
+  const [category, setCategory] = useState<"All" | "Images" | "Video">("All");
+  const visibleTools = TOOLS.filter((tool) => category === "All" || tool.category === category);
+  const cards: ToolCard[] = visibleTools.map((tool) => ({
+    slug: tool.slug,
+    name: tool.name,
+    description: tool.desc,
+    icon: tool.category === "Images" ? ImageIcon : Clapperboard,
+    badge: tool.badge ? {
+      label: tool.badge,
+      tone: tool.badge === "Hot" ? "amber" : tool.badge === "Pro" ? "cyan" : "lime",
+    } : undefined,
+  }));
+
   return (
     <>
       <AgeGateOverlay />
-      <main className="mx-auto w-full max-w-[1400px] px-5 pb-14">
-
-      {/* hero */}
-      <section className="relative overflow-hidden rounded-[2.25rem] border border-line bg-panel">
-        <div className="absolute inset-0 opacity-70">
-          <HeroCanvas />
-        </div>
-        <div className="relative z-10 px-6 py-16 sm:px-10 sm:py-24 lg:px-16 lg:py-28">
-          <motion.p
-            initial={{ opacity: 0, y: 12 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
-            className="inline-flex items-center gap-2 rounded-full border border-lime/25 bg-lime/10 px-3.5 py-1.5 text-[10px] font-bold uppercase tracking-[0.22em] text-lime"
-          >
-            <Sparkles size={12} />
-            NEXORA — AI creation platform for 18+
-          </motion.p>
-
-          <h1 className="mt-6 max-w-3xl font-display text-4xl font-extrabold tracking-tight text-white sm:text-6xl lg:text-[4.25rem] lg:leading-[1.04]">
-            <KineticWords words={["Create", "without", "limits."]} />
-            <span className="block">
-              <KineticWords words={["Turn", "any", "idea", "into", "an", "image", "or", "video."]} wordClassName="gradient-text" />
-            </span>
-          </h1>
-
-          <motion.p
-            initial={{ opacity: 0, y: 14 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.55, delay: 0.35, ease: [0.22, 1, 0.36, 1] }}
-            className="mt-5 max-w-xl text-base leading-relaxed text-muted sm:text-lg"
-          >
-            Professional creative tools for images, video, reference editing, and cinematic motion —
-            all in one place.
-          </motion.p>
-
-          <motion.div
-            initial={{ opacity: 0, y: 14 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.55, delay: 0.5, ease: [0.22, 1, 0.36, 1] }}
-            className="mt-8 flex flex-wrap items-center gap-3"
-          >
-            <Magnetic>
-              <Link href="/tools" className="btn-primary h-12 px-6 text-sm">
-                Start creating <ArrowRight size={15} />
-              </Link>
-            </Magnetic>
-            <Link href="/templates" className="btn-ghost h-12 px-6 text-sm">
-              Browse templates
-            </Link>
-          </motion.div>
-
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ duration: 0.6, delay: 0.7 }}
-            className="mt-12 flex flex-wrap items-center gap-x-8 gap-y-3 border-t border-white/[0.06] pt-6"
-          >
-            {[
-              { value: 8, label: "creative tools", suffix: "" },
-              { value: 3, label: "image tools", suffix: "" },
-              { value: 5, label: "video tools", suffix: "" },
-            ].map((stat) => (
-              <div key={stat.label} className="flex items-baseline gap-2">
-                <AnimatedCounter
-                  value={stat.value}
-                  suffix={stat.suffix}
-                  className="font-display text-2xl font-extrabold text-lime sm:text-3xl"
-                />
-                <span className="text-xs uppercase tracking-[0.16em] text-muted">{stat.label}</span>
-              </div>
-            ))}
-            <div className="flex items-center gap-2 text-xs text-muted">
-              <span className="grid h-7 w-7 place-items-center rounded-lg border border-white/10 bg-white/[0.03] text-lime">
-                <Zap size={12} />
-              </span>
-              18+ gated · real credits · live job tracking
-            </div>
-          </motion.div>
-        </div>
-      </section>
-
-      {/* spotlight */}
-      <Reveal className="mt-8">
-        <Link
-          href="/tools/image-to-video"
-          className="group relative flex flex-col overflow-hidden rounded-[1.75rem] border border-lime/25 bg-gradient-to-br from-lime/[0.12] via-green/[0.06] to-cyan/[0.10] p-7 transition-colors duration-200 hover:border-lime/45 sm:flex-row sm:items-center sm:gap-8 sm:p-9"
-        >
-          <div className="grid h-14 w-14 shrink-0 place-items-center rounded-2xl border border-lime/30 bg-lime/15 text-lime">
-            <Play size={24} />
-          </div>
-          <div className="mt-5 flex-1 sm:mt-0">
-            <div className="flex flex-wrap items-center gap-2">
-              <span className="rounded-full border border-lime/30 bg-lime/15 px-2.5 py-1 text-[9px] font-bold uppercase tracking-[0.14em] text-lime">
-                Spotlight
-              </span>
-              <span className="rounded-full border border-cyan/30 bg-cyan/15 px-2.5 py-1 text-[9px] font-bold uppercase tracking-[0.14em] text-cyan">
-                Image to video
-              </span>
-            </div>
-            <h2 className="mt-3 text-2xl font-bold text-white sm:text-3xl">Image to Video</h2>
-            <p className="mt-2 max-w-2xl text-sm leading-relaxed text-muted">
-              Animate a generated or uploaded still image with a motion prompt, then follow the job through to its saved result.
-            </p>
-          </div>
-          <span className="mt-6 inline-flex h-11 shrink-0 items-center gap-2 self-start rounded-xl bg-lime px-5 text-xs font-bold text-ink transition-transform duration-200 group-hover:translate-x-1 sm:mt-0 sm:self-center">
-            Open tool <ArrowRight size={15} />
-          </span>
-        </Link>
-      </Reveal>
-
-      {/* image tools */}
-      <Reveal className="mt-12">
-        <div className="flex flex-wrap items-end justify-between gap-3">
-          <div>
-            <h2 className="flex items-center gap-2 text-xl font-semibold text-white">
-              <ImageIcon size={18} className="text-lime" /> AI Image Tools
-            </h2>
-            <p className="mt-1 text-sm text-muted">Create, edit and direct stills with real generation behind every tool.</p>
-          </div>
-          <Link href="/tools?kind=image" className="btn-ghost h-9 px-4 text-[11px]">
-            View image tools <ArrowRight size={13} />
-          </Link>
-        </div>
-      </Reveal>
-      <div className="mt-5">
-        <ToolCardGrid tools={IMAGE_TOOLS} />
-      </div>
-
-      {/* video tools */}
-      <Reveal className="mt-12">
-        <div className="flex flex-wrap items-end justify-between gap-3">
-          <div>
-            <h2 className="flex items-center gap-2 text-xl font-semibold text-white">
-              <Clapperboard size={18} className="text-cyan" /> AI Video Tools
-            </h2>
-            <p className="mt-1 text-sm text-muted">Create clips from text or animate a still image, then track every generation.</p>
-          </div>
-          <Link href="/tools?kind=video" className="btn-ghost h-9 px-4 text-[11px]">
-            View video tools <ArrowRight size={13} />
-          </Link>
-        </div>
-      </Reveal>
-      <div className="mt-5">
-        <ToolCardGrid tools={VIDEO_TOOLS} />
-      </div>
-
-      {/* templates */}
-      <TemplatesRail />
-
-      {/* upgrade strip */}
-      <Reveal className="mt-12">
-        <section className="rounded-[1.75rem] border border-line bg-panel p-8 sm:p-10">
-          <div className="flex flex-col gap-8 lg:flex-row lg:items-center">
-            <div className="flex-1">
-              <h2 className="flex items-center gap-2 text-2xl font-semibold text-white">
-                <Flame size={18} className="text-lime" /> Clear credit usage
-              </h2>
-              <p className="mt-2 max-w-xl text-sm leading-relaxed text-muted">
-                See the estimated cost before every generation. Credits are reserved when a job starts and returned automatically when a run fails.
+      <main className="mx-auto w-full max-w-[1480px] px-4 pb-12 pt-6 sm:px-6 lg:px-8">
+        <section className="relative overflow-hidden rounded-[2rem] border border-line bg-[#101827]">
+          <div className="pointer-events-none absolute -right-20 -top-28 h-80 w-80 rounded-full bg-lime/10 blur-3xl" />
+          <div className="pointer-events-none absolute -bottom-32 right-1/3 h-72 w-72 rounded-full bg-cyan/10 blur-3xl" />
+          <div className="relative grid gap-8 p-6 sm:p-9 lg:grid-cols-[minmax(0,1fr)_340px] lg:items-center lg:p-12">
+            <div>
+              <p className="inline-flex items-center gap-2 rounded-full border border-lime/25 bg-lime/10 px-3 py-1.5 text-[9px] font-bold uppercase tracking-[.2em] text-lime">
+                <Sparkles size={12} /> NEXORA creative studio
               </p>
-              <div className="mt-5 flex flex-wrap items-center gap-3">
-                <Link href="/credits" className="btn-primary h-11 px-5 text-xs">
-                  View credit rules <ArrowRight size={14} />
+              <h1 className="mt-5 max-w-3xl font-display text-3xl font-bold leading-tight tracking-tight text-white sm:text-5xl lg:text-[3.6rem]">
+                Your ideas.
+                <span className="block gradient-text">Made visual.</span>
+              </h1>
+              <p className="mt-4 max-w-2xl text-sm leading-7 text-muted sm:text-base">
+                Create images, transform references and bring stills to life. Start with a focused tool,
+                then manage every result in your personal creative library.
+              </p>
+              <div className="mt-7 flex flex-wrap gap-3">
+                <Link href="/studio" className="btn-primary h-11 px-5 text-xs">
+                  <Wand2 size={14} /> Open creative studio <ArrowRight size={14} />
                 </Link>
                 <Link href="/tasks" className="btn-ghost h-11 px-5 text-xs">
-                  View my tasks
+                  <Layers size={14} /> My creations
                 </Link>
               </div>
             </div>
-
-            <div className="grid gap-3 lg:w-[26rem]">
-              {([
-                { icon: Plus, value: "Reserved", label: "Credits before each generation", tone: "lime" },
-                { icon: Zap, value: "Visible", label: "Cost before you submit", tone: "cyan" },
-                { icon: Minus, value: "Refunded", label: "Failed generations return credits", tone: "amber" },
-              ] as const).map((row) => (
-                <div
-                  key={row.label}
-                  className="flex items-center gap-3 rounded-2xl border border-line bg-white/[0.02] p-3.5"
-                >
-                  <div className={`grid h-9 w-9 place-items-center rounded-xl border ${STRIP_TONES[row.tone]}`}>
-                    <row.icon size={15} />
-                  </div>
-                  <div className="flex-1">
-                    <p className="text-sm font-semibold text-white">{row.value}</p>
-                    <p className="text-[10px] text-muted">{row.label}</p>
-                  </div>
-                  <Check size={14} className="text-lime" />
-                </div>
-              ))}
+            <div className="grid grid-cols-2 gap-3">
+              <Link href="/tools/text-to-image" className="group rounded-2xl border border-white/10 bg-white/[.045] p-4 transition hover:border-lime/30 hover:bg-white/[.07]">
+                <span className="grid h-10 w-10 place-items-center rounded-xl bg-lime/10 text-lime"><ImageIcon size={18}/></span>
+                <p className="mt-4 text-xs font-semibold text-white">Create an image</p>
+                <p className="mt-1 text-[10px] leading-relaxed text-muted">Start from a prompt</p>
+                <ArrowUpRight size={14} className="mt-4 text-lime transition-transform group-hover:translate-x-1"/>
+              </Link>
+              <Link href="/tools/image-editor" className="group rounded-2xl border border-white/10 bg-white/[.045] p-4 transition hover:border-lime/30 hover:bg-white/[.07]">
+                <span className="grid h-10 w-10 place-items-center rounded-xl bg-cyan/10 text-cyan"><Wand2 size={18}/></span>
+                <p className="mt-4 text-xs font-semibold text-white">Edit an image</p>
+                <p className="mt-1 text-[10px] leading-relaxed text-muted">Transform a reference</p>
+                <ArrowUpRight size={14} className="mt-4 text-lime transition-transform group-hover:translate-x-1"/>
+              </Link>
+              <Link href="/tools/text-to-video" className="group rounded-2xl border border-white/10 bg-white/[.045] p-4 transition hover:border-lime/30 hover:bg-white/[.07]">
+                <span className="grid h-10 w-10 place-items-center rounded-xl bg-cyan/10 text-cyan"><Clapperboard size={18}/></span>
+                <p className="mt-4 text-xs font-semibold text-white">Create a video</p>
+                <p className="mt-1 text-[10px] leading-relaxed text-muted">Generate from text</p>
+                <ArrowUpRight size={14} className="mt-4 text-lime transition-transform group-hover:translate-x-1"/>
+              </Link>
+              <Link href="/tools/image-to-video" className="group rounded-2xl border border-white/10 bg-white/[.045] p-4 transition hover:border-lime/30 hover:bg-white/[.07]">
+                <span className="grid h-10 w-10 place-items-center rounded-xl bg-amber/10 text-amber"><Play size={18}/></span>
+                <p className="mt-4 text-xs font-semibold text-white">Animate a still</p>
+                <p className="mt-1 text-[10px] leading-relaxed text-muted">Image to video</p>
+                <ArrowUpRight size={14} className="mt-4 text-lime transition-transform group-hover:translate-x-1"/>
+              </Link>
             </div>
           </div>
         </section>
-      </Reveal>
+
+        <section className="mt-10">
+          <div className="flex flex-wrap items-end justify-between gap-4">
+            <div>
+              <p className="text-[9px] font-bold uppercase tracking-[.22em] text-lime">Explore NEXORA</p>
+              <h2 className="mt-2 font-display text-2xl font-bold text-white sm:text-3xl">Choose your creative tool</h2>
+              <p className="mt-1.5 text-xs text-muted">Each tool opens its own focused workflow. No model picker or extra setup.</p>
+            </div>
+            <div className="flex gap-1.5 rounded-xl border border-line bg-panel p-1">
+              {(["All", "Images", "Video"] as const).map((item) => (
+                <button key={item} type="button" onClick={() => setCategory(item)} aria-pressed={category === item}
+                  className={category === item ? "rounded-lg bg-lime/15 px-3.5 py-2 text-[10px] font-semibold text-lime" : "rounded-lg px-3.5 py-2 text-[10px] font-semibold text-muted transition hover:text-white"}>
+                  {item}
+                </button>
+              ))}
+            </div>
+          </div>
+          <div className="mt-5"><ToolCardGrid tools={cards} /></div>
+        </section>
+
+        <section className="mt-10 grid gap-4 md:grid-cols-3">
+          {[
+            { href: "/characters", label: "Characters", detail: "Manage reusable character references.", icon: Sparkles },
+            { href: "/cases", label: "Creation cases", detail: "Explore reusable creative briefs.", icon: Layers },
+            { href: "/workflows", label: "Workflows", detail: "Organize repeatable creation steps.", icon: Boxes },
+          ].map((item) => (
+            <Link key={item.href} href={item.href} className="group flex items-center gap-4 rounded-2xl border border-line bg-panel p-5 transition hover:border-lime/30">
+              <span className="grid h-11 w-11 place-items-center rounded-xl border border-white/10 bg-white/[.035] text-lime"><item.icon size={18}/></span>
+              <span className="min-w-0 flex-1"><span className="block text-sm font-semibold text-white">{item.label}</span><span className="mt-1 block text-[10px] text-muted">{item.detail}</span></span>
+              <ArrowUpRight size={15} className="text-dim transition group-hover:-translate-y-0.5 group-hover:translate-x-0.5 group-hover:text-lime"/>
+            </Link>
+          ))}
+        </section>
+
+        <TemplatesRail />
+
+        <section className="mt-10 flex flex-wrap items-center justify-between gap-4 rounded-2xl border border-line bg-panel px-5 py-5 sm:px-7">
+          <div>
+            <p className="text-sm font-semibold text-white">Your creative history stays in one place.</p>
+            <p className="mt-1 text-[11px] text-muted">Track active jobs, revisit finished images and videos, and download your work.</p>
+          </div>
+          <Link href="/tasks" className="btn-secondary h-10 px-4 text-xs">Open task history <ArrowRight size={13}/></Link>
+        </section>
       </main>
     </>
   );
