@@ -23,9 +23,7 @@ const chatSchema = z.object({
 });
 
 /**
- * Real chat against the local-first engine chain (Local Companion → self-hosted
- * endpoint → Omega AI → Venice). Never canned: when no engine is connected the
- * response is an explicit configuration error with setup instructions.
+ * Real chat against the hosted-first engine chain (Gemini → configured Omega AI / Venice fallbacks). Never canned: when no engine is connected the response is an explicit configuration error.
  */
 export async function POST(request: Request) {
   let body: unknown;
@@ -46,7 +44,7 @@ export async function POST(request: Request) {
   const {
     data: { user },
   } = await supabase.auth.getUser();
-  if (!user) return NextResponse.json({ error: "Sign in to chat with local models." }, { status: 401 });
+  if (!user) return NextResponse.json({ error: "Sign in to use AI Chat." }, { status: 401 });
 
   const ageAdmin = createAdminClient();
   const { data: ageProfile, error: ageProfileError } = await ageAdmin
