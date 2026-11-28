@@ -24,8 +24,8 @@
   --cyan: #22d3ee;
   --grad: linear-gradient(100deg, #a3e635 0%, #4ade80 48%, #22d3ee 100%);
   --grad-text: linear-gradient(100deg, #a3e635 0%, #4ade80 45%, #22d3ee 100%);
-  --font-display: var(--font-display), ui-sans-serif, sans-serif;
-  --font-sans: var(--font-sans), ui-sans-serif, sans-serif;
+  --font-display: "Arial", "Helvetica Neue", ui-sans-serif, sans-serif;
+  --font-sans: "Inter", "Segoe UI", ui-sans-serif, system-ui, sans-serif;
 }
 
 * { box-sizing: border-box; }

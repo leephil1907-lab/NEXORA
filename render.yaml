@@ -25,6 +25,14 @@ services:
         sync: false
       - key: FASHN_API_KEY
         sync: false
+      - key: OMEGA_API_KEY
+        sync: false
+      - key: VENICE_API_KEY
+        sync: false
+      - key: VIPEAK_API_KEY
+        sync: false
+      - key: VIPEAK_BASE_URL
+        sync: false
       - key: NEXORA_IMAGE_CREDIT_COST
         value: "1"
       - key: NEXORA_VIDEO_CREDIT_COST
