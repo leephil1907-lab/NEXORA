@@ -243,6 +243,26 @@ export function Workspace({ view = "create", tool }: { view?: "create" | "librar
   }, []);
 
   useEffect(() => {
+    const path = searchParams.get("referenceAssetPath");
+    if (!path || !user || !ageVerified || !tool?.needsReference || selectedReferenceAssetPath === path) return;
+    let cancelled = false;
+    void fetch(`/api/uploads?path=${encodeURIComponent(path)}`, { cache: "no-store" })
+      .then(async (response) => {
+        const payload = await response.json();
+        if (!response.ok) throw new Error(payload.error || "Could not load the saved reference image.");
+        if (!cancelled) {
+          setSelectedReferenceAssetPath(payload.path);
+          setReferencePreview(payload.signedUrl);
+          setMessage({ type: "info", text: "Saved image loaded as your reference. Add a motion prompt, then generate." });
+        }
+      })
+      .catch((error) => {
+        if (!cancelled) setMessage({ type: "error", text: error instanceof Error ? error.message : "Could not load the saved reference image." });
+      });
+    return () => { cancelled = true; };
+  }, [searchParams, user, ageVerified, tool, selectedReferenceAssetPath]);
+
+  useEffect(() => {
     if (!supabase) {
       setReady(true);
       return;
@@ -358,23 +378,12 @@ export function Workspace({ view = "create", tool }: { view?: "create" | "librar
   }
 
   function useGeneratedImageAsVideoSource(job: Job) {
-    if (job.kind !== "image" || job.status !== "succeeded" || !job.asset_path || !job.assetUrl) return;
-    const videoModel = config.models.find(
-      (candidate) => candidate.modality === "video" && candidate.ready && candidate.capabilities.imageToVideo
-    );
-    if (!videoModel) {
-      setMessage({ type: "error", text: "No ready image-to-video model is configured on this deployment." });
-      return;
-    }
-    setKind("video");
-    setModelId(videoModel.id);
-    setReferenceFile(null);
-    setSelectedReferenceAssetPath(job.asset_path);
-    setReferencePreview(job.assetUrl);
-    setPrompt(job.prompt);
-    setActiveJob(null);
-    setMessage({ type: "info", text: "Generated image loaded as the video start frame. Add a motion prompt, then generate." });
-    if (fileInputRef.current) fileInputRef.current.value = "";
+    if (job.kind !== "image" || job.status !== "succeeded" || !job.asset_path) return;
+    const query = new URLSearchParams({
+      referenceAssetPath: job.asset_path,
+      prompt: `Animate this image naturally while preserving its subject, composition and visual identity. Original scene: ${job.prompt}. Motion: `,
+    });
+    window.location.assign(`/tools/image-to-video?${query.toString()}`);
   }
 
   async function extend(job: Job) {
@@ -1169,7 +1178,7 @@ export function Workspace({ view = "create", tool }: { view?: "create" | "librar
               </div>
               <div className="mt-4"><LibraryTabs value={libraryFilter} onChange={setLibraryFilter} counts={filterCounts} /></div>
               <div className="mt-5"><LibraryGrid jobs={filteredJobs} activeId={activeJob?.id ?? null} onSelect={setActiveJob} /></div>
-              {activeJob && <div className="mt-6"><JobView job={activeJob} canExtend={canExtend} onFavorite={(job) => void patchJob(job, { favorite: !job.favorite })} onRate={(job, rating) => void patchJob(job, { rating })} onExtend={(job) => void extend(job)} /></div>}
+              {activeJob && <div className="mt-6"><JobView job={activeJob} canExtend={canExtend} onFavorite={(job) => void patchJob(job, { favorite: !job.favorite })} onRate={(job, rating) => void patchJob(job, { rating })} onExtend={(job) => void extend(job)} onUseImage={useGeneratedImageAsVideoSource} /></div>}
             </section>
           )}
           {view === "credits" && <section className="glass-strong rounded-3xl p-5 sm:p-7"><CreditsPanel credits={credits} imageCost={config.imageCreditCost} videoCost={config.videoCreditCost} /></section>}
