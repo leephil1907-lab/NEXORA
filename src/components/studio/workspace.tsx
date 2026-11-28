@@ -88,7 +88,6 @@ export function Workspace({ view = "create", tool }: { view?: "create" | "librar
   const [resolution, setResolution] = useState("480p");
   const [aspect, setAspect] = useState("16:9");
   const [mode] = useState<"standard">("standard");
-  const [guidance, setGuidance] = useState(5);
   const [camera, setCamera] = useState("static");
   const [sensitive, setSensitive] = useState(false);
   const [sensitiveConsent, setSensitiveConsent] = useState(false);
@@ -335,7 +334,7 @@ export function Workspace({ view = "create", tool }: { view?: "create" | "librar
       aspectRatio: aspect,
       mode,
       cameraMovement: camera,
-      guidance,
+      guidance: 5,
       audio: false,
       sensitive,
     };
@@ -1008,24 +1007,6 @@ export function Workspace({ view = "create", tool }: { view?: "create" | "librar
                       </button>
                     ))}
                   </div>
-                </div>
-
-                {/* Creativity slider */}
-                <div className="mt-6">
-                  <div className="flex items-center justify-between text-xs font-semibold text-white/80">
-                    <span>Creativity</span>
-                    <span className="text-[10px] font-normal text-dim">{guidance <= 4 ? "loose interpretation" : guidance >= 8 ? "strict prompt adherence" : "balanced"}</span>
-                    <span>Relevance</span>
-                  </div>
-                  <input
-                    type="range"
-                    min={1}
-                    max={10}
-                    value={guidance}
-                    onChange={(event) => setGuidance(Number(event.target.value))}
-                    className="mt-2.5 w-full accent-lime"
-                    aria-label="Creativity versus relevance"
-                  />
                 </div>
 
                 {/* Camera */}
