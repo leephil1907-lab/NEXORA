@@ -1,5 +1,5 @@
 "use client";
-import { useCallback,useEffect,useState } from "react";
+import { useCallback,useEffect,useState, type FormEvent } from "react";
 import Link from "next/link";
 import { Bookmark, Clapperboard, Image as ImageIcon, Layers, Plus, Trash2 } from "lucide-react";
 type CaseItem={id:string;title:string;category:string;description:string;prompt:string;kind:"image"|"video";is_public?:boolean};
@@ -13,7 +13,7 @@ export function CasesClient(){
 const [saved,setSaved]=useState<CaseItem[]>([]),[title,setTitle]=useState(""),[prompt,setPrompt]=useState(""),[kind,setKind]=useState<"image"|"video">("image"),[error,setError]=useState("");
 const load=useCallback(async()=>{try{const r=await fetch("/api/cases",{cache:"no-store"});const d=await r.json();if(r.ok)setSaved((d.cases||[]).filter((x:CaseItem)=>!x.is_public));else setError(d.error||"Could not load saved cases.");}catch{setError("Could not load saved cases.");}},[]);
 useEffect(()=>{void load();},[load]);
-async function save(e:React.FormEvent){e.preventDefault();const r=await fetch("/api/cases",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({title,category:"Custom",description:"Personal reusable production brief",prompt,kind})});const d=await r.json();if(!r.ok){setError(d.error||"Could not save case.");return;}setTitle("");setPrompt("");await load();}
+async function save(e:FormEvent){e.preventDefault();const r=await fetch("/api/cases",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({title,category:"Custom",description:"Personal reusable production brief",prompt,kind})});const d=await r.json();if(!r.ok){setError(d.error||"Could not save case.");return;}setTitle("");setPrompt("");await load();}
 async function remove(id:string){const r=await fetch("/api/cases/"+id,{method:"DELETE"});if(r.ok)await load();}
 const cards=[...STARTERS,...saved];
 return <main className="mx-auto w-full max-w-[1400px] px-5 py-8"><section className="rounded-3xl border border-line bg-panel p-7 sm:p-9"><p className="flex items-center gap-2 text-[10px] font-bold uppercase tracking-[.2em] text-lime"><Layers size={14}/> Creation cases</p><h1 className="mt-3 font-display text-3xl font-extrabold text-white sm:text-4xl">Repeat a winning creative direction.</h1><p className="mt-3 max-w-2xl text-sm leading-relaxed text-muted">Production-ready briefs for common image and video workflows. Save your own cases and reopen the exact prompt in Studio.</p></section>
