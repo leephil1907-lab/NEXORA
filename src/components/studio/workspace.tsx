@@ -78,7 +78,7 @@ export function Workspace() {
   const [libraryFilter, setLibraryFilter] = useState<LibraryFilter>("all");
 
   // Compose state
-  const [kind] = useState<"image" | "video">("image");
+  const [kind, setKind] = useState<"image" | "video">("image");
   const [prompt, setPrompt] = useState(initialPrompt);
   const [modelId, setModelId] = useState("");
   const [duration, setDuration] = useState(5);
@@ -616,6 +616,35 @@ export function Workspace() {
           <div className="mt-8 grid gap-6 xl:grid-cols-[minmax(0,460px)_minmax(0,1fr)]">
             {/* ============================ compose column ============================ */}
             <form onSubmit={generate} className="space-y-5">
+              {/* Modality switch */}
+              <div className="flex items-center gap-2 rounded-2xl border border-line bg-panel p-1.5" role="group" aria-label="Generation type">
+                {(["image", "video"] as const).map((value) => {
+                  const active = kind === value;
+                  const Icon = value === "image" ? ImageIcon : Film;
+                  return (
+                    <button
+                      key={value}
+                      type="button"
+                      aria-pressed={active}
+                      onClick={() => {
+                        if (value === kind) return;
+                        setKind(value);
+                        setModelId("");
+                        setAudio(false);
+                        clearEnd();
+                      }}
+                      className={cn(
+                        "flex flex-1 items-center justify-center gap-2 rounded-xl px-4 py-3 text-xs font-semibold capitalize transition-colors",
+                        active ? "bg-white/[0.09] text-white shadow-inner" : "text-muted hover:bg-white/[0.04] hover:text-white"
+                      )}
+                    >
+                      <Icon size={15} className={active ? "text-lime" : "text-dim"} />
+                      {value} generation
+                    </button>
+                  );
+                })}
+              </div>
+
               {/* Image and Prompt */}
               <div className="glass-strong rounded-3xl p-6">
                 <div className="flex flex-wrap items-center justify-between gap-3">
