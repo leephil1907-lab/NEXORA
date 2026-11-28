@@ -98,6 +98,7 @@ export const MODEL_CATALOG: ModelEntry[] = [
       directDuration: true,
       directResolution: true,
       directAspect: true,
+      directGuidance: true,
     }),
   },
   {
