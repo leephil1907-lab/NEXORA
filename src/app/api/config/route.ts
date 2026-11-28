@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import type { AppConfig } from "@/lib/generations/types";
-import { publicCatalog, getModel, providerReady, replicateConfigured, geminiConfigured } from "@/lib/providers";
+import { publicCatalog, getModel, providerReady, geminiConfigured } from "@/lib/providers";
 import { imageCreditCost, videoCreditBase, maxUploadMb } from "@/lib/generations/pricing";
 import { omegaConfigured } from "@/lib/providers/omega";
 
