@@ -1,5 +1,5 @@
 "use client";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useState, type FormEvent } from "react";
 import Link from "next/link";
 import { Bot, Plus, Trash2, MessageCircle, RefreshCw, UserRound, Sparkles } from "lucide-react";
 type Character = { id:string; name:string; description:string; persona_prompt:string; visual_prompt:string; tags:string[]; referenceUrl?:string|null; created_at:string };
@@ -8,7 +8,7 @@ export function CharactersClient() {
   const [name,setName]=useState(""), [description,setDescription]=useState(""), [persona,setPersona]=useState("Curious, warm, articulate, observant, and consistent in personality. Speak naturally and remember the character's fictional background."), [visual,setVisual]=useState("");
   const load=useCallback(async()=>{setBusy(true);try{const r=await fetch("/api/characters",{cache:"no-store"});const d=await r.json();if(!r.ok)throw new Error(d.error||"Could not load characters");setItems(d.characters||[]);setError("");}catch(e){setError(e instanceof Error?e.message:"Could not load characters");}finally{setBusy(false);}},[]);
   useEffect(()=>{void load();},[load]);
-  async function create(e:React.FormEvent){e.preventDefault();setBusy(true);setError("");try{const r=await fetch("/api/characters",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({name,description,personaPrompt:persona,visualPrompt:visual})});const d=await r.json();if(!r.ok)throw new Error(d.error||"Could not save character");setName("");setDescription("");setVisual("");await load();}catch(e){setError(e instanceof Error?e.message:"Could not save character");}finally{setBusy(false);}}
+  async function create(e:FormEvent){e.preventDefault();setBusy(true);setError("");try{const r=await fetch("/api/characters",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({name,description,personaPrompt:persona,visualPrompt:visual})});const d=await r.json();if(!r.ok)throw new Error(d.error||"Could not save character");setName("");setDescription("");setVisual("");await load();}catch(e){setError(e instanceof Error?e.message:"Could not save character");}finally{setBusy(false);}}
   async function remove(id:string){if(!confirm("Delete this character?"))return;const r=await fetch("/api/characters/"+id,{method:"DELETE"});if(r.ok)await load();else setError("Could not delete character.");}
   return <main className="mx-auto w-full max-w-[1400px] px-5 py-8">
     <section className="rounded-3xl border border-line bg-panel p-7 sm:p-9"><p className="flex items-center gap-2 text-[10px] font-bold uppercase tracking-[.2em] text-lime"><UserRound size={14}/> Character library</p><h1 className="mt-3 font-display text-3xl font-extrabold text-white sm:text-4xl">Build characters that stay consistent.</h1><p className="mt-3 max-w-2xl text-sm leading-relaxed text-muted">Save fictional identities, personalities and visual direction. Reuse each character in AI chat and carry the same creative brief into Studio.</p></section>
