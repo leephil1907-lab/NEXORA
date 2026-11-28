@@ -101,10 +101,6 @@ export type ModelEntry = {
   label: string;
   modality: Modality;
   provider: ProviderKind;
-  /** Replicate official model slug, e.g. "wan-video/wan-2.2-i2v-fast". */
-  replicateModel?: string;
-  /** For version-pinned community models. */
-  replicateVersion?: string;
   /** Custom-endpoint model id sent to the OpenAI-compatible backend. */
   endpointModelId?: string;
   source: string;
@@ -118,10 +114,8 @@ export class ProviderNotConfiguredError extends Error {
   readonly code = "PROVIDER_NOT_CONFIGURED" as const;
   constructor(public readonly provider: ProviderKind) {
     super(
-      provider === "replicate"
-        ? "Replicate API token is not configured on this deployment. Set REPLICATE_API_TOKEN to enable generation."
-        : provider === "gemini-image" || provider === "gemini-video"
-          ? "Google Gemini generation is not configured. Set GEMINI_API_KEY on the server and enable billing for Gemini image/video generation."
+      provider === "gemini-image" || provider === "gemini-video"
+        ? "Google Gemini generation is not configured. Set GEMINI_API_KEY on the server and enable billing for Gemini image/video generation."
         : provider === "custom-llm"
           ? "No custom LLM endpoint is configured on this deployment. Set NEXORA_LLM_ENDPOINT / NEXORA_LLM_API_KEY to enable the prompt assistant."
           : "No custom image endpoint is configured on this deployment. Set NEXORA_IMAGE_ENDPOINT / NEXORA_IMAGE_API_KEY to enable this model."
