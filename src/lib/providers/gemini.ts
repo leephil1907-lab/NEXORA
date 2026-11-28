@@ -43,11 +43,17 @@ function extractVideo(body: Json): string | undefined {
   for (const step of body.steps || []) {
     if (step.type !== "model_output") continue;
     for (const item of step.content || []) {
-      if (item.type === "video" && item.data) return `data:${item.mime_type || "video/mp4"};base64,${item.data}`;
+      if (item.type !== "video") continue;
+      if (item.data) return `data:${item.mime_type || "video/mp4"};base64,${item.data}`;
+      // Gemini Omni may return a Google Files API download URI instead of inline bytes.
+      if (typeof item.uri === "string") return item.uri;
+      if (typeof item.url === "string") return item.url;
     }
   }
   const out = body.output_video || body.outputVideo;
   if (out?.data) return `data:${out.mime_type || "video/mp4"};base64,${out.data}`;
+  if (typeof out?.uri === "string") return out.uri;
+  if (typeof out?.url === "string") return out.url;
   return undefined;
 }
 function status(value: string): ProviderJob["status"] {
@@ -113,6 +119,7 @@ export const geminiVideoProvider: GenerationProvider = {
         background: true,
         response_format: {
           type: "video",
+          delivery: "uri",
           aspect_ratio: args.settings.aspectRatio === "9:16" ? "9:16" : "16:9",
           duration: `${duration}s`,
           resolution,
