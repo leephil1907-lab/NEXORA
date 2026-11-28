@@ -5,8 +5,8 @@ import type { GenerationSettings, ModelEntry } from "@/lib/providers/types";
  * NEXORA_* fallback for older deployments) and displayed live in the UI before
  * every run — the deduction is the exact number shown.
  *
- *   image: base credits × mode multiplier
- *   video: base credits × (duration / 5s) × mode multiplier
+ *   image: configured image base credits
+ *   video: configured video base credits × (duration / 5s)
  */
 function envInt(names: string[], fallback: number): number {
   for (const name of names) {
@@ -32,20 +32,19 @@ export function maxUploadMb(): number {
 }
 
 export function creditCost(settings: Pick<GenerationSettings, "modality" | "durationSeconds" | "mode">): number {
-  const multiplier = settings.mode === "professional" ? 2 : 1;
-  if (settings.modality === "image") return imageCreditCost() * multiplier;
-  return Math.max(1, Math.ceil(videoCreditBase() * (settings.durationSeconds / 5))) * multiplier;
+  if (settings.modality === "image") return imageCreditCost();
+  return Math.max(1, Math.ceil(videoCreditBase() * (settings.durationSeconds / 5)));
 }
 
 export function costBreakdown(settings: GenerationSettings): string {
   const total = creditCost(settings);
   if (settings.modality === "image") {
-    return settings.mode === "professional" ? `${imageCreditCost()} base × 2 professional` : `${imageCreditCost()} base`;
+    return `${imageCreditCost()} base`;
   }
   const parts = [
     `${videoCreditBase()} per 5s`,
     `${settings.durationSeconds}s`,
-    settings.mode === "professional" ? "professional ×2" : "standard",
+    "standard quality",
   ];
   return `${parts.join(" · ")} = ${total} credits`;
 }
