@@ -6,7 +6,7 @@ import { Logo } from "@/components/ui/logo";
 import { Boxes, Cpu, LayoutGrid, MessageSquareText, Shirt, Camera, Coins } from "lucide-react";
 
 const LINKS = [
-  { href: "/", label: "Studio", icon: Camera },
+  { href: "/studio", label: "Studio", icon: Camera },
   { href: "/chat", label: "Chat", icon: MessageSquareText },
   { href: "/tools", label: "Tools", icon: LayoutGrid },
   { href: "/models", label: "Models", icon: Boxes },
@@ -20,7 +20,7 @@ export function Navbar() {
   return (
     <header className="sticky top-3 z-40 mx-3 rounded-2xl border border-white/[.13] bg-[#111a29]/65 shadow-[0_16px_50px_rgba(0,0,0,.28),inset_0_1px_0_rgba(255,255,255,.16)] backdrop-blur-2xl backdrop-saturate-150 sm:mx-5">
       <div className="mx-auto flex max-w-[1500px] items-center gap-3 px-3 py-2.5 sm:gap-4 sm:px-5">
-        <Link href="/" className="flex shrink-0 items-center rounded-xl" aria-label="NEXORA home">
+        <Link href="/studio" className="flex shrink-0 items-center rounded-xl" aria-label="NEXORA home">
           <Logo />
         </Link>
         <span className="hidden h-7 w-px bg-white/10 md:block" />

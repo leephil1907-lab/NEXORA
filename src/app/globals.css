@@ -18,8 +18,8 @@
   --cyan: #76d8f6;
   --grad: linear-gradient(115deg, #c3f77a 0%, #72e0b1 48%, #76d8f6 100%);
   --grad-text: linear-gradient(110deg, #d6ff9a 0%, #8ae8c3 52%, #8bdcf8 100%);
-  --font-display: "Inter", "SF Pro Display", ui-sans-serif, system-ui, sans-serif;
-  --font-sans: "Inter", "Segoe UI", ui-sans-serif, system-ui, sans-serif;
+  --font-display: var(--font-space-grotesk), "SF Pro Display", ui-sans-serif, system-ui, sans-serif;
+  --font-sans: var(--font-manrope), "Segoe UI", ui-sans-serif, system-ui, sans-serif;
 }
 * { box-sizing: border-box; }
 html { scroll-behavior: smooth; scroll-padding-top: 88px; }

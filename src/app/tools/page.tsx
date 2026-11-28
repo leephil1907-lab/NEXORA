@@ -18,8 +18,8 @@ const TOOLS=[
 {name:"Code Assistant",cat:"Development",desc:"Design features, explain code and produce implementation-ready fixes.",icon:Code2,prompt:"Act as a senior software engineer. Solve the development task I provide using the stated stack and constraints. Propose the smallest reliable implementation, provide complete code where requested and include validation steps. Do not assume unseen files."},
 {name:"Debugging Partner",cat:"Development",desc:"Trace errors, find root causes and suggest targeted fixes.",icon:Code2,prompt:"Act as a senior debugging engineer. Analyze my logs, error and code. Rank likely root causes, show how to verify them and give the smallest safe fix. Do not guess at unseen files."},
 {name:"Presentation Architect",cat:"Business",desc:"Create slide-by-slide presentations with speaker notes.",icon:FileText,prompt:"Act as a presentation strategist. Turn my topic and audience into a persuasive slide-by-slide outline. For every slide give title, key message, concise content, suggested visual and speaker notes."},
-{name:"Image Creator",cat:"Creative",desc:"Generate images through NEXORA's connected image models.",icon:WandSparkles,href:"/?kind=image"},
-{name:"Video Creator",cat:"Creative",desc:"Create clips from prompts or reference images using connected video models.",icon:Sparkles,href:"/?kind=video"}
+{name:"Image Creator",cat:"Creative",desc:"Generate images through NEXORA's connected image models.",icon:WandSparkles,href:"/studio?kind=image"},
+{name:"Video Creator",cat:"Creative",desc:"Create clips from prompts or reference images using connected video models.",icon:Sparkles,href:"/studio?kind=video"}
 ];
 const CATS=["All","Writing","Marketing","Research","Business","Development","Creative"];
 export default function ToolsPage(){

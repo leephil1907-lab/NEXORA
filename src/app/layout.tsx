@@ -1,5 +1,9 @@
 import type { Metadata } from "next";
+import { Manrope, Space_Grotesk } from "next/font/google";
 import "./globals.css";
+
+const manrope = Manrope({ subsets: ["latin"], variable: "--font-manrope", display: "swap" });
+const spaceGrotesk = Space_Grotesk({ subsets: ["latin"], variable: "--font-space-grotesk", display: "swap" });
 
 export const metadata: Metadata = {
   title: {
@@ -20,7 +24,7 @@ export const metadata: Metadata = {
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
   return (
     <html lang="en">
-      <body className="font-sans antialiased">
+      <body className={`${manrope.variable} ${spaceGrotesk.variable} font-sans antialiased`}>
         <div aria-hidden className="pointer-events-none fixed inset-0 z-0 overflow-hidden">
           <div className="absolute inset-0 bg-ink" />
           <div className="absolute inset-0 grid-lines opacity-50" />
