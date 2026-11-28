@@ -152,7 +152,7 @@ export function ChatClient({ initialPrompt = "", initialCharacterId = "" }: { in
         <div className="flex items-center justify-between gap-3 border-b border-line px-5 py-3.5">
           <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-dim">
             Chat <span className="mx-1.5 text-white/20">/</span>
-            <span className="text-white/80">{characterName ? "Character · " + characterName : selected?.label ?? "AI assistant"}</span>
+            <span className="text-white/80">{characterName ? "Character · " + characterName : selectedLabel}</span>
           </p>
           {selected && <span className="pill border-lime/25 bg-lime/10 text-lime"><Bot size={11} /> Connected</span>}
         </div>
