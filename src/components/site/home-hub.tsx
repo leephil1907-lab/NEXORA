@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import {
-  ArrowRight, ArrowUpRight, Boxes, Camera, Check, Clapperboard, Image as ImageIcon, Paintbrush, PanelsTopLeft, Package, Shirt, UserRound, Sparkles,
+  ArrowRight, ArrowUpRight, Boxes, Camera, Check, Clapperboard, Image as ImageIcon, Paintbrush, PanelsTopLeft, Shirt, UserRound,
   Layers, Play, ShieldAlert, Sparkles, Wand2,
 } from "lucide-react";
 import { motion } from "framer-motion";
