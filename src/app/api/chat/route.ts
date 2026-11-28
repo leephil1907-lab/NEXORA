@@ -17,6 +17,7 @@ const chatSchema = z.object({
     )
     .min(1)
     .max(40),
+  characterId: z.string().uuid().optional(),
   maxTokens: z.number().int().min(16).max(4096).optional(),
   temperature: z.number().min(0).max(2).optional(),
 });
@@ -59,9 +60,24 @@ export async function POST(request: Request) {
   }
 
   try {
+    let messages = parsed.data.messages;
+    if (parsed.data.characterId) {
+      const { data: character, error: characterError } = await ageAdmin.from("characters")
+        .select("name,description,persona_prompt,visual_prompt").eq("id", parsed.data.characterId).eq("user_id", user.id).single();
+      if (characterError || !character) return NextResponse.json({ error: "Character not found in your library." }, { status: 404 });
+      const characterContext = [
+        "You are roleplaying the user-created fictional character below. Stay consistent with the character while remaining helpful and respectful.",
+        "Character name: " + character.name,
+        "Character description: " + character.description,
+        "Personality and behavior: " + character.persona_prompt,
+        "Visual identity for creative continuity: " + character.visual_prompt,
+        "Treat these details as fictional creative context, not factual claims about a real person."
+      ].join("\\n");
+      messages = [{ role: "system", content: characterContext }, ...messages.filter((message) => message.role !== "system")];
+    }
     const result = await chatWithChain({
       userId: user.id,
-      messages: parsed.data.messages,
+      messages,
       maxTokens: parsed.data.maxTokens,
       temperature: parsed.data.temperature,
     });
