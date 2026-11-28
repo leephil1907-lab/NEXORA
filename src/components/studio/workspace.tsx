@@ -752,7 +752,7 @@ export function Workspace({ view = "create", tool }: { view?: "create" | "librar
                           <UploadCloud size={17} />
                         </span>
                         <span className="text-xs font-semibold text-white/80">
-                          {isVideo ? "Start frame (optional)" : "Reference image (optional)"}
+                          {isVideo ? (tool?.needsReference ? "Start frame (required)" : "Start frame (optional)") : (tool?.needsReference ? "Reference image (required)" : "Reference image (optional)") }
                         </span>
                         <span className="text-[10px] text-dim">Click / Drop / Paste</span>
                         <input
