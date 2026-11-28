@@ -8,12 +8,12 @@ export const metadata: Metadata = {
   description: "A creative assistant powered by NEXORA's connected hosted inference provider.",
 };
 
-export default async function ChatPage({ searchParams }: { searchParams: Promise<{ prompt?: string }> }) {
-  const { prompt = "" } = await searchParams;
+export default async function ChatPage({ searchParams }: { searchParams: Promise<{ prompt?: string; characterId?: string }> }) {
+  const { prompt = "", characterId = "" } = await searchParams;
   return (
     <>
       <Navbar />
-      <ChatClient initialPrompt={prompt.slice(0, 4000)} />
+      <ChatClient initialPrompt={prompt.slice(0, 4000)} initialCharacterId={characterId} />
       <Footer />
     </>
   );
