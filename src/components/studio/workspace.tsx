@@ -51,7 +51,7 @@ const defaultConfig: AppConfig = {
   models: [],
 };
 
-export function Workspace() {
+export function Workspace({ view = "create" }: { view?: "create" | "library" | "credits" | "admin" }) {
   const searchParams = useSearchParams();
   const initialPrompt = searchParams.get("prompt")?.slice(0, 2500) ?? "";
 
@@ -533,13 +533,13 @@ export function Workspace() {
           <p className="mb-2 mt-9 px-3 text-[9px] font-bold uppercase tracking-[.22em] text-dim">Workspace</p>
           <nav className="flex flex-row gap-1 overflow-x-auto scrollbar-none lg:flex-col" aria-label="Studio workspace">
             {[
-              { href: "#create", label: "Create", icon: WandSparkles },
-              { href: "#library", label: "Your library", icon: Library },
-              { href: "#credits", label: "Credits", icon: Zap },
-            ].map((item, index) => (
-              <a key={item.href} href={item.href} className={`group flex shrink-0 items-center gap-3 rounded-xl border px-3.5 py-3 text-[11px] font-semibold transition-all ${index === 0 ? "border-lime/15 bg-lime/[.08] text-white" : "border-transparent text-muted hover:border-white/10 hover:bg-white/[.045] hover:text-white"}`}>
-                <item.icon size={15} className={index === 0 ? "text-lime" : "text-dim group-hover:text-lime"} /> {item.label}
-              </a>
+              { href: "/studio", label: "Create", icon: WandSparkles, key: "create" },
+              { href: "/studio/library", label: "Your library", icon: Library, key: "library" },
+              { href: "/studio/credits", label: "Credits", icon: Zap, key: "credits" },
+            ].map((item) => (
+              <Link key={item.href} href={item.href} aria-current={view === item.key ? "page" : undefined} className={`group flex shrink-0 items-center gap-3 rounded-xl border px-3.5 py-3 text-[11px] font-semibold transition-all ${view === item.key ? "border-lime/20 bg-lime/[.09] text-white shadow-[inset_0_1px_0_rgba(255,255,255,.08)]" : "border-transparent text-muted hover:border-white/10 hover:bg-white/[.045] hover:text-white"}`}>
+                <item.icon size={15} className={view === item.key ? "text-lime" : "text-dim group-hover:text-lime"} /> {item.label}
+              </Link>
             ))}
           </nav>
           <p className="mb-2 mt-8 px-3 text-[9px] font-bold uppercase tracking-[.22em] text-dim">Explore</p>
@@ -555,7 +555,7 @@ export function Workspace() {
                 <item.icon size={15} className="text-dim group-hover:text-cyan" /> {item.label}
               </Link>
             ))}
-            {role === "admin" && <a href="#admin" className="flex shrink-0 items-center gap-3 rounded-xl border border-lime/15 bg-lime/[.05] px-3.5 py-3 text-[11px] font-semibold text-lime"><ShieldCheck size={15}/> Admin controls</a>}
+            {role === "admin" && <Link href="/studio/admin" aria-current={view === "admin" ? "page" : undefined} className={`flex shrink-0 items-center gap-3 rounded-xl border px-3.5 py-3 text-[11px] font-semibold ${view === "admin" ? "border-lime/20 bg-lime/[.08] text-lime" : "border-transparent text-muted hover:bg-white/[.045]"}`}><ShieldCheck size={15}/> Admin controls</Link>}
           </nav>
           <div className="mt-auto hidden rounded-2xl border border-white/10 bg-white/[.035] p-4 lg:block">
             <div className="flex items-center justify-between">
@@ -563,7 +563,7 @@ export function Workspace() {
               <Zap size={13} className="text-lime" />
             </div>
             <p className="mt-2 font-display text-3xl font-bold tracking-tight text-white">{credits === null ? "—" : credits.toLocaleString()}</p>
-            <a href="#credits" className="mt-2 inline-flex items-center gap-1 text-[10px] font-semibold text-cyan hover:underline">View usage <ArrowUpRight size={11}/></a>
+            <Link href="/studio/credits" className="mt-2 inline-flex items-center gap-1 text-[10px] font-semibold text-cyan hover:underline">View usage <ArrowUpRight size={11}/></Link>
           </div>
           <div className="mt-4 flex items-center gap-3 rounded-2xl border border-white/[.09] bg-white/[.035] px-3 py-3">
             <span className="grid h-9 w-9 shrink-0 place-items-center rounded-xl bg-gradient-to-br from-lime/30 to-cyan/25 text-xs font-bold text-white">{displayEmail.slice(0, 1).toUpperCase()}</span>
@@ -578,7 +578,7 @@ export function Workspace() {
 
       <section className="min-w-0">
         <header className="sticky top-0 z-30 flex min-h-[62px] items-center justify-between gap-3 border-b border-white/[.07] bg-[#0a0f19]/75 px-4 backdrop-blur-2xl sm:px-7">
-          <div className="flex items-center gap-2 text-[11px] font-medium text-muted"><span className="text-white/90">Workspace</span><span className="text-white/20">/</span><span className="text-lime">Create</span></div>
+          <div className="flex items-center gap-2 text-[11px] font-medium text-muted"><span className="text-white/90">Workspace</span><span className="text-white/20">/</span><span className="text-lime">{view === "create" ? "Create" : view === "library" ? "Your library" : view === "credits" ? "Credits" : "Admin controls"}</span></div>
           <div className="flex items-center gap-2">
             {providersReady ? <span className="pill border-mint/25 bg-mint/10 text-mint"><span className="dot-live"/> Engines connected</span> : <span className="pill border-amber/25 bg-amber/10 text-amber"><AlertTriangle size={11}/> Engines need setup</span>}
             {config.sensitiveEnabled && sensitive && <span className="pill border-rose/25 bg-rose/10 text-rose"><ShieldAlert size={11}/> 18+ mode</span>}
@@ -588,16 +588,16 @@ export function Workspace() {
         <div className="mx-auto max-w-[1540px] px-4 pb-12 pt-6 sm:px-7 sm:pt-8">
           <div id="create" className="mb-6 flex flex-wrap items-end justify-between gap-4 scroll-mt-24">
             <div>
-              <p className="text-[9px] font-bold uppercase tracking-[.22em] text-lime">Creative workspace</p>
-              <h1 className="mt-2 font-display text-2xl font-bold tracking-tight text-white sm:text-[32px]">Create something <span className="gradient-text">remarkable.</span></h1>
-              <p className="mt-1.5 text-xs text-muted">Images, motion and visual ideas — all in one focused space.</p>
+              <p className="text-[9px] font-bold uppercase tracking-[.22em] text-lime">{view === "create" ? "Creative workspace" : view === "library" ? "Your creations" : view === "credits" ? "Account" : "Management"}</p>
+              <h1 className="mt-2 font-display text-2xl font-bold tracking-tight text-white sm:text-[32px]">{view === "create" ? <>Create something <span className="gradient-text">remarkable.</span></> : view === "library" ? <>Your creative <span className="gradient-text">library.</span></> : view === "credits" ? <>Credits & <span className="gradient-text">usage.</span></> : <>Studio <span className="gradient-text">admin.</span></>}</h1>
+              <p className="mt-1.5 text-xs text-muted">{view === "create" ? "Images, motion and visual ideas — all in one focused space." : view === "library" ? "All your generated images and videos, in one place." : view === "credits" ? "Track your balance and understand generation costs." : "Manage member credit balances."}</p>
             </div>
             <div className="flex items-center gap-2 rounded-xl border border-white/[.08] bg-white/[.025] px-3 py-2 text-[10px] text-muted"><span className="h-1.5 w-1.5 rounded-full bg-mint"/>{displayEmail}</div>
           </div>
 
-          <div className="mt-8 grid gap-6 xl:grid-cols-[minmax(0,460px)_minmax(0,1fr)]">
+          <div className={view === "create" ? "mt-8 grid gap-6 xl:grid-cols-[minmax(0,460px)_minmax(0,1fr)]" : "mt-2"}>
             {/* ============================ compose column ============================ */}
-            <form onSubmit={generate} className="space-y-5">
+            {view === "create" && (<form onSubmit={generate} className="space-y-5">
               {/* Modality switch */}
               <div className="flex items-center gap-2 rounded-2xl border border-line bg-panel p-1.5" role="group" aria-label="Generation type">
                 {(["image", "video"] as const).map((value) => {
@@ -1118,10 +1118,10 @@ export function Workspace() {
                   NEXORA never simulates results.
                 </p>
               )}
-            </form>
+            </form>)}
 
             {/* ============================= preview column ============================ */}
-            <div className="min-w-0 space-y-8">
+            {view === "create" && (<div className="min-w-0 space-y-8">
               {message && (
                 <p className={cn(
                   "rounded-xl border px-4 py-3 text-xs leading-relaxed",
@@ -1164,50 +1164,28 @@ export function Workspace() {
                 </div>
               )}
 
-              {/* Library */}
-              <section id="library" className="scroll-mt-24">
-                <div className="flex flex-wrap items-center justify-between gap-4">
-                  <div>
-                    <p className="text-[10px] font-semibold uppercase tracking-[0.22em] text-lime">Your work</p>
-                    <h2 className="mt-2 font-display text-xl font-semibold text-white/95">Recent generations</h2>
-                  </div>
-                  <span className="text-[10px] uppercase tracking-[0.18em] text-dim">
-                    {jobs.length} record{jobs.length === 1 ? "" : "s"}
-                  </span>
-                </div>
-                <div className="mt-4">
-                  <LibraryTabs value={libraryFilter} onChange={setLibraryFilter} counts={filterCounts} />
-                </div>
-                <div className="mt-5">
-                  <LibraryGrid jobs={filteredJobs} activeId={activeJob?.id ?? null} onSelect={setActiveJob} />
-                </div>
-              </section>
-
-              {/* Credits */}
-              <section id="credits" className="scroll-mt-24">
-                <CreditsPanel credits={credits} imageCost={config.imageCreditCost} videoCost={config.videoCreditCost} />
-              </section>
-
-              {/* Admin */}
-              {role === "admin" && (
-                <section id="admin" className="scroll-mt-24">
-                  <AdminPanel users={adminUsers} busy={adminBusy} onSubmit={adjustCredits} />
-                  {adminMessage && (
-                    <p className={cn(
-                      "mt-4 rounded-xl border px-4 py-3 text-xs",
-                      adminMessage.includes("applied")
-                        ? "border-mint/25 bg-mint/10 text-mint"
-                        : "border-rose/25 bg-rose/10 text-rose"
-                    )}>
-                      {adminMessage}
-                    </p>
-                  )}
-                </section>
-              )}
-            </div>
+            </div>)}
           </div>
 
-          <footer className="mt-16 flex flex-wrap items-center justify-between gap-3 border-t border-line pt-6 text-[10px] uppercase tracking-[0.16em] text-dim">
+          {view === "library" && (
+            <section className="glass-strong rounded-3xl p-5 sm:p-7">
+              <div className="flex flex-wrap items-center justify-between gap-4">
+                <div><p className="text-[10px] font-semibold uppercase tracking-[.22em] text-lime">Your work</p><h2 className="mt-2 font-display text-xl font-semibold text-white/95">Recent generations</h2></div>
+                <span className="text-[10px] uppercase tracking-[.18em] text-dim">{jobs.length} record{jobs.length === 1 ? "" : "s"}</span>
+              </div>
+              <div className="mt-4"><LibraryTabs value={libraryFilter} onChange={setLibraryFilter} counts={filterCounts} /></div>
+              <div className="mt-5"><LibraryGrid jobs={filteredJobs} activeId={activeJob?.id ?? null} onSelect={setActiveJob} /></div>
+            </section>
+          )}
+          {view === "credits" && <section className="glass-strong rounded-3xl p-5 sm:p-7"><CreditsPanel credits={credits} imageCost={config.imageCreditCost} videoCost={config.videoCreditCost} /></section>}
+          {view === "admin" && role === "admin" && (
+            <section className="glass-strong rounded-3xl p-5 sm:p-7">
+              <AdminPanel users={adminUsers} busy={adminBusy} onSubmit={adjustCredits} />
+              {adminMessage && <p className={cn("mt-4 rounded-xl border px-4 py-3 text-xs", adminMessage.includes("applied") ? "border-mint/25 bg-mint/10 text-mint" : "border-rose/25 bg-rose/10 text-rose")}>{adminMessage}</p>}
+            </section>
+          )}
+
+          <footer className="mt-12 flex flex-wrap items-center justify-between gap-3 border-t border-line pt-6 text-[10px] uppercase tracking-[0.16em] text-dim">
             <span className="font-display font-bold tracking-[0.22em] text-lime/80">NEXORA</span>
             <span>Real models. Real work. No placeholders.</span>
             <span>© {new Date().getFullYear()}</span>
