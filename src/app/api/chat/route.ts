@@ -17,7 +17,6 @@ const chatSchema = z.object({
     )
     .min(1)
     .max(40),
-  modelId: z.string().trim().max(120).optional(),
   maxTokens: z.number().int().min(16).max(4096).optional(),
   temperature: z.number().min(0).max(2).optional(),
 });
@@ -63,7 +62,6 @@ export async function POST(request: Request) {
     const result = await chatWithChain({
       userId: user.id,
       messages: parsed.data.messages,
-      modelId: parsed.data.modelId,
       maxTokens: parsed.data.maxTokens,
       temperature: parsed.data.temperature,
     });
