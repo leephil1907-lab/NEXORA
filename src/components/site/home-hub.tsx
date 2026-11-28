@@ -290,6 +290,7 @@ export function HomeHub() {
   return (
     <>
       <AgeGateOverlay />
+      <main className="mx-auto w-full max-w-[1400px] px-5 pb-14">
 
       {/* hero */}
       <section className="relative overflow-hidden rounded-[2.25rem] border border-line bg-panel">
@@ -485,6 +486,7 @@ export function HomeHub() {
           </div>
         </section>
       </Reveal>
+      </main>
     </>
   );
 }
