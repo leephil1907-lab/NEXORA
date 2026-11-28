@@ -9,7 +9,7 @@
 
 export type Modality = "image" | "video";
 
-export type ProviderKind = "replicate" | "custom-image" | "custom-llm" | "gemini-image" | "gemini-video";
+export type ProviderKind = "custom-image" | "custom-llm" | "gemini-image" | "gemini-video";
 
 export type AspectRatio = "16:9" | "9:16" | "1:1" | "4:3" | "3:4" | "21:9";
 export type Resolution = "480p" | "720p" | "1080p";
