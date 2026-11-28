@@ -95,3 +95,8 @@ npm run build
 ```
 
 Database migrations live in `supabase/migrations/` and must be applied in order.
+
+
+## Generation billing
+
+The active Studio catalog uses Google Gemini 3.1 Flash Lite Image for image generation and Gemini Omni 1.2 Flash for video generation. Replicate-dependent models have been removed from the active catalog. Google Gemini image and video generation are paid-tier features; a free-tier Gemini text API key does not include image/video generation. The Gemini API project must have billing enabled. NEXORA only submits a provider request after the user presses Generate.
