@@ -98,6 +98,18 @@ export const TOOLS: ToolEntry[] = [
     promptTemplate: "Create a high-end fashion editorial for: [garment, outfit or concept]. Show the silhouette, materials, construction, styling and details clearly. Use considered editorial lighting and a cohesive art direction.",
   },
   {
+    slug: "background-editor",
+    name: "Background & Scene Editor",
+    category: "Images",
+    kind: "image",
+    workflow: "image-edit",
+    desc: "Upload a reference and rework its background, setting, lighting or environment.",
+    tag: "Scene editing",
+    needsReference: true,
+    steps: ["Upload an image", "Describe the new scene", "Generate", "Compare and save"],
+    promptTemplate: "Edit the uploaded image by changing its background or environment to: [describe the new scene]. Preserve the main subject, pose, proportions and important foreground details. Match the lighting and perspective naturally.",
+  },
+  {
     slug: "poster-studio",
     name: "Poster & Thumbnail Maker",
     category: "Images",
