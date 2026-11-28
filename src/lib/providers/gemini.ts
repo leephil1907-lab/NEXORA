@@ -3,6 +3,8 @@ import type { GenerationProvider, ModelEntry, ProviderJob, StartJobArgs } from "
 const API = "https://generativelanguage.googleapis.com/v1beta";
 const key = () => process.env.GEMINI_API_KEY || "";
 
+// The upstream Gemini API has several polymorphic response shapes.
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 type Json = Record<string, any>;
 async function request(path: string, init: RequestInit = {}): Promise<Json> {
   const apiKey = key();
