@@ -10,7 +10,6 @@ import {
 type LlmPublic = { id: string; label: string };
 
 type Engines = {
-  selfHostedLlm?: boolean;
   gemini?: boolean;
   omega?: boolean;
   venice?: boolean;
@@ -116,13 +115,6 @@ export function ChatClient({ initialPrompt = "" }: { initialPrompt?: string }) {
               )}
             </li>
             <li className="flex items-center gap-2">
-              {engines.selfHostedLlm ? (
-                <><CheckCircle2 size={13} className="text-mint" /><span className="text-white/85">Self-hosted endpoint connected</span></>
-              ) : (
-                <><Server size={13} className="text-dim" /><span className="text-muted">Self-hosted endpoint not configured</span></>
-              )}
-            </li>
-            <li className="flex items-center gap-2">
               {engines.omega ? (
                 <><CheckCircle2 size={13} className="text-mint" /><span className="text-white/85">Omega AI fallback connected</span></>
               ) : (
@@ -138,7 +130,7 @@ export function ChatClient({ initialPrompt = "" }: { initialPrompt?: string }) {
             </li>
           </ul>
           <p className="mt-3 border-t border-line pt-3 text-[10px] leading-relaxed text-dim">
-            Messages are sent to a connected inference provider. Gemini is used first when configured; available hosted fallbacks are shown above.
+            Messages use Gemini first when configured, with only the connected hosted fallbacks shown above.
           </p>
         </div>
 
