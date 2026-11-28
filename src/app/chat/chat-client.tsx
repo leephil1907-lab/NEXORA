@@ -43,13 +43,13 @@ const VIA_LABEL: Record<string, string> = {
   venice: "Venice.ai hosted",
 };
 
-export function ChatClient() {
+export function ChatClient({ initialPrompt = "" }: { initialPrompt?: string }) {
   const [models, setModels] = useState<LlmPublic[]>([]);
   const [engines, setEngines] = useState<Engines>({});
   const [devices, setDevices] = useState<Device[] | null>(null);
   const [modelId, setModelId] = useState("");
   const [messages, setMessages] = useState<ChatMessage[]>([]);
-  const [input, setInput] = useState("");
+  const [input, setInput] = useState(initialPrompt);
   const [busy, setBusy] = useState(false);
   const [authState, setAuthState] = useState<"loading" | "signed-out" | "age-required" | "ready">("loading");
   const [error, setError] = useState<string | null>(null);
