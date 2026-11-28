@@ -523,101 +523,76 @@ export function Workspace() {
     : false);
 
   return (
-    <main className="min-h-screen lg:grid lg:grid-cols-[264px_minmax(0,1fr)]">
-      {/* ------------------------------- sidebar ------------------------------- */}
-      <aside className="border-b border-line bg-ink/60 backdrop-blur-xl lg:sticky lg:top-0 lg:h-screen lg:border-b-0 lg:border-r">
-        <div className="flex h-full flex-col p-5">
-          <div className="flex items-center justify-between gap-3">
+    <main className="min-h-screen lg:grid lg:grid-cols-[248px_minmax(0,1fr)]">
+      <aside className="border-b border-white/[.07] bg-[#0b101a]/80 backdrop-blur-2xl lg:sticky lg:top-0 lg:h-screen lg:border-b-0 lg:border-r">
+        <div className="flex h-full flex-col p-4 sm:p-5">
+          <div className="flex items-center justify-between gap-3 px-1 py-1">
             <Link href="/" aria-label="NEXORA home"><Logo /></Link>
-            <Link href="/" className="btn-ghost !p-2 lg:hidden" aria-label="Homepage"><Home size={16} /></Link>
+            <span className="rounded-full border border-lime/20 bg-lime/[.08] px-2 py-1 text-[8px] font-bold uppercase tracking-[.15em] text-lime">Studio</span>
           </div>
-
-          <nav className="mt-8 flex flex-row gap-1.5 overflow-x-auto scrollbar-none lg:flex-col" aria-label="Studio">
+          <p className="mb-2 mt-9 px-3 text-[9px] font-bold uppercase tracking-[.22em] text-dim">Workspace</p>
+          <nav className="flex flex-row gap-1 overflow-x-auto scrollbar-none lg:flex-col" aria-label="Studio workspace">
             {[
               { href: "#create", label: "Create", icon: WandSparkles },
-              { href: "#library", label: "Library", icon: Library },
+              { href: "#library", label: "Your library", icon: Library },
               { href: "#credits", label: "Credits", icon: Zap },
-            ].map((item) => (
-              <a
-                key={item.href}
-                href={item.href}
-                className="flex items-center gap-2.5 rounded-xl px-3.5 py-2.5 text-xs font-semibold text-muted transition-colors duration-200 hover:bg-white/5 hover:text-white"
-              >
-                <item.icon size={15} className="text-lime" /> {item.label}
+            ].map((item, index) => (
+              <a key={item.href} href={item.href} className={`group flex shrink-0 items-center gap-3 rounded-xl border px-3.5 py-3 text-[11px] font-semibold transition-all ${index === 0 ? "border-lime/15 bg-lime/[.08] text-white" : "border-transparent text-muted hover:border-white/10 hover:bg-white/[.045] hover:text-white"}`}>
+                <item.icon size={15} className={index === 0 ? "text-lime" : "text-dim group-hover:text-lime"} /> {item.label}
               </a>
             ))}
-            <Link href="/chat" className="flex items-center gap-2.5 rounded-xl px-3.5 py-2.5 text-xs font-semibold text-muted transition-colors duration-200 hover:bg-white/5 hover:text-white">
-              <MessageSquare size={15} className="text-lime" /> Uncensored chat
-            </Link>
-            <Link href="/models" className="flex items-center gap-2.5 rounded-xl px-3.5 py-2.5 text-xs font-semibold text-muted transition-colors duration-200 hover:bg-white/5 hover:text-white">
-              <Boxes size={15} className="text-lime" /> Model catalog
-            </Link>
-            <Link href="/studio/try-on" className="flex items-center gap-2.5 rounded-xl px-3.5 py-2.5 text-xs font-semibold text-muted transition-colors duration-200 hover:bg-white/5 hover:text-white">
-              <Shirt size={15} className="text-lime" /> Virtual try-on
-            </Link>
-            <Link href="/studio/local" className="flex items-center gap-2.5 rounded-xl px-3.5 py-2.5 text-xs font-semibold text-muted transition-colors duration-200 hover:bg-white/5 hover:text-white">
-              <Cpu size={15} className="text-cyan" /> Local companion
-            </Link>
           </nav>
-
-          <div className="mt-auto hidden rounded-2xl border border-line bg-white/[0.02] p-4 lg:block">
+          <p className="mb-2 mt-8 px-3 text-[9px] font-bold uppercase tracking-[.22em] text-dim">Explore</p>
+          <nav className="flex flex-row gap-1 overflow-x-auto scrollbar-none lg:flex-col" aria-label="NEXORA tools">
+            {[
+              { href: "/chat", label: "AI Chat", icon: MessageSquare },
+              { href: "/tools", label: "Toolbox", icon: LayoutGrid },
+              { href: "/models", label: "Model library", icon: Boxes },
+              { href: "/studio/try-on", label: "Virtual try-on", icon: Shirt },
+              { href: "/studio/local", label: "Local companion", icon: Cpu },
+            ].map((item) => (
+              <Link key={item.href} href={item.href} className="group flex shrink-0 items-center gap-3 rounded-xl border border-transparent px-3.5 py-3 text-[11px] font-semibold text-muted transition-all hover:border-white/10 hover:bg-white/[.045] hover:text-white">
+                <item.icon size={15} className="text-dim group-hover:text-cyan" /> {item.label}
+              </Link>
+            ))}
+            {role === "admin" && <a href="#admin" className="flex shrink-0 items-center gap-3 rounded-xl border border-lime/15 bg-lime/[.05] px-3.5 py-3 text-[11px] font-semibold text-lime"><ShieldCheck size={15}/> Admin controls</a>}
+          </nav>
+          <div className="mt-auto hidden rounded-2xl border border-white/10 bg-white/[.035] p-4 lg:block">
             <div className="flex items-center justify-between">
-              <p className="text-[9px] font-semibold uppercase tracking-[0.22em] text-dim">Available credits</p>
-              <Zap size={12} className="text-cyan" />
+              <p className="text-[9px] font-bold uppercase tracking-[.18em] text-dim">Credit balance</p>
+              <Zap size={13} className="text-lime" />
             </div>
-            <p className="mt-2 font-display text-3xl font-extrabold text-white">
-              {credits === null ? "—" : credits.toLocaleString()}
-            </p>
-            <a href="#credits" className="mt-2 inline-flex items-center gap-1 text-[10px] font-semibold text-cyan hover:underline">
-              How credits work <ArrowUpRight size={11} />
-            </a>
+            <p className="mt-2 font-display text-3xl font-bold tracking-tight text-white">{credits === null ? "—" : credits.toLocaleString()}</p>
+            <a href="#credits" className="mt-2 inline-flex items-center gap-1 text-[10px] font-semibold text-cyan hover:underline">View usage <ArrowUpRight size={11}/></a>
           </div>
-
-          <div className="mt-5 flex items-center gap-3 rounded-2xl border border-line bg-white/[0.02] px-3.5 py-3">
-            <span className="grid h-8 w-8 shrink-0 place-items-center rounded-full bg-gradient-to-br from-lime/40 to-cyan/25 text-[11px] font-bold text-white">
-              {displayEmail.slice(0, 1).toUpperCase()}
-            </span>
+          <div className="mt-4 flex items-center gap-3 rounded-2xl border border-white/[.09] bg-white/[.035] px-3 py-3">
+            <span className="grid h-9 w-9 shrink-0 place-items-center rounded-xl bg-gradient-to-br from-lime/30 to-cyan/25 text-xs font-bold text-white">{displayEmail.slice(0, 1).toUpperCase()}</span>
             <div className="min-w-0 flex-1">
-              <p className="truncate text-[11px] font-semibold text-white/85">{displayEmail}</p>
-              <p className="flex items-center gap-1 text-[9px] uppercase tracking-[0.14em] text-dim">
-                <ShieldCheck size={9} className="text-mint" /> {role === "admin" ? "Operator" : "Signed in"}
-              </p>
+              <p className="truncate text-[10px] font-semibold text-white/85">{displayEmail}</p>
+              <p className="mt-0.5 flex items-center gap-1 text-[9px] uppercase tracking-[.12em] text-dim"><ShieldCheck size={9} className="text-mint"/>{role === "admin" ? "Administrator" : "Member"}</p>
             </div>
-            <button type="button" onClick={signOut} className="btn-ghost !p-1.5" aria-label="Sign out">
-              <LogOut size={13} />
-            </button>
+            <button type="button" onClick={signOut} className="btn-ghost !p-2" aria-label="Sign out"><LogOut size={13}/></button>
           </div>
         </div>
       </aside>
 
-      {/* -------------------------------- content ------------------------------- */}
       <section className="min-w-0">
-        <header className="sticky top-0 z-40 flex items-center justify-between gap-4 border-b border-line bg-ink/70 px-6 py-4 backdrop-blur-xl">
-          <p className="text-[11px] uppercase tracking-[0.2em] text-dim">
-            Studio <span className="mx-1.5 text-white/20">/</span> <span className="text-white/80">Create</span>
-          </p>
-          <div className="flex items-center gap-2.5">
-            {providersReady ? (
-              <span className="pill border-mint/25 bg-mint/10 text-mint"><Cpu size={11} /> Providers ready</span>
-            ) : (
-              <span className="pill border-amber/25 bg-amber/10 text-amber"><AlertTriangle size={11} /> Provider not configured</span>
-            )}
-            {config.sensitiveEnabled && sensitive && (
-              <span className="pill border-rose/25 bg-rose/10 text-rose"><ShieldAlert size={11} /> Sensitive</span>
-            )}
+        <header className="sticky top-0 z-30 flex min-h-[62px] items-center justify-between gap-3 border-b border-white/[.07] bg-[#0a0f19]/75 px-4 backdrop-blur-2xl sm:px-7">
+          <div className="flex items-center gap-2 text-[11px] font-medium text-muted"><span className="text-white/90">Workspace</span><span className="text-white/20">/</span><span className="text-lime">Create</span></div>
+          <div className="flex items-center gap-2">
+            {providersReady ? <span className="pill border-mint/25 bg-mint/10 text-mint"><span className="dot-live"/> Engines connected</span> : <span className="pill border-amber/25 bg-amber/10 text-amber"><AlertTriangle size={11}/> Engines need setup</span>}
+            {config.sensitiveEnabled && sensitive && <span className="pill border-rose/25 bg-rose/10 text-rose"><ShieldAlert size={11}/> 18+ mode</span>}
           </div>
         </header>
 
-        <div className="mx-auto max-w-[1500px] px-6 pb-16 pt-10">
-          {/* ------------------------------ hero strip ----------------------------- */}
-          <div id="create" className="scroll-mt-24">
-            <p className="text-[10px] font-semibold uppercase tracking-[0.28em] text-lime">The creative engine</p>
-            <h1 className="mt-3 font-display text-3xl font-extrabold tracking-tight text-white sm:text-4xl">
-              Imagine it. <span className="gradient-text">Bring it to life.</span>
-            </h1>
-            <p className="mt-3 text-sm text-muted">
-              Signed in as {displayEmail} · {formatDate(new Date().toISOString())}
-            </p>
+        <div className="mx-auto max-w-[1540px] px-4 pb-12 pt-6 sm:px-7 sm:pt-8">
+          <div id="create" className="mb-6 flex flex-wrap items-end justify-between gap-4 scroll-mt-24">
+            <div>
+              <p className="text-[9px] font-bold uppercase tracking-[.22em] text-lime">Creative workspace</p>
+              <h1 className="mt-2 font-display text-2xl font-bold tracking-tight text-white sm:text-[32px]">Create something <span className="gradient-text">remarkable.</span></h1>
+              <p className="mt-1.5 text-xs text-muted">Images, motion and visual ideas — all in one focused space.</p>
+            </div>
+            <div className="flex items-center gap-2 rounded-xl border border-white/[.08] bg-white/[.025] px-3 py-2 text-[10px] text-muted"><span className="h-1.5 w-1.5 rounded-full bg-mint"/>{displayEmail}</div>
           </div>
 
           <div className="mt-8 grid gap-6 xl:grid-cols-[minmax(0,460px)_minmax(0,1fr)]">
