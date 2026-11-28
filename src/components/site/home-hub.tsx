@@ -135,22 +135,16 @@ const IMAGE_TOOLS: ToolCard[] = [
   {
     slug: "text-to-image",
     name: "Text-to-Image",
-    description: "Turn a prompt into a finished still with model presets and cost preview.",
+    description: "Create a new image from a prompt with the connected FLUX model.",
     icon: Wand2,
     badge: { label: "New", tone: "lime" },
   },
   {
     slug: "image-editor",
     name: "Image Editor",
-    description: "Describe an edit and get a refraction back — real uploads, real previews.",
+    description: "Upload a reference image and edit it with natural-language instructions.",
     icon: ImageIcon,
-    badge: { label: "Pro", tone: "cyan" },
-  },
-  {
-    slug: "pose-generator",
-    name: "AI Pose Generator",
-    description: "Compose a clean pose from a prompt and use it as your generation starting point.",
-    icon: Boxes,
+    badge: { label: "Reference", tone: "cyan" },
   },
 ];
 
@@ -158,34 +152,20 @@ const VIDEO_TOOLS: ToolCard[] = [
   {
     slug: "text-to-video",
     name: "Text-to-Video",
-    description: "Generate motion from a text description with duration and cost preview.",
+    description: "Generate a video clip from a written scene description.",
     icon: Clapperboard,
   },
   {
     slug: "image-to-video",
     name: "Image-to-Video",
-    description: "Animate an uploaded frame with a motion prompt and inspect the result.",
+    description: "Animate an uploaded or generated still image.",
     icon: Play,
-    badge: { label: "Hot", tone: "amber" },
-  },
-  {
-    slug: "video-studio",
-    name: "Video Studio",
-    description: "Generate a longer video cut and track the real task lifecycle end to end.",
-    icon: Sparkles,
-    badge: { label: "Long", tone: "cyan" },
-  },
-  {
-    slug: "video-audio-studio",
-    name: "Video Audio Studio",
-    description: "Generate video and native sound together from one idea in one video.",
-    icon: Music4,
-    badge: { label: "Native Sound", tone: "lime" },
+    badge: { label: "Popular", tone: "amber" },
   },
   {
     slug: "video-extension",
     name: "Video Extension",
-    description: "Keep the story going — extend an existing clip with five more seconds.",
+    description: "Continue a supported generated clip with a new prompt.",
     icon: TimerReset,
   },
 ];
