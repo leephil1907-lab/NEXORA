@@ -3,11 +3,12 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import {
-  ArrowUpRight, Bot, CheckCircle2, Cpu, LoaderCircle, MessageSquare,
-  Send, Server, ShieldCheck, Sparkles,
+  Bot, CheckCircle2, Cpu, LoaderCircle, MessageSquare,
+  Send, ShieldCheck, Sparkles,
 } from "lucide-react";
 
 type LlmPublic = { id: string; label: string };
+type ChatMessage = { role: "user" | "assistant"; content: string; via?: string; detail?: string };
 
 type Engines = {
   gemini?: boolean;
@@ -17,7 +18,6 @@ type Engines = {
 
 const VIA_LABEL: Record<string, string> = {
   gemini: "Google Gemini",
-  "local-endpoint": "Self-hosted endpoint",
   omega: "Omega AI hosted",
   venice: "Venice.ai hosted",
 };
@@ -47,10 +47,11 @@ export function ChatClient({ initialPrompt = "" }: { initialPrompt?: string }) {
         }
       } catch { /* engine list stays empty — shown honestly */ }
 
-      const devicesResponse = await fetch("/api/local/devices", { cache: "no-store" });
+      const accessResponse = await fetch("/api/generations?limit=1", { cache: "no-store" });
       if (cancelled) return;
-      if (devicesResponse.status === 401) { setAuthState("signed-out"); return; }
-      if (devicesResponse.status === 403) { setAuthState("age-required"); return; }
+      if (accessResponse.status === 401) { setAuthState("signed-out"); return; }
+      if (accessResponse.status === 403) { setAuthState("age-required"); return; }
+      if (!accessResponse.ok) throw new Error("Could not verify account access.");
       setAuthState("ready");
     })();
     return () => { cancelled = true; };
