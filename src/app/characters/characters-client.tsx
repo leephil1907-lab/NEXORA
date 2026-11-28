@@ -1,0 +1,29 @@
+"use client";
+import { useCallback, useEffect, useState } from "react";
+import Link from "next/link";
+import { Bot, Plus, Trash2, MessageCircle, RefreshCw, UserRound, Sparkles } from "lucide-react";
+type Character = { id:string; name:string; description:string; persona_prompt:string; visual_prompt:string; tags:string[]; referenceUrl?:string|null; created_at:string };
+export function CharactersClient() {
+  const [items,setItems]=useState<Character[]>([]), [busy,setBusy]=useState(false), [error,setError]=useState("");
+  const [name,setName]=useState(""), [description,setDescription]=useState(""), [persona,setPersona]=useState("Curious, warm, articulate, observant, and consistent in personality. Speak naturally and remember the character's fictional background."), [visual,setVisual]=useState("");
+  const load=useCallback(async()=>{setBusy(true);try{const r=await fetch("/api/characters",{cache:"no-store"});const d=await r.json();if(!r.ok)throw new Error(d.error||"Could not load characters");setItems(d.characters||[]);setError("");}catch(e){setError(e instanceof Error?e.message:"Could not load characters");}finally{setBusy(false);}},[]);
+  useEffect(()=>{void load();},[load]);
+  async function create(e:React.FormEvent){e.preventDefault();setBusy(true);setError("");try{const r=await fetch("/api/characters",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({name,description,personaPrompt:persona,visualPrompt:visual})});const d=await r.json();if(!r.ok)throw new Error(d.error||"Could not save character");setName("");setDescription("");setVisual("");await load();}catch(e){setError(e instanceof Error?e.message:"Could not save character");}finally{setBusy(false);}}
+  async function remove(id:string){if(!confirm("Delete this character?"))return;const r=await fetch("/api/characters/"+id,{method:"DELETE"});if(r.ok)await load();else setError("Could not delete character.");}
+  return <main className="mx-auto w-full max-w-[1400px] px-5 py-8">
+    <section className="rounded-3xl border border-line bg-panel p-7 sm:p-9"><p className="flex items-center gap-2 text-[10px] font-bold uppercase tracking-[.2em] text-lime"><UserRound size={14}/> Character library</p><h1 className="mt-3 font-display text-3xl font-extrabold text-white sm:text-4xl">Build characters that stay consistent.</h1><p className="mt-3 max-w-2xl text-sm leading-relaxed text-muted">Save fictional identities, personalities and visual direction. Reuse each character in AI chat and carry the same creative brief into Studio.</p></section>
+    {error&&<p className="mt-4 rounded-xl border border-rose/30 bg-rose/10 p-3 text-xs text-rose">{error}</p>}
+    <div className="mt-6 grid gap-5 lg:grid-cols-[380px_1fr]">
+      <form onSubmit={create} className="h-fit space-y-3 rounded-2xl border border-line bg-panel p-5"><h2 className="flex items-center gap-2 text-sm font-semibold text-white"><Plus size={15} className="text-lime"/> New character</h2>
+        <label className="block text-[11px] text-muted">Name<input required maxLength={80} value={name} onChange={e=>setName(e.target.value)} className="field mt-1" placeholder="e.g. Nova"/></label>
+        <label className="block text-[11px] text-muted">Short description<input maxLength={500} value={description} onChange={e=>setDescription(e.target.value)} className="field mt-1" placeholder="Who is this character?"/></label>
+        <label className="block text-[11px] text-muted">Personality and backstory<textarea required maxLength={4000} rows={5} value={persona} onChange={e=>setPersona(e.target.value)} className="field mt-1 resize-y"/></label>
+        <label className="block text-[11px] text-muted">Visual identity prompt<textarea maxLength={2500} rows={3} value={visual} onChange={e=>setVisual(e.target.value)} className="field mt-1 resize-y" placeholder="Appearance, wardrobe, visual style…"/></label>
+        <button disabled={busy} className="btn-primary flex w-full items-center justify-center gap-2 text-xs"><Sparkles size={13}/>{busy?"Saving…":"Save character"}</button>
+      </form>
+      <section><div className="mb-3 flex items-center justify-between"><h2 className="text-sm font-semibold text-white">Your characters <span className="ml-1 text-dim">({items.length})</span></h2><button onClick={()=>void load()} className="btn-secondary !px-3 !py-2 text-[10px]"><RefreshCw size={12}/> Refresh</button></div>
+        {items.length===0?<div className="rounded-2xl border border-dashed border-line p-12 text-center"><Bot size={28} className="mx-auto text-lime"/><p className="mt-3 text-sm font-semibold text-white">Your character library is empty</p><p className="mt-1 text-xs text-muted">Create your first fictional character to start a persistent chat.</p></div>:<div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">{items.map(c=><article key={c.id} className="rounded-2xl border border-line bg-panel p-4"><div className="flex items-start justify-between"><span className="grid h-10 w-10 place-items-center rounded-xl bg-lime/10 text-lime"><Bot size={18}/></span><button onClick={()=>void remove(c.id)} aria-label="Delete character" className="rounded-lg p-2 text-dim hover:bg-rose/10 hover:text-rose"><Trash2 size={14}/></button></div><h3 className="mt-3 text-sm font-semibold text-white">{c.name}</h3><p className="mt-1 line-clamp-2 text-[11px] leading-relaxed text-muted">{c.description||c.persona_prompt}</p>{c.visual_prompt&&<p className="mt-2 line-clamp-2 text-[10px] text-dim">Visual: {c.visual_prompt}</p>}<div className="mt-4 flex flex-wrap gap-2"><Link href={"/chat?characterId="+c.id} className="btn-primary inline-flex items-center gap-1.5 !px-3 !py-2 text-[10px]"><MessageCircle size={12}/> Chat with character</Link><Link href={"/studio?characterId="+c.id} className="btn-secondary !px-3 !py-2 text-[10px]">Use in Studio</Link></div></article>)}</div>}
+      </section>
+    </div>
+  </main>;
+}
