@@ -140,7 +140,7 @@ export function Workspace({ view = "create", tool }: { view?: "create" | "librar
   /* ------------------------------- model state ------------------------------ */
 
   const modelsForKind = useMemo(
-    () => config.models.filter((m) => m.modality === kind),
+    () => config.models.filter((m) => m.modality === kind && m.ready),
     [config.models, kind]
   );
   const currentModel: CatalogModelPublic | undefined = useMemo(
@@ -1119,23 +1119,12 @@ export function Workspace({ view = "create", tool }: { view?: "create" | "librar
                         </p>
                       </div>
                     </div>
-                    <button
-                      type="button"
-                      role="switch"
-                      aria-checked={Boolean(caps?.audio && audio)}
-                      disabled={!caps?.audio}
-                      onClick={() => setAudio((v) => !v)}
-                      className={cn(
-                        "relative h-6 w-11 rounded-full transition-colors duration-200",
-                        caps?.audio && audio ? "bg-lime" : "bg-white/12",
-                        !caps?.audio && "cursor-not-allowed opacity-40"
-                      )}
-                    >
-                      <span className={cn(
-                        "absolute top-0.5 h-5 w-5 rounded-full bg-white transition-transform duration-200",
-                        caps?.audio && audio ? "translate-x-[22px]" : "translate-x-0.5"
-                      )} />
-                    </button>
+                    <span className={cn(
+                      "rounded-full border px-3 py-1.5 text-[10px] font-semibold",
+                      caps?.audio ? "border-cyan/25 bg-cyan/10 text-cyan" : "border-line bg-white/[0.02] text-dim"
+                    )}>
+                      {caps?.audio ? "Audio output supported" : "Silent video"}
+                    </span>
                   </div>
 
                   <div className="flex items-center justify-between gap-4 rounded-2xl border border-line bg-white/[0.02] px-4 py-3">
