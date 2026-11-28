@@ -6,7 +6,7 @@ import { Logo } from "@/components/ui/logo";
 import { LayoutGrid, Layers, ListChecks, MessageSquareText, Sparkles, UserRound, Bot, Workflow, KeyRound } from "lucide-react";
 
 const LINKS = [
-  { href: "/tools", label: "Tools", icon: LayoutGrid },
+  { href: "/tools", label: "Explore", icon: LayoutGrid },
   { href: "/templates", label: "Templates", icon: Layers },
   { href: "/cases", label: "Cases", icon: Workflow },
   { href: "/workflows", label: "Flows", icon: Workflow },
