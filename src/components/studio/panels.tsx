@@ -141,13 +141,15 @@ export function JobView({
   canExtend,
   onFavorite,
   onRate,
-  onExtend
+  onExtend,
+  onUseImage
 }: {
   job: Job;
   canExtend: boolean;
   onFavorite?: (job: Job) => void;
   onRate?: (job: Job, rating: 1 | -1 | null) => void;
   onExtend?: (job: Job) => void;
+  onUseImage?: (job: Job) => void;
 }) {
   const pending = job.status === "queued" || job.status === "processing" || job.status === "storage_failed";
   return (
@@ -245,6 +247,11 @@ export function JobView({
               <ThumbsDown size={14} />
             </button>
           </div>
+          {job.kind === "image" && job.status === "succeeded" && job.asset_path && onUseImage && (
+            <button type="button" onClick={() => onUseImage(job)} className="btn-primary !py-2 text-xs">
+              <Film size={13} /> Use image for video
+            </button>
+          )}
           {canExtend && job.kind === "video" && onExtend && (
             <button type="button" onClick={() => onExtend(job)} className="btn-secondary !py-2 text-xs">
               <Timer size={13} /> Extend +5s
