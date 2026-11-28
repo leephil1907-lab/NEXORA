@@ -154,7 +154,7 @@ export function ChatClient({ initialPrompt = "", initialCharacterId = "" }: { in
             Chat <span className="mx-1.5 text-white/20">/</span>
             <span className="text-white/80">{characterName ? "Character · " + characterName : selectedLabel}</span>
           </p>
-          {selected && <span className="pill border-lime/25 bg-lime/10 text-lime"><Bot size={11} /> Connected</span>}
+          {(engines.gemini || engines.omega || engines.venice) && <span className="pill border-lime/25 bg-lime/10 text-lime"><Bot size={11} /> Connected</span>}
         </div>
 
         <div className="flex-1 space-y-4 overflow-y-auto px-5 py-6" style={{ maxHeight: "62vh" }}>
