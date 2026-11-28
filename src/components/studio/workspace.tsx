@@ -80,7 +80,7 @@ export function Workspace() {
   const [libraryFilter, setLibraryFilter] = useState<LibraryFilter>("all");
 
   // Compose state
-  const [kind, setKind] = useState<"image" | "video">("image");
+  const [kind, setKind] = useState<"image" | "video">(searchParams.get("kind") === "video" ? "video" : "image");
   const [prompt, setPrompt] = useState(initialPrompt);
   const [modelId, setModelId] = useState("");
   const [duration, setDuration] = useState(5);
