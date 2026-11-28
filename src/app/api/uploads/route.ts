@@ -11,6 +11,28 @@ const allowedTypes: Record<string, string> = {
   "image/webp": "webp"
 };
 
+export async function GET(request: Request) {
+  let supabase;
+  try { supabase = await createClient(); } catch {
+    return NextResponse.json({ error: "Authentication service is unavailable." }, { status: 503 });
+  }
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) return NextResponse.json({ error: "Sign in to load this reference image." }, { status: 401 });
+  const admin = createAdminClient();
+  const { data: ageProfile, error: ageError } = await admin.from("profiles")
+    .select("age_verified_at").eq("id", user.id).single();
+  if (ageError || !ageProfile?.age_verified_at) {
+    return NextResponse.json({ code: "AGE_VERIFICATION_REQUIRED", error: "Complete 18+ verification first." }, { status: 403 });
+  }
+  const path = new URL(request.url).searchParams.get("path") || "";
+  if (!path.startsWith(`${user.id}/`) || path.includes("..") || path.startsWith("/") || path.includes("\\\\")) {
+    return NextResponse.json({ error: "Reference asset path is invalid." }, { status: 400 });
+  }
+  const { data, error } = await admin.storage.from("lumi-assets").createSignedUrl(path, 3600);
+  if (error || !data) return NextResponse.json({ error: "Reference image is unavailable." }, { status: 404 });
+  return NextResponse.json({ path, signedUrl: data.signedUrl });
+}
+
 export async function POST(request: Request) {
   let supabase;
   try { supabase = await createClient(); } catch {
