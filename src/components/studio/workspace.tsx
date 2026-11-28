@@ -6,7 +6,7 @@ import Image from "next/image";
 import Link from "next/link";
 import type { User } from "@supabase/supabase-js";
 import {
-  AlertTriangle, ArrowUpRight, Camera, ChevronDown, Cpu, Film,
+  AlertTriangle, ArrowUpRight, Camera, ChevronDown, Film,
   Gauge, Image as ImageIcon, LayoutGrid, Library, LoaderCircle, LogOut, MessageSquare, Plus, ShieldAlert,
   ShieldCheck, Sparkles, Timer, Trash2, UploadCloud, Volume2, WandSparkles, Zap
 } from "lucide-react";
