@@ -188,30 +188,52 @@ export function Workspace({ view = "create", tool }: { view?: "create" | "librar
   /* ------------------------------- data loading ------------------------------ */
 
   const refreshAccount = useCallback(async () => {
-    if (!supabase) return;
-    const { data: { user: currentUser } } = await supabase.auth.getUser();
-    setUser(currentUser);
-    if (!currentUser) return;
-    const { data } = await supabase.from("profiles").select("credits,role,age_verified_at").eq("id", currentUser.id).single();
-    if (data) {
-      setAgeVerified(Boolean(data.age_verified_at));
-      setCredits(data.credits);
-      const isAdmin = data.role === "admin";
-      setRole(isAdmin ? "admin" : "customer");
-      if (isAdmin) {
-        const adminResponse = await fetch("/api/admin/credits", { cache: "no-store" });
-        if (adminResponse.ok) {
-          const adminPayload = await adminResponse.json();
-          setAdminUsers(adminPayload.users || []);
-        }
-      } else {
-        setAdminUsers([]);
-      }
+    if (!supabase) {
+      setReady(true);
+      return;
     }
-    const response = await fetch("/api/generations?limit=18", { cache: "no-store" });
-    if (response.ok) {
-      const payload = await response.json();
-      setJobs(payload.generations || []);
+
+    try {
+      const { data: { user: currentUser } } = await supabase.auth.getUser();
+      setUser(currentUser);
+      // Reveal the workspace as soon as authentication is known. Profile,
+      // history and admin data load in parallel without blocking first paint.
+      setReady(true);
+      if (!currentUser) return;
+
+      const [profileResult, generationsResponse] = await Promise.all([
+        supabase.from("profiles")
+          .select("credits,role,age_verified_at")
+          .eq("id", currentUser.id)
+          .single(),
+        fetch("/api/generations?limit=18", { cache: "no-store" }),
+      ]);
+
+      const { data } = profileResult;
+      if (data) {
+        setAgeVerified(Boolean(data.age_verified_at));
+        setCredits(data.credits);
+        const isAdmin = data.role === "admin";
+        setRole(isAdmin ? "admin" : "customer");
+        if (isAdmin) {
+          const adminResponse = await fetch("/api/admin/credits", { cache: "no-store" });
+          if (adminResponse.ok) {
+            const adminPayload = await adminResponse.json();
+            setAdminUsers(adminPayload.users || []);
+          }
+        } else {
+          setAdminUsers([]);
+        }
+      }
+
+      if (generationsResponse.ok) {
+        const payload = await generationsResponse.json();
+        setJobs(payload.generations || []);
+      }
+    } catch {
+      // Keep the authenticated shell usable; secondary account data can retry
+      // on the next auth event or user action.
+      setReady(true);
     }
   }, [supabase]);
 
