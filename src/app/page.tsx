@@ -4,9 +4,9 @@ import { Footer } from "@/components/site/footer";
 import { HomeHub } from "@/components/site/home-hub";
 
 export const metadata: Metadata = {
-  title: "NEXORA AI — NSFW AI Image & Video Studio (18+)",
+  title: "NEXORA — Creative Image & Video Studio",
   description:
-    "Advanced AI image and video generation for consenting adults: text to image, image editor, pose generator, text to video, image to video, video studio with native sound. Real engines, no placeholders.",
+    "A focused creative studio for image generation, image editing, portraits, product photography, fashion concepts, text-to-video and image-to-video.",
 };
 
 export default function HomePage() {
