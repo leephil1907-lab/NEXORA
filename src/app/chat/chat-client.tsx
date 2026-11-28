@@ -7,19 +7,7 @@ import {
   Send, Server, ShieldCheck, Sparkles,
 } from "lucide-react";
 
-type LlmPublic = {
-  id: string;
-  label: string;
-  family: string;
-  sizeNote: string;
-  runtime: "local" | "hosted";
-  hfRepo?: string;
-  hfRepoVerified: boolean;
-  pullHint?: string;
-  vramNote?: string;
-  hostedVia?: "omega" | "venice";
-  note?: string;
-};
+type LlmPublic = { id: string; label: string };
 
 type Engines = {
   selfHostedLlm?: boolean;
@@ -28,17 +16,8 @@ type Engines = {
   venice?: boolean;
 };
 
-type Device = { id: string; name: string; status: string; last_seen_at: string | null };
-
-type ChatMessage = {
-  role: "user" | "assistant";
-  content: string;
-  via?: string;
-  detail?: string;
-};
-
 const VIA_LABEL: Record<string, string> = {
-  "local-device": "Your machine · local companion",
+  gemini: "Google Gemini",
   "local-endpoint": "Self-hosted endpoint",
   omega: "Omega AI hosted",
   venice: "Venice.ai hosted",
@@ -47,7 +26,6 @@ const VIA_LABEL: Record<string, string> = {
 export function ChatClient({ initialPrompt = "" }: { initialPrompt?: string }) {
   const [models, setModels] = useState<LlmPublic[]>([]);
   const [engines, setEngines] = useState<Engines>({});
-  const [devices, setDevices] = useState<Device[] | null>(null);
   const [modelId, setModelId] = useState("");
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [input, setInput] = useState(initialPrompt);
@@ -74,8 +52,6 @@ export function ChatClient({ initialPrompt = "" }: { initialPrompt?: string }) {
       if (cancelled) return;
       if (devicesResponse.status === 401) { setAuthState("signed-out"); return; }
       if (devicesResponse.status === 403) { setAuthState("age-required"); return; }
-      const devicesPayload = await devicesResponse.json().catch(() => ({}));
-      setDevices(Array.isArray(devicesPayload.devices) ? devicesPayload.devices : []);
       setAuthState("ready");
     })();
     return () => { cancelled = true; };
@@ -84,11 +60,6 @@ export function ChatClient({ initialPrompt = "" }: { initialPrompt?: string }) {
   useEffect(() => {
     threadEndRef.current?.scrollIntoView({ behavior: "smooth", block: "end" });
   }, [messages, busy]);
-
-  const activeDevice = devices?.find(
-    (device) => device.status === "active" && device.last_seen_at &&
-      Date.now() - new Date(device.last_seen_at).getTime() < 90_000
-  );
 
   const send = useCallback(async () => {
     const content = input.trim();
@@ -167,13 +138,13 @@ export function ChatClient({ initialPrompt = "" }: { initialPrompt?: string }) {
             </li>
           </ul>
           <p className="mt-3 border-t border-line pt-3 text-[10px] leading-relaxed text-dim">
-            Chat runs real inference on the connected engines. Self-hosted endpoints take priority; hosted engines fill in when configured.
+            Messages are sent to a connected inference provider. Gemini is used first when configured; available hosted fallbacks are shown above.
           </p>
         </div>
 
         <div className="rounded-2xl border border-line bg-panel p-5">
           <p className="flex items-center gap-2 text-[10px] font-semibold uppercase tracking-[0.22em] text-dim">
-            <MessageSquare size={12} className="text-lime" /> Uncensored models
+            <MessageSquare size={12} className="text-lime" /> Connected model
           </p>
           <div className="mt-3 space-y-1.5">
             {models.map((model) => {
@@ -183,32 +154,18 @@ export function ChatClient({ initialPrompt = "" }: { initialPrompt?: string }) {
                   key={model.id}
                   type="button"
                   onClick={() => setModelId(model.id)}
-                  className={`w-full rounded-xl border px-3 py-2.5 text-left transition-colors duration-200 ${
+                  className={`w-full rounded-xl border px-3 py-3 text-left transition-colors duration-200 ${
                     active ? "border-lime/40 bg-lime/10" : "border-line bg-white/[0.02] hover:border-white/15"
                   }`}
                 >
                   <span className="flex items-center justify-between gap-2">
                     <span className="text-[11px] font-semibold text-white/90">{model.label}</span>
-                    <span className={`rounded-full px-1.5 py-0.5 text-[8px] font-bold uppercase tracking-wider ${model.runtime === "local" ? "bg-lime/15 text-lime" : "bg-cyan/15 text-cyan"}`}>
-                      {model.runtime === "local" ? "local" : "hosted"}
-                    </span>
+                    <span className="rounded-full bg-cyan/15 px-1.5 py-0.5 text-[8px] font-bold uppercase tracking-wider text-cyan">connected</span>
                   </span>
-                  <span className="mt-1 block text-[9px] text-dim">{model.sizeNote} · {model.vramNote || "—"}</span>
                 </button>
               );
             })}
           </div>
-          {selected?.hfRepo && (
-            <a
-              href={`https://huggingface.co/${selected.hfRepo}`}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="mt-3 inline-flex items-center gap-1 text-[10px] font-semibold text-cyan hover:underline"
-            >
-              {selected.hfRepoVerified ? "Verified build" : "Build"}: {selected.hfRepo} <ArrowUpRight size={10} />
-            </a>
-          )}
-          {selected?.note && <p className="mt-2 text-[9px] leading-relaxed text-dim">{selected.note}</p>}
         </div>
       </aside>
 
@@ -217,13 +174,9 @@ export function ChatClient({ initialPrompt = "" }: { initialPrompt?: string }) {
         <div className="flex items-center justify-between gap-3 border-b border-line px-5 py-3.5">
           <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-dim">
             Chat <span className="mx-1.5 text-white/20">/</span>
-            <span className="text-white/80">{selected?.label ?? "uncensored model"}</span>
+            <span className="text-white/80">{selected?.label ?? "AI assistant"}</span>
           </p>
-          {selected && (
-            <span className="pill border-lime/25 bg-lime/10 text-lime">
-              <Bot size={11} /> {selected.runtime === "local" ? "Runs on your machine" : "Hosted"}
-            </span>
-          )}
+          {selected && <span className="pill border-lime/25 bg-lime/10 text-lime"><Bot size={11} /> Connected</span>}
         </div>
 
         <div className="flex-1 space-y-4 overflow-y-auto px-5 py-6" style={{ maxHeight: "62vh" }}>
@@ -234,9 +187,9 @@ export function ChatClient({ initialPrompt = "" }: { initialPrompt?: string }) {
           {authState === "signed-out" && (
             <div className="py-14 text-center">
               <MessageSquare size={28} className="mx-auto text-lime" />
-              <p className="mt-4 text-sm font-semibold text-white">Sign in to chat with your local models</p>
+              <p className="mt-4 text-sm font-semibold text-white">Sign in to use AI Chat</p>
               <p className="mx-auto mt-2 max-w-sm text-xs leading-relaxed text-muted">
-                Chat runs real inference — your machine first, hosted engines as fallback. Sign in and complete the 18+ check to start.
+                Chat uses the connected hosted inference service. Sign in and complete the 18+ check to start.
               </p>
               <Link href="/sign-in" className="btn-primary mt-5 inline-flex !px-5 !py-2.5 text-xs">Sign in</Link>
             </div>
@@ -256,10 +209,9 @@ export function ChatClient({ initialPrompt = "" }: { initialPrompt?: string }) {
           {authState === "ready" && messages.length === 0 && (
             <div className="py-14 text-center">
               <Sparkles size={26} className="mx-auto text-lime" />
-              <p className="mt-4 text-sm font-semibold text-white">No filters. Your hardware. Your rules.</p>
+              <p className="mt-4 text-sm font-semibold text-white">Your creative assistant.</p>
               <p className="mx-auto mt-2 max-w-md text-xs leading-relaxed text-muted">
-                Pick an uncensored model on the left and start typing. If your local companion is offline, the
-                request falls back to hosted engines only when they are configured — never to canned responses.
+                Choose the connected model and ask for help with prompts, ideas or creative planning.
               </p>
             </div>
           )}
@@ -287,7 +239,7 @@ export function ChatClient({ initialPrompt = "" }: { initialPrompt?: string }) {
             <div className="flex justify-start">
               <div className="flex items-center gap-2 rounded-2xl border border-line bg-white/[0.03] px-4 py-3 text-xs text-muted">
                 <LoaderCircle size={13} className="animate-spin text-lime" />
-                {activeDevice ? `Running on ${activeDevice.name}…` : "Running inference…"}
+                Running inference…
               </div>
             </div>
           )}
@@ -313,7 +265,7 @@ export function ChatClient({ initialPrompt = "" }: { initialPrompt?: string }) {
                   }
                 }}
                 rows={2}
-                placeholder="Message your uncensored model… (Enter to send, Shift+Enter for a new line)"
+                placeholder="Message the assistant… (Enter to send, Shift+Enter for a new line)"
                 className="field min-h-[52px] flex-1 resize-y"
               />
               <button type="button" onClick={() => void send()} disabled={busy || !input.trim()} className="btn-primary !px-4 !py-3">
