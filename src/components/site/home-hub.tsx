@@ -135,7 +135,7 @@ const IMAGE_TOOLS: ToolCard[] = [
   {
     slug: "text-to-image",
     name: "Text-to-Image",
-    description: "Create a new image from a prompt with the connected FLUX model.",
+    description: "Create a new image from a prompt with the connected Gemini image engine.",
     icon: Wand2,
     badge: { label: "New", tone: "lime" },
   },
@@ -295,7 +295,7 @@ export function HomeHub() {
             transition={{ duration: 0.55, delay: 0.35, ease: [0.22, 1, 0.36, 1] }}
             className="mt-5 max-w-xl text-base leading-relaxed text-muted sm:text-lg"
           >
-            Professional creative tools for images, video, editing, posing and video with native sound —
+            Professional creative tools for images, video, reference editing, and cinematic motion —
             all in one place.
           </motion.p>
 
