@@ -86,7 +86,6 @@ export const MODEL_CATALOG: ModelEntry[] = [
     modality: "video",
     provider: "replicate",
     replicateModel: "lightricks/ltx-video-0.9.7-distilled",
-    replicateVersion: "e7f2778ec419047c564a6620b2d9bf7d6c64673411bf2ae13e628ee2b2c0b5b1",
     source: "Replicate · Lightricks",
     tagline: "Fast text, image or video guided generation and clip continuation.",
     durations: [5, 10],
