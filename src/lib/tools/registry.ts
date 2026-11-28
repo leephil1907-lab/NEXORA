@@ -26,12 +26,11 @@ export const TOOLS: ToolEntry[] = [
     category: "Images",
     kind: "image",
     workflow: "text-to-image",
-    desc: "Create a new image from a written prompt using the connected FLUX model.",
+    desc: "Create a new image from a written prompt using the connected Gemini image engine.",
     tag: "Prompt to image",
     badge: "New",
     needsReference: false,
     steps: ["Describe the image", "Choose the aspect ratio", "Generate", "Save or animate"],
-    preferredModelId: "flux-schnell",
     promptTemplate: "A cinematic editorial image, soft directional light, rich natural textures, precise composition",
   },
   {
@@ -40,12 +39,11 @@ export const TOOLS: ToolEntry[] = [
     category: "Images",
     kind: "image",
     workflow: "image-edit",
-    desc: "Upload an image and describe the changes you want. Powered by FLUX Kontext.",
+    desc: "Upload an image and describe the changes you want. Uses Gemini reference-image editing.",
     tag: "Reference image",
     badge: "Pro",
     needsReference: true,
     steps: ["Upload an image", "Describe the edit", "Generate", "Compare and save"],
-    preferredModelId: "flux-kontext-dev",
   },
   {
     slug: "text-to-video",
@@ -57,7 +55,6 @@ export const TOOLS: ToolEntry[] = [
     tag: "Prompt to video",
     needsReference: false,
     steps: ["Describe the scene", "Choose duration and format", "Generate", "Preview and download"],
-    preferredModelId: "wan-2.5-t2v",
     promptTemplate: "A cinematic tracking shot, atmospheric lighting, natural movement, rich film detail",
   },
   {
@@ -71,7 +68,6 @@ export const TOOLS: ToolEntry[] = [
     badge: "Hot",
     needsReference: true,
     steps: ["Upload or choose an image", "Describe the motion", "Generate", "Preview and download"],
-    preferredModelId: "wan-2.5-i2v",
     promptTemplate: "Natural subtle motion, smooth camera drift, realistic lighting preserved",
   },
 
