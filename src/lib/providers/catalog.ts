@@ -3,6 +3,7 @@ import type { ModelEntry, ModelCapabilities } from "./types";
 const cap = (partial: Partial<ModelCapabilities>): ModelCapabilities => ({
   textToVideo: false,
   imageToVideo: false,
+  referenceImage: false,
   startEndFrame: false,
   videoExtend: false,
   audio: false,
@@ -170,6 +171,18 @@ export const MODEL_CATALOG: ModelEntry[] = [
     durations: [0],
     resolutions: ["1080p"],
     capabilities: cap({ textToVideo: true, directAspect: true }),
+  },
+  {
+    id: "flux-kontext-dev",
+    label: "FLUX.1 Kontext [dev]",
+    modality: "image",
+    provider: "replicate",
+    replicateModel: "black-forest-labs/flux-kontext-dev",
+    source: "Replicate · Black Forest Labs",
+    tagline: "Instruction-based image editing. Upload a reference and describe the change — restyle, relight, repose.",
+    durations: [0],
+    resolutions: ["1080p"],
+    capabilities: cap({ textToVideo: true, referenceImage: true, directAspect: true }),
   },
   {
     id: "moss-gguf-lora",

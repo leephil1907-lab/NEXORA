@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import {
-  AlertTriangle, ArrowUpRight, Bot, CheckCircle2, Cpu, LoaderCircle, MessageSquare,
+  ArrowUpRight, Bot, CheckCircle2, Cpu, LoaderCircle, MessageSquare,
   Send, Server, ShieldCheck, Sparkles,
 } from "lucide-react";
 
@@ -23,6 +23,7 @@ type LlmPublic = {
 
 type Engines = {
   selfHostedLlm?: boolean;
+  gemini?: boolean;
   omega?: boolean;
   venice?: boolean;
 };
@@ -133,14 +134,14 @@ export function ChatClient({ initialPrompt = "" }: { initialPrompt?: string }) {
       <aside className="space-y-5">
         <div className="rounded-2xl border border-line bg-panel p-5">
           <p className="flex items-center gap-2 text-[10px] font-semibold uppercase tracking-[0.22em] text-dim">
-            <Cpu size={12} className="text-lime" /> Engine chain — local first
+            <Cpu size={12} className="text-lime" /> Engine chain
           </p>
           <ul className="mt-3 space-y-2 text-[11px]">
             <li className="flex items-center gap-2">
-              {activeDevice ? (
-                <><CheckCircle2 size={13} className="text-mint" /><span className="text-white/85">Local companion · <strong>{activeDevice.name}</strong></span></>
+              {engines.gemini ? (
+                <><CheckCircle2 size={13} className="text-mint" /><span className="text-white/85">Gemini hosted — connected</span></>
               ) : (
-                <><AlertTriangle size={13} className="text-amber" /><span className="text-muted">Local companion — no device online (<Link className="text-cyan hover:underline" href="/studio/local">pair one</Link>)</span></>
+                <><Sparkles size={13} className="text-dim" /><span className="text-muted">Gemini hosted — not configured</span></>
               )}
             </li>
             <li className="flex items-center gap-2">
@@ -166,7 +167,7 @@ export function ChatClient({ initialPrompt = "" }: { initialPrompt?: string }) {
             </li>
           </ul>
           <p className="mt-3 border-t border-line pt-3 text-[10px] leading-relaxed text-dim">
-            Requests always try your machine first. Hosted engines only run when your local engine is offline or fails.
+            Chat runs real inference on the connected engines. Self-hosted endpoints take priority; hosted engines fill in when configured.
           </p>
         </div>
 
@@ -248,7 +249,7 @@ export function ChatClient({ initialPrompt = "" }: { initialPrompt?: string }) {
               <p className="mx-auto mt-2 max-w-sm text-xs leading-relaxed text-muted">
                 Adults only. Open the studio to complete NEXORA&apos;s age verification, then come back to chat.
               </p>
-              <Link href="/" className="btn-primary mt-5 inline-flex !px-5 !py-2.5 text-xs">Open studio</Link>
+              <Link href="/studio" className="btn-primary mt-5 inline-flex !px-5 !py-2.5 text-xs">Open studio</Link>
             </div>
           )}
 

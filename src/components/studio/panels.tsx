@@ -72,18 +72,18 @@ export function SignedOutScreen() {
             Your studio awaits.
           </h1>
           <p className="mt-4 text-sm leading-relaxed text-muted">
-            Sign in to run real generations on your own machine first, chat with uncensored
-            models, and keep every asset in your private library. No demo data — just your work.
+            Sign in to run real generations in the studio, chat with the assistant, and keep
+            every asset in your private library. No demo data — just your work.
           </p>
           <div className="mt-8 flex flex-col items-center justify-center gap-3 sm:flex-row sm:flex-wrap">
             <Link href="/sign-in?next=%2F" className="btn-primary whitespace-nowrap">
               Sign in to continue <ArrowUpRight size={16} />
             </Link>
-            <Link href="/models" className="btn-secondary whitespace-nowrap">Browse models</Link>
+            <Link href="/tools" className="btn-secondary whitespace-nowrap">Browse tools</Link>
             <Link href="/chat" className="btn-secondary whitespace-nowrap">Uncensored chat</Link>
           </div>
           <p className="mt-7 text-[11px] text-dim">
-            Local-first engines · Passwordless access · Private storage · Automatic failure refunds
+            Real engines · Passwordless access · Private storage · Automatic failure refunds
           </p>
         </div>
       </div>
@@ -97,7 +97,7 @@ export function SensitiveGate({ onAccept, onCancel }: { onAccept: () => void; on
   const [adult, setAdult] = useState(false);
   const [rules, setRules] = useState(false);
   return (
-    <div className="fixed inset-0 z-[80] grid place-items-center bg-ink/80 px-6 backdrop-blur-md">
+    <div className="fixed inset-0 z-[80] grid place-items-center bg-ink/80 px-6">
       <div className="glass-strong w-full max-w-md rounded-[1.5rem] p-8">
         <div className="flex items-start justify-between gap-4">
           <span className="grid h-11 w-11 place-items-center rounded-2xl bg-rose/12 text-rose">
@@ -386,7 +386,7 @@ export function LibraryGrid({
                 </div>
               )}
               <div className="absolute left-3 top-3">
-                <StatusChip status={job.status} className="bg-ink/70 backdrop-blur-md" />
+                <StatusChip status={job.status} className="bg-ink/70" />
               </div>
               {job.favorite && (
                 <span className="absolute right-3 top-3 text-amber"><Star size={13} fill="currentColor" /></span>

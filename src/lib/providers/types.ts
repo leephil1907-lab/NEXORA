@@ -79,6 +79,8 @@ export type ProviderJob = {
 export type ModelCapabilities = {
   textToVideo: boolean;
   imageToVideo: boolean;
+  /** Accepts a reference image for editing / pose-guided generation. */
+  referenceImage: boolean;
   /** Accepts a second image as the final frame. */
   startEndFrame: boolean;
   /** Accepts a previous clip to continue from (Extend). */

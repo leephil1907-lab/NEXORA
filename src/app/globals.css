@@ -55,8 +55,6 @@ img, video { max-width: 100%; display: block; }
     border: 1px solid rgba(207, 226, 249, .17);
     border-radius: 22px;
     box-shadow: 0 22px 65px rgba(0,0,0,.28), inset 0 1px 0 rgba(255,255,255,.17), inset 0 -1px 0 rgba(255,255,255,.035);
-    -webkit-backdrop-filter: blur(28px) saturate(155%);
-    backdrop-filter: blur(28px) saturate(155%);
   }
   .glass::before, .glass-strong::before {
     content: ""; position: absolute; inset: 0; border-radius: inherit; pointer-events: none; z-index: -1;
@@ -74,15 +72,12 @@ img, video { max-width: 100%; display: block; }
       linear-gradient(145deg, rgba(34, 47, 69, .78), rgba(12, 18, 30, .84));
     border-color: rgba(215, 232, 250, .23);
     box-shadow: 0 26px 80px rgba(0,0,0,.34), inset 0 1px 0 rgba(255,255,255,.2), inset 0 -1px 0 rgba(255,255,255,.05);
-    -webkit-backdrop-filter: blur(34px) saturate(170%);
-    backdrop-filter: blur(34px) saturate(170%);
   }
   .liquid-surface {
     position: relative; isolation: isolate; overflow: hidden;
     background: linear-gradient(135deg, rgba(255,255,255,.105), rgba(255,255,255,.025) 42%, rgba(118,216,246,.055));
     border: 1px solid rgba(215,232,250,.2);
     box-shadow: inset 0 1px 0 rgba(255,255,255,.2), 0 12px 36px rgba(0,0,0,.18);
-    -webkit-backdrop-filter: blur(22px) saturate(160%); backdrop-filter: blur(22px) saturate(160%);
   }
   .gradient-text { background: var(--grad-text); -webkit-background-clip: text; background-clip: text; color: transparent; }
   .eyebrow { @apply inline-flex items-center gap-2.5 text-[10px] font-semibold uppercase tracking-[.2em] text-lime; }
@@ -92,15 +87,12 @@ img, video { max-width: 100%; display: block; }
   .btn-primary:hover { filter: brightness(1.06); transform: translateY(-1px); box-shadow: 0 10px 30px rgba(114,224,177,.22); }
   .btn-primary:active { transform: translateY(0); }
   .btn-primary:disabled { opacity: .45; cursor: not-allowed; transform: none; filter: none; box-shadow: none; }
-  .btn-secondary { @apply btn px-5 py-3 text-sm text-white/90; background: rgba(255,255,255,.055); border: 1px solid var(--line-strong); -webkit-backdrop-filter: blur(18px); backdrop-filter: blur(18px); }
   .btn-secondary:hover { border-color: rgba(118,216,246,.38); background: rgba(255,255,255,.095); }
   .btn-secondary:disabled { opacity: .45; cursor: not-allowed; }
   .btn-ghost { @apply btn px-3 py-2 text-sm text-muted; }
   .btn-ghost:hover { @apply text-white; background: rgba(255,255,255,.06); }
-  .pill { @apply inline-flex items-center gap-2 rounded-full border px-3 py-1.5 text-[10px] font-medium tracking-wide text-muted; background: rgba(255,255,255,.045); border-color: var(--line); -webkit-backdrop-filter: blur(14px); backdrop-filter: blur(14px); }
   .pill-live { @apply pill; border-color: rgba(114,224,177,.3); color: #9cf0c7; background: rgba(114,224,177,.08); }
   .dot-live { @apply h-1.5 w-1.5 rounded-full bg-mint; box-shadow: 0 0 9px rgba(126,226,184,.65); animation: pulseSoft 2.2s ease-in-out infinite; }
-  .field { @apply w-full rounded-xl px-4 py-3 text-sm text-white placeholder:text-dim outline-none transition-all duration-150; background: rgba(5,9,17,.48); border: 1px solid var(--line-strong); -webkit-backdrop-filter: blur(14px); backdrop-filter: blur(14px); }
   .field:hover { border-color: rgba(160,176,210,.34); }
   .field:focus { border-color: rgba(118,216,246,.58); box-shadow: 0 0 0 3px rgba(118,216,246,.10); }
   .card-hover { @apply transition-all duration-200; }
@@ -115,7 +107,7 @@ img, video { max-width: 100%; display: block; }
   .scrollbar-none::-webkit-scrollbar { display: none; }
   .scrollbar-none { scrollbar-width: none; }
 }
-@keyframes nexora-page-enter { from { opacity: 0; transform: translate3d(0,12px,0) scale(.995); filter: blur(5px); } to { opacity: 1; transform: translate3d(0,0,0) scale(1); filter: blur(0); } }
+@keyframes nexora-page-enter { from { opacity: 0; transform: translate3d(0,12px,0) scale(.995);  } to { opacity: 1; transform: translate3d(0,0,0) scale(1); } }
 @keyframes nexora-soft-glow { 0%,100% { box-shadow: 0 0 0 0 rgba(181,243,107,0); } 50% { box-shadow: 0 0 0 5px rgba(181,243,107,.055); } }
 @keyframes nexora-orbit { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
 @keyframes liquid-drift { 0%,100% { transform: translate3d(0,0,0) scale(1); } 50% { transform: translate3d(18px,-14px,0) scale(1.06); } }

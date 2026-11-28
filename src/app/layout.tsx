@@ -28,9 +28,6 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
         <div aria-hidden className="pointer-events-none fixed inset-0 z-0 overflow-hidden">
           <div className="absolute inset-0 bg-ink" />
           <div className="absolute inset-0 grid-lines opacity-50" />
-          <div className="absolute -left-40 top-24 h-[28rem] w-[28rem] rounded-full bg-emerald-300/[.075] blur-[110px]" />
-          <div className="absolute -right-40 top-[-8rem] h-[34rem] w-[34rem] rounded-full bg-sky-300/[.09] blur-[125px]" />
-          <div className="absolute bottom-[-18rem] left-[35%] h-[32rem] w-[32rem] rounded-full bg-indigo-400/[.07] blur-[130px]" />
         </div>
         <div className="relative z-10">{children}</div>
       </body>

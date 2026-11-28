@@ -97,7 +97,7 @@ export async function POST(request: Request) {
   if (kind === "video" && settings.durationSeconds === 0) {
     return NextResponse.json({ error: "Video generations need a duration." }, { status: 400 });
   }
-  if (!model.capabilities.imageToVideo && (referenceAssetPath || endAssetPath)) {
+  if (!model.capabilities.imageToVideo && !model.capabilities.referenceImage && (referenceAssetPath || endAssetPath)) {
     return NextResponse.json({ error: `${model.label} does not accept reference images.` }, { status: 400 });
   }
   if (!model.capabilities.startEndFrame && endAssetPath) {

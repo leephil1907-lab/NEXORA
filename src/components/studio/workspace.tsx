@@ -6,9 +6,9 @@ import Image from "next/image";
 import Link from "next/link";
 import type { User } from "@supabase/supabase-js";
 import {
-  AlertTriangle, ArrowUpRight, Boxes, Camera, Check, ChevronDown, Cpu, Film,
+  AlertTriangle, ArrowUpRight, Camera, Check, ChevronDown, Cpu, Film,
   Gauge, Image as ImageIcon, LayoutGrid, Library, LoaderCircle, LogOut, MessageSquare, Plus, ShieldAlert,
-  ShieldCheck, Shirt, Sparkles, Timer, Trash2, UploadCloud, Volume2, WandSparkles, Zap
+  ShieldCheck, Sparkles, Timer, Trash2, UploadCloud, Volume2, WandSparkles, Zap
 } from "lucide-react";
 import { createClient } from "@/lib/supabase/browser";
 import { Logo } from "@/components/ui/logo";
@@ -18,6 +18,7 @@ import {
 } from "@/components/studio/panels";
 import type { AdminUser, AppConfig, CatalogModelPublic, Job } from "@/lib/generations/types";
 import type { GenerationSettingsSnapshot } from "@/lib/generations/types";
+import type { ToolEntry } from "@/lib/tools/registry";
 import { cn } from "@/lib/utils";
 
 const ASPECTS = ["16:9", "9:16", "1:1", "4:3", "3:4", "21:9"];
@@ -51,9 +52,9 @@ const defaultConfig: AppConfig = {
   models: [],
 };
 
-export function Workspace({ view = "create" }: { view?: "create" | "library" | "credits" | "admin" }) {
+export function Workspace({ view = "create", tool }: { view?: "create" | "library" | "credits" | "admin"; tool?: ToolEntry }) {
   const searchParams = useSearchParams();
-  const initialPrompt = searchParams.get("prompt")?.slice(0, 2500) ?? "";
+  const initialPrompt = (searchParams.get("prompt") ?? tool?.promptTemplate ?? "").slice(0, 2500);
 
   const supabase = useMemo(() => {
     if (!process.env.NEXT_PUBLIC_SUPABASE_URL || !process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY) return null;
@@ -80,7 +81,7 @@ export function Workspace({ view = "create" }: { view?: "create" | "library" | "
   const [libraryFilter, setLibraryFilter] = useState<LibraryFilter>("all");
 
   // Compose state
-  const [kind, setKind] = useState<"image" | "video">(searchParams.get("kind") === "video" ? "video" : "image");
+  const [kind, setKind] = useState<"image" | "video">(tool?.kind ?? (searchParams.get("kind") === "video" ? "video" : "image"));
   const [prompt, setPrompt] = useState(initialPrompt);
   const [modelId, setModelId] = useState("");
   const [duration, setDuration] = useState(5);
@@ -147,16 +148,23 @@ export function Workspace({ view = "create" }: { view?: "create" | "library" | "
 
   useEffect(() => {
     if (modelsForKind.length > 0 && !modelsForKind.some((m) => m.id === modelId)) {
-      const workflow = searchParams.get("workflow");
-      const workflowModel = workflow === "image-to-video"
+      const workflow = searchParams.get("workflow") ?? tool?.workflow;
+      const preferred = tool?.preferredModelId
+        ? modelsForKind.find((m) => m.id === tool?.preferredModelId)
+        : undefined;
+      const workflowModel = workflow === "image-to-video" || workflow === "video-audio"
         ? modelsForKind.find((m) => m.capabilities.imageToVideo)
         : workflow === "text-to-video"
           ? modelsForKind.find((m) => m.capabilities.textToVideo)
-          : undefined;
+          : workflow === "image-edit" || workflow === "pose"
+            ? modelsForKind.find((m) => m.capabilities.referenceImage)
+            : workflow === "video-extension" || workflow === "video-studio"
+              ? modelsForKind.find((m) => m.capabilities.videoExtend)
+              : undefined;
       const localFirst = modelsForKind.find((m) => m.provider === "custom-image" || m.provider === "custom-llm");
-      setModelId((workflowModel ?? localFirst ?? modelsForKind[0]).id);
+      setModelId((preferred ?? workflowModel ?? localFirst ?? modelsForKind[0]).id);
     }
-  }, [modelsForKind, modelId, searchParams]);
+  }, [modelsForKind, modelId, searchParams, tool]);
 
   useEffect(() => {
     if (!currentModel) return;
@@ -530,7 +538,7 @@ export function Workspace({ view = "create" }: { view?: "create" | "library" | "
 
   return (
     <main className="min-h-screen lg:grid lg:grid-cols-[248px_minmax(0,1fr)]">
-      <aside className="border-b border-white/[.07] bg-[#0b101a]/80 backdrop-blur-2xl lg:sticky lg:top-0 lg:h-screen lg:border-b-0 lg:border-r">
+      <aside className="border-b border-white/[.07] bg-[#0b101a] lg:sticky lg:top-0 lg:h-screen lg:border-b-0 lg:border-r">
         <div className="flex h-full flex-col p-4 sm:p-5">
           <div className="flex items-center justify-between gap-3 px-1 py-1">
             <Link href="/studio" aria-label="NEXORA home"><Logo /></Link>
@@ -553,9 +561,8 @@ export function Workspace({ view = "create" }: { view?: "create" | "library" | "
             {[
               { href: "/chat", label: "AI Chat", icon: MessageSquare },
               { href: "/tools", label: "Toolbox", icon: LayoutGrid },
-              { href: "/models", label: "Model library", icon: Boxes },
-              { href: "/studio/try-on", label: "Virtual try-on", icon: Shirt },
-              { href: "/studio/local", label: "Local companion", icon: Cpu },
+              { href: "/tasks", label: "Tasks", icon: Library },
+              { href: "/profile", label: "Profile", icon: ShieldCheck },
             ].map((item) => (
               <Link key={item.href} href={item.href} className="group flex shrink-0 items-center gap-3 rounded-xl border border-transparent px-3.5 py-3 text-[11px] font-semibold text-muted transition-all hover:border-white/10 hover:bg-white/[.045] hover:text-white">
                 <item.icon size={15} className="text-dim group-hover:text-cyan" /> {item.label}
@@ -583,8 +590,8 @@ export function Workspace({ view = "create" }: { view?: "create" | "library" | "
       </aside>
 
       <section className="min-w-0">
-        <header className="sticky top-0 z-30 flex min-h-[62px] items-center justify-between gap-3 border-b border-white/[.07] bg-[#0a0f19]/75 px-4 backdrop-blur-2xl sm:px-7">
-          <div className="flex items-center gap-2 text-[11px] font-medium text-muted"><span className="text-white/90">Workspace</span><span className="text-white/20">/</span><span className="text-lime">{view === "create" ? "Create" : view === "library" ? "Your library" : view === "credits" ? "Credits" : "Admin controls"}</span></div>
+        <header className="sticky top-0 z-30 flex min-h-[62px] items-center justify-between gap-3 border-b border-white/[.07] bg-[#0a0f19] px-4 sm:px-7">
+          <div className="flex items-center gap-2 text-[11px] font-medium text-muted"><span className="text-white/90">{tool ? "Tools" : "Workspace"}</span><span className="text-white/20">/</span><span className="text-lime">{tool ? tool.name : view === "create" ? "Create" : view === "library" ? "Your library" : view === "credits" ? "Credits" : "Admin controls"}</span></div>
           <div className="flex items-center gap-2">
             {providersReady ? <span className="pill border-mint/25 bg-mint/10 text-mint"><span className="dot-live"/> Engines connected</span> : <span className="pill border-amber/25 bg-amber/10 text-amber"><AlertTriangle size={11}/> Engines need setup</span>}
             {config.sensitiveEnabled && sensitive && <span className="pill border-rose/25 bg-rose/10 text-rose"><ShieldAlert size={11}/> 18+ mode</span>}
@@ -594,12 +601,23 @@ export function Workspace({ view = "create" }: { view?: "create" | "library" | "
         <div className="mx-auto max-w-[1540px] px-4 pb-12 pt-6 sm:px-7 sm:pt-8">
           <div id="create" className="mb-6 flex flex-wrap items-end justify-between gap-4 scroll-mt-24">
             <div>
-              <p className="text-[9px] font-bold uppercase tracking-[.22em] text-lime">{view === "create" ? "Creative workspace" : view === "library" ? "Your creations" : view === "credits" ? "Account" : "Management"}</p>
-              <h1 className="mt-2 font-display text-2xl font-bold tracking-tight text-white sm:text-[32px]">{view === "create" ? <>Create something <span className="gradient-text">remarkable.</span></> : view === "library" ? <>Your creative <span className="gradient-text">library.</span></> : view === "credits" ? <>Credits & <span className="gradient-text">usage.</span></> : <>Studio <span className="gradient-text">admin.</span></>}</h1>
-              <p className="mt-1.5 text-xs text-muted">{view === "create" ? "Images, motion and visual ideas — all in one focused space." : view === "library" ? "All your generated images and videos, in one place." : view === "credits" ? "Track your balance and understand generation costs." : "Manage member credit balances."}</p>
+              <p className="text-[9px] font-bold uppercase tracking-[.22em] text-lime">{tool ? (tool.category === "Images" ? "Image tool" : "Video tool") : view === "create" ? "Creative workspace" : view === "library" ? "Your creations" : view === "credits" ? "Account" : "Management"}</p>
+              <h1 className="mt-2 font-display text-2xl font-bold tracking-tight text-white sm:text-[32px]">{tool ? <>Create with <span className="gradient-text">{tool.name}.</span></> : view === "create" ? <>Create something <span className="gradient-text">remarkable.</span></> : view === "library" ? <>Your creative <span className="gradient-text">library.</span></> : view === "credits" ? <>Credits & <span className="gradient-text">usage.</span></> : <>Studio <span className="gradient-text">admin.</span></>}</h1>
+              <p className="mt-1.5 text-xs text-muted">{tool ? tool.desc : view === "create" ? "Images, motion and visual ideas — all in one focused space." : view === "library" ? "All your generated images and videos, in one place." : view === "credits" ? "Track your balance and understand generation costs." : "Manage member credit balances."}</p>
             </div>
             <div className="flex items-center gap-2 rounded-xl border border-white/[.08] bg-white/[.025] px-3 py-2 text-[10px] text-muted"><span className="h-1.5 w-1.5 rounded-full bg-mint"/>{displayEmail}</div>
           </div>
+
+          {tool && (
+            <div className="mb-6 grid gap-2 sm:grid-cols-4">
+              {tool.steps.map((step, index) => (
+                <div key={step} className="flex items-center gap-2.5 rounded-xl border border-line bg-white/[0.02] px-3.5 py-2.5">
+                  <span className="grid h-5 w-5 shrink-0 place-items-center rounded-full bg-lime/15 text-[9px] font-bold text-lime">{index + 1}</span>
+                  <p className="text-[10px] font-medium text-muted">{step}</p>
+                </div>
+              ))}
+            </div>
+          )}
 
           <div className={view === "create" ? "mt-8 grid gap-6 xl:grid-cols-[minmax(0,460px)_minmax(0,1fr)]" : "mt-2"}>
             {/* ============================ compose column ============================ */}

@@ -30,6 +30,12 @@ function buildInput(model: ModelEntry, args: StartJobArgs): ReplicateInput {
       // Schema: { prompt }
       return { prompt };
 
+    case "flux-kontext-dev":
+      // Schema: { prompt, input_image, aspect_ratio, ... } — instruction-based editing
+      return args.imageUrl
+        ? { prompt, input_image: args.imageUrl }
+        : { prompt };
+
     case "wan-2.2-i2v-fast":
       // Schema: { image, prompt }
       return { prompt, image: args.imageUrl ?? "" };

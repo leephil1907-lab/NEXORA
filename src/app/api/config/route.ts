@@ -52,6 +52,7 @@ export async function GET() {
       localCompanion: true,
       selfHostedLlm: assistantConfigured(),
       selfHostedImage: customImageConfigured(),
+      gemini: Boolean(process.env.GEMINI_API_KEY),
       omega: omegaConfigured(),
       venice: Boolean(process.env.VENICE_API_KEY),
       vipeak: vipeakConfigured(),
