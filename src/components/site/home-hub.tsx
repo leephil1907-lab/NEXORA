@@ -348,11 +348,11 @@ export function HomeHub() {
       {/* spotlight */}
       <Reveal className="mt-8">
         <Link
-          href="/tools/video-audio-studio"
+          href="/tools/image-to-video"
           className="group relative flex flex-col overflow-hidden rounded-[1.75rem] border border-lime/25 bg-gradient-to-br from-lime/[0.12] via-green/[0.06] to-cyan/[0.10] p-7 transition-colors duration-200 hover:border-lime/45 sm:flex-row sm:items-center sm:gap-8 sm:p-9"
         >
           <div className="grid h-14 w-14 shrink-0 place-items-center rounded-2xl border border-lime/30 bg-lime/15 text-lime">
-            <Music4 size={24} />
+            <Play size={24} />
           </div>
           <div className="mt-5 flex-1 sm:mt-0">
             <div className="flex flex-wrap items-center gap-2">
@@ -360,13 +360,12 @@ export function HomeHub() {
                 Spotlight
               </span>
               <span className="rounded-full border border-cyan/30 bg-cyan/15 px-2.5 py-1 text-[9px] font-bold uppercase tracking-[0.14em] text-cyan">
-                Native Sound
+                Image to video
               </span>
             </div>
-            <h2 className="mt-3 text-2xl font-bold text-white sm:text-3xl">Video Audio Studio</h2>
+            <h2 className="mt-3 text-2xl font-bold text-white sm:text-3xl">Image to Video</h2>
             <p className="mt-2 max-w-2xl text-sm leading-relaxed text-muted">
-              Create video and native sound together from one idea in one video — motion and sound,
-              generated as a single job with a real credit preview.
+              Animate a generated or uploaded still image with a motion prompt, then follow the job through to its saved result.
             </p>
           </div>
           <span className="mt-6 inline-flex h-11 shrink-0 items-center gap-2 self-start rounded-xl bg-lime px-5 text-xs font-bold text-ink transition-transform duration-200 group-hover:translate-x-1 sm:mt-0 sm:self-center">
@@ -400,7 +399,7 @@ export function HomeHub() {
             <h2 className="flex items-center gap-2 text-xl font-semibold text-white">
               <Clapperboard size={18} className="text-cyan" /> AI Video Tools
             </h2>
-            <p className="mt-1 text-sm text-muted">Motion, edit, sound and extend — every tool runs a real task you can track.</p>
+            <p className="mt-1 text-sm text-muted">Create clips from text or animate a still image, then track every generation.</p>
           </div>
           <Link href="/tools?kind=video" className="btn-ghost h-9 px-4 text-[11px]">
             View video tools <ArrowRight size={13} />
@@ -420,15 +419,14 @@ export function HomeHub() {
           <div className="flex flex-col gap-8 lg:flex-row lg:items-center">
             <div className="flex-1">
               <h2 className="flex items-center gap-2 text-2xl font-semibold text-white">
-                <Flame size={18} className="text-lime" /> Get more credits
+                <Flame size={18} className="text-lime" /> Clear credit usage
               </h2>
               <p className="mt-2 max-w-xl text-sm leading-relaxed text-muted">
-                Generation runs on real credits — 100 free to start. When you need more, see how the
-                credit system works and how purchases are granted.
+                See the estimated cost before every generation. Credits are reserved when a job starts and returned automatically when a run fails.
               </p>
               <div className="mt-5 flex flex-wrap items-center gap-3">
                 <Link href="/credits" className="btn-primary h-11 px-5 text-xs">
-                  Upgrade now <ArrowRight size={14} />
+                  View credit rules <ArrowRight size={14} />
                 </Link>
                 <Link href="/tasks" className="btn-ghost h-11 px-5 text-xs">
                   View my tasks
@@ -438,9 +436,9 @@ export function HomeHub() {
 
             <div className="grid gap-3 lg:w-[26rem]">
               {([
-                { icon: Plus, value: "+100", label: "Free credits on signup", tone: "lime" },
-                { icon: Zap, value: "−10", label: "Credits per 5s of video", tone: "cyan" },
-                { icon: Minus, value: "−1", label: "Credit per image", tone: "amber" },
+                { icon: Plus, value: "Reserved", label: "Credits before each generation", tone: "lime" },
+                { icon: Zap, value: "Visible", label: "Cost before you submit", tone: "cyan" },
+                { icon: Minus, value: "Refunded", label: "Failed generations return credits", tone: "amber" },
               ] as const).map((row) => (
                 <div
                   key={row.label}
