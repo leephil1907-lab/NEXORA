@@ -36,6 +36,14 @@ export function ChatClient({ initialPrompt = "", initialCharacterId = "" }: { in
   useEffect(() => {
     let cancelled = false;
     (async () => {
+      if (initialCharacterId) {
+        try {
+          const characterResponse = await fetch("/api/characters", { cache: "no-store" });
+          const characterPayload = await characterResponse.json();
+          const character = (characterPayload.characters || []).find((item: { id: string; name: string }) => item.id === initialCharacterId);
+          if (!cancelled && character) setCharacterName(character.name);
+        } catch { /* character label is optional; server validates ownership on send */ }
+      }
       try {
         const configResponse = await fetch("/api/config", { cache: "no-store" });
         const config = await configResponse.json();
@@ -95,7 +103,7 @@ export function ChatClient({ initialPrompt = "", initialCharacterId = "" }: { in
     } finally {
       setBusy(false);
     }
-  }, [busy, input, messages, modelId]);
+  }, [busy, input, messages, modelId, characterId]);
 
   const selected = models.find((model) => model.id === modelId);
 
