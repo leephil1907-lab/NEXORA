@@ -23,7 +23,9 @@ const VIA_LABEL: Record<string, string> = {
 };
 
 export function ChatClient({ initialPrompt = "", initialCharacterId = "" }: { initialPrompt?: string; initialCharacterId?: string }) {
-  const [models, setModels] = useState<LlmPublic[]>([]);\n  const [characterId] = useState(initialCharacterId);\n  const [characterName, setCharacterName] = useState("");
+  const [models, setModels] = useState<LlmPublic[]>([]);
+  const [characterId] = useState(initialCharacterId);
+  const [characterName, setCharacterName] = useState("");
   const [engines, setEngines] = useState<Engines>({});
   const [modelId, setModelId] = useState("");
   const [messages, setMessages] = useState<ChatMessage[]>([]);
@@ -82,7 +84,8 @@ export function ChatClient({ initialPrompt = "", initialCharacterId = "" }: { in
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          modelId: modelId || undefined,\n          characterId: characterId || undefined,
+          modelId: modelId || undefined,
+          characterId: characterId || undefined,
           messages: nextMessages
             .filter((message) => message.role === "user" || message.role === "assistant")
             .map((message) => ({ role: message.role, content: message.content })),
