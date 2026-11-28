@@ -1145,8 +1145,8 @@ export function Workspace({ view = "create", tool }: { view?: "create" | "librar
                     <Zap size={14} className="text-cyan" /> {cost} credit{cost === 1 ? "" : "s"}
                   </p>
                   <p className="mt-1 text-[10px] text-dim">
-                    {isVideo ? `${config.videoCreditCost} per 5s${mode === "professional" ? " · professional ×2" : ""}` : `per image${mode === "professional" ? " · professional ×2" : ""}`}
-                    {" · "}deducted on submit, refunded on failure
+                    {isVideo ? `${config.videoCreditCost} per 5s` : "per image"}
+                    {" · "}reserved on submit, refunded on failure
                   </p>
                 </div>
                 <button
