@@ -54,16 +54,32 @@ function buildInput(model: ModelEntry, args: StartJobArgs): ReplicateInput {
       };
     }
 
-    case "wan-2.5-t2v":
+    case "wan-2.5-t2v": {
+      // Wan 2.5 T2V expects a size string, not the I2V resolution field.
+      const sizes: Record<string, Record<string, string>> = {
+        "16:9": { "480p": "832*480", "720p": "1280*720", "1080p": "1920*1080" },
+        "9:16": { "480p": "480*832", "720p": "720*1280", "1080p": "1080*1920" },
+        "1:1": { "480p": "640*640", "720p": "1024*1024", "1080p": "1440*1440" },
+        "4:3": { "480p": "640*480", "720p": "960*720", "1080p": "1440*1080" },
+        "3:4": { "480p": "480*640", "720p": "720*960", "1080p": "1080*1440" },
+        "21:9": { "480p": "896*384", "720p": "1280*544", "1080p": "1920*816" },
+      };
+      return {
+        prompt,
+        size: sizes[s.aspectRatio]?.[s.resolution] ?? "1280*720",
+        duration: s.durationSeconds,
+        negative_prompt: "blurry, distorted, low quality, deformed anatomy, extra fingers, watermark, text overlay",
+        enable_prompt_expansion: true,
+      };
+    }
+
     case "wan-2.5-i2v": {
-      // Schema: { seed, audio, image, prompt, duration, resolution,
-      //           negative_prompt, enable_prompt_expansion }
+      // Wan 2.5 I2V expects an image URL and a resolution string.
       const input: ReplicateInput = {
         prompt,
         duration: s.durationSeconds,
         resolution: s.resolution,
-        negative_prompt:
-          "blurry, distorted, low quality, deformed anatomy, extra fingers, watermark, text overlay",
+        negative_prompt: "blurry, distorted, low quality, deformed anatomy, extra fingers, watermark, text overlay",
         enable_prompt_expansion: true,
       };
       if (args.imageUrl) input.image = args.imageUrl;
