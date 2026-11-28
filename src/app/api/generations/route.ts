@@ -145,13 +145,34 @@ export async function POST(request: Request) {
 
 
   const admin = createAdminClient();
-  const signInput = async (path: string | undefined): Promise<string | undefined> => {
+  const signInput = async (
+    path: string | undefined,
+    expectedKind: "image" | "video"
+  ): Promise<string | undefined> => {
     if (!path) return undefined;
-    if (!path.startsWith(`${user.id}/inputs/`) || path.includes("..")) {
-      throw new Error("Reference asset does not belong to this account.");
+    if (path.includes("..") || path.startsWith("/") || path.includes("\\")) {
+      throw new Error("Reference asset path is invalid.");
     }
+
+    // Fresh uploads live in the user's inputs folder. Completed generations are
+    // stored under their generation ID, so authorize those by exact DB ownership.
+    const isFreshUpload = expectedKind === "image" && path.startsWith(`${user.id}/inputs/`);
+    if (!isFreshUpload) {
+      const { data: ownedAsset, error: ownershipError } = await supabase
+        .from("generations")
+        .select("id")
+        .eq("user_id", user.id)
+        .eq("asset_path", path)
+        .eq("kind", expectedKind)
+        .eq("status", "succeeded")
+        .maybeSingle();
+      if (ownershipError || !ownedAsset) {
+        throw new Error("This generated asset is unavailable or does not belong to this account.");
+      }
+    }
+
     const { data, error } = await admin.storage.from("lumi-assets").createSignedUrl(path, 3600);
-    if (error || !data) throw new Error("Reference image is missing or unavailable.");
+    if (error || !data) throw new Error("Reference media is missing or unavailable.");
     return data.signedUrl;
   };
 
@@ -159,9 +180,9 @@ export async function POST(request: Request) {
   let endImageUrl: string | undefined;
   let videoUrl: string | undefined;
   try {
-    referenceImageUrl = await signInput(referenceAssetPath);
-    endImageUrl = await signInput(endAssetPath);
-    videoUrl = await signInput(videoAssetPath);
+    referenceImageUrl = await signInput(referenceAssetPath, "image");
+    endImageUrl = await signInput(endAssetPath, "image");
+    videoUrl = await signInput(videoAssetPath, "video");
   } catch (error) {
     return NextResponse.json({ error: error instanceof Error ? error.message : "Invalid reference asset." }, { status: 400 });
   }
