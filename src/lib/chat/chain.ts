@@ -2,7 +2,6 @@
  * Hosted-first chat engine. Gemini is primary, with configured Omega and Venice fallbacks.
  */
 import { omegaChatComplete, omegaConfigured } from "@/lib/providers/omega";
-import { getLlm, UNCENSORED_LLM_CATALOG, type LlmEntry } from "@/lib/models/uncensored-catalog";
 
 export type ChatMessage = { role: "system" | "user" | "assistant"; content: string };
 export type ChainVia = "gemini" | "omega" | "venice";
@@ -79,19 +78,13 @@ async function chatViaVenice(messages: ChatMessage[], maxTokens: number, tempera
   return output.trim();
 }
 
-export function resolveLlm(modelId?: string): LlmEntry {
-  return (modelId && getLlm(modelId)) || UNCENSORED_LLM_CATALOG[0];
-}
-
 export async function chatWithChain(opts: {
   userId: string;
   messages: ChatMessage[];
-  modelId?: string;
   maxTokens?: number;
   temperature?: number;
 }): Promise<ChainResult> {
   void opts.userId;
-  const entry = resolveLlm(opts.modelId);
   const maxTokens = Math.min(Math.max(opts.maxTokens ?? 1024, 16), 4096);
   const temperature = Math.min(Math.max(opts.temperature ?? 0.7, 0), 2);
   const tried: string[] = [];
@@ -113,7 +106,6 @@ export async function chatWithChain(opts: {
     tried.push("omega");
     try {
       const text = await omegaChatComplete(opts.messages, {
-        model: entry.hostedModelId || entry.localModelId,
         maxTokens,
         temperature,
       });
