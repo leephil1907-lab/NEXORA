@@ -153,7 +153,7 @@ export function ChatClient({ initialPrompt = "" }: { initialPrompt?: string }) {
                 >
                   <span className="flex items-center justify-between gap-2">
                     <span className="text-[11px] font-semibold text-white/90">{model.label}</span>
-                    <span className="rounded-full bg-cyan/15 px-1.5 py-0.5 text-[8px] font-bold uppercase tracking-wider text-cyan">connected</span>
+                    <span className="rounded-full bg-cyan/15 px-1.5 py-0.5 text-[8px] font-bold uppercase tracking-wider text-cyan">configured</span>
                   </span>
                 </button>
               );
