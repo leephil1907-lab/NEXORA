@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import type { AppConfig } from "@/lib/generations/types";
-import { publicCatalog, getModel, providerReady, assistantConfigured, customImageConfigured, replicateConfigured } from "@/lib/providers";
+import { publicCatalog, getModel, providerReady, replicateConfigured } from "@/lib/providers";
 import { imageCreditCost, videoCreditBase, maxUploadMb } from "@/lib/generations/pricing";
 import { omegaConfigured } from "@/lib/providers/omega";
 
@@ -23,8 +23,7 @@ export async function GET() {
   const chatReady = Boolean(
     process.env.GEMINI_API_KEY ||
     process.env.VENICE_API_KEY ||
-    omegaConfigured() ||
-    assistantConfigured()
+    omegaConfigured()
   );
 
   const config: AppConfig & { models: typeof models } = {
@@ -38,16 +37,14 @@ export async function GET() {
     models,
   };
 
-  const llmCatalog = process.env.GEMINI_API_KEY
-    ? [{ id: "gemini", label: process.env.GEMINI_MODEL || "Google Gemini" }]
+  const llmCatalog = chatReady
+    ? [{ id: "auto", label: "Automatic · connected AI" }]
     : [];
 
   return NextResponse.json({
     ...config,
     providers: {
       replicate: replicateConfigured(),
-      customImage: customImageConfigured(),
-      customLlm: assistantConfigured(),
       omega: omegaConfigured(),
       venice: Boolean(process.env.VENICE_API_KEY),
     },
@@ -56,8 +53,6 @@ export async function GET() {
       omega: omegaConfigured(),
       venice: Boolean(process.env.VENICE_API_KEY),
       replicate: replicateConfigured(),
-      customImage: customImageConfigured(),
-      customLlm: assistantConfigured(),
     },
     llmCatalog,
   }, { headers: { "Cache-Control": "no-store" } });
