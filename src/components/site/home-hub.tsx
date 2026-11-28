@@ -1,23 +1,16 @@
 "use client";
 
 import Link from "next/link";
-import dynamic from "next/dynamic";
 import { useEffect, useState } from "react";
 import {
-  ArrowRight, ArrowUpRight, Boxes, Check, Clapperboard, Flame, Image as ImageIcon,
-  Layers, Minus, Play, Plus, ShieldAlert, Sparkles, Wand2, Zap,
+  ArrowRight, ArrowUpRight, Boxes, Check, Clapperboard, Image as ImageIcon,
+  Layers, Play, ShieldAlert, Sparkles, Wand2,
 } from "lucide-react";
 import { motion } from "framer-motion";
-import {
-  AnimatedCounter, HoverLift, KineticWords, Magnetic, Reveal, StaggerGroup, StaggerItem,
-} from "@/components/site/motion";
+import { HoverLift, Reveal, StaggerGroup, StaggerItem } from "@/components/site/motion";
 import { TEMPLATES } from "@/lib/tools/templates";
 import { TOOLS } from "@/lib/tools/registry";
 
-const HeroCanvas = dynamic(
-  () => import("@/components/site/hero-canvas").then((module) => module.HeroCanvas),
-  { ssr: false }
-);
 
 const AGE_KEY = "nexora-age-gate";
 
@@ -132,49 +125,10 @@ type ToolCard = {
   badge?: { label: string; tone: "lime" | "cyan" | "amber" };
 };
 
-const IMAGE_TOOLS: ToolCard[] = [
-  {
-    slug: "text-to-image",
-    name: "Text-to-Image",
-    description: "Create a new image from a prompt with the connected Gemini image engine.",
-    icon: Wand2,
-    badge: { label: "New", tone: "lime" },
-  },
-  {
-    slug: "image-editor",
-    name: "Image Editor",
-    description: "Upload a reference image and edit it with natural-language instructions.",
-    icon: ImageIcon,
-    badge: { label: "Reference", tone: "cyan" },
-  },
-];
-
-const VIDEO_TOOLS: ToolCard[] = [
-  {
-    slug: "text-to-video",
-    name: "Text-to-Video",
-    description: "Generate a video clip from a written scene description.",
-    icon: Clapperboard,
-  },
-  {
-    slug: "image-to-video",
-    name: "Image-to-Video",
-    description: "Animate an uploaded or generated still image.",
-    icon: Play,
-    badge: { label: "Popular", tone: "amber" },
-  },
-];
-
 const BADGE_TONES = {
   lime: "border-lime/30 bg-lime/15 text-lime",
   cyan: "border-cyan/30 bg-cyan/15 text-cyan",
   amber: "border-amber/30 bg-amber/15 text-amber",
-} as const;
-
-const STRIP_TONES = {
-  lime: "border-lime/25 bg-lime/10 text-lime",
-  cyan: "border-cyan/25 bg-cyan/10 text-cyan",
-  amber: "border-amber/25 bg-amber/10 text-amber",
 } as const;
 
 function ToolCardGrid({ tools }: { tools: ToolCard[] }) {
