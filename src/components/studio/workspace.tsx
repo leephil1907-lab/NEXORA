@@ -147,10 +147,16 @@ export function Workspace({ view = "create" }: { view?: "create" | "library" | "
 
   useEffect(() => {
     if (modelsForKind.length > 0 && !modelsForKind.some((m) => m.id === modelId)) {
+      const workflow = searchParams.get("workflow");
+      const workflowModel = workflow === "image-to-video"
+        ? modelsForKind.find((m) => m.capabilities.imageToVideo)
+        : workflow === "text-to-video"
+          ? modelsForKind.find((m) => m.capabilities.textToVideo)
+          : undefined;
       const localFirst = modelsForKind.find((m) => m.provider === "custom-image" || m.provider === "custom-llm");
-      setModelId((localFirst ?? modelsForKind[0]).id);
+      setModelId((workflowModel ?? localFirst ?? modelsForKind[0]).id);
     }
-  }, [modelsForKind, modelId]);
+  }, [modelsForKind, modelId, searchParams]);
 
   useEffect(() => {
     if (!currentModel) return;
