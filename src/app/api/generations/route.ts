@@ -200,7 +200,8 @@ export async function POST(request: Request) {
       provider: model.provider,
       model_id: model.id,
       settings,
-      credits_reserved: amount,
+      // Keep the initial row at zero so the authenticated INSERT RLS policy passes.
+      // reserve_generation_credits() deducts the balance and sets credits_reserved atomically.
       extended_from: extendedFrom || null,
     })
     .select("id, status, created_at").single();
