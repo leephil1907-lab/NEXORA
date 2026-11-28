@@ -44,7 +44,7 @@ export async function GET() {
   return NextResponse.json({
     ...config,
     providers: {
-      replicate: replicateConfigured(),
+      replicate: false,
       gemini: geminiConfigured(),
       omega: omegaConfigured(),
       venice: Boolean(process.env.VENICE_API_KEY),
@@ -53,7 +53,7 @@ export async function GET() {
       gemini: Boolean(process.env.GEMINI_API_KEY),
       omega: omegaConfigured(),
       venice: Boolean(process.env.VENICE_API_KEY),
-      replicate: replicateConfigured(),
+      replicate: false,
       geminiImage: geminiConfigured(),
       geminiVideo: geminiConfigured(),
     },
