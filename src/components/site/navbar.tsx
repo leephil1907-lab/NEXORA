@@ -3,11 +3,11 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Logo } from "@/components/ui/logo";
-import { Boxes, Cpu, MessageSquare, Shirt, WandSparkles, Zap } from "lucide-react";
+import { Boxes, Cpu, LayoutGrid, MessageSquare, Shirt, WandSparkles, Zap } from "lucide-react";
 
 const LINKS = [
   { href: "/", label: "Studio", icon: WandSparkles },
-  { href: "/chat", label: "Chat", icon: MessageSquare },
+  { href: "/chat", label: "Chat", icon: MessageSquare },\n  { href: "/tools", label: "Tools", icon: LayoutGrid },
   { href: "/models", label: "Models", icon: Boxes },
   { href: "/studio/try-on", label: "Try-on", icon: Shirt },
   { href: "/studio/local", label: "Local", icon: Cpu },
