@@ -97,6 +97,7 @@ export function Workspace({ view = "create", tool }: { view?: "create" | "librar
   const [presetOpen, setPresetOpen] = useState(false);
 
   const [referenceFile, setReferenceFile] = useState<File | null>(null);
+  const [selectedReferenceAssetPath, setSelectedReferenceAssetPath] = useState<string | null>(null);
   const [referencePreview, setReferencePreview] = useState<string | null>(null);
   const [endEnabled, setEndEnabled] = useState(false);
   const [endFile, setEndFile] = useState<File | null>(null);
@@ -125,6 +126,7 @@ export function Workspace({ view = "create", tool }: { view?: "create" | "librar
 
   function clearReference() {
     setReferenceFile(null);
+    setSelectedReferenceAssetPath(null);
     setReferencePreview(null);
     if (fileInputRef.current) fileInputRef.current.value = "";
   }
@@ -295,7 +297,7 @@ export function Workspace({ view = "create", tool }: { view?: "create" | "librar
     }
     setBusy(true);
     try {
-      let referenceAssetPath: string | undefined;
+      let referenceAssetPath: string | undefined = selectedReferenceAssetPath || undefined;
       let endAssetPath: string | undefined;
       if (referenceFile) referenceAssetPath = await uploadOne(referenceFile);
       if (endEnabled && endFile) endAssetPath = await uploadOne(endFile);
@@ -330,6 +332,26 @@ export function Workspace({ view = "create", tool }: { view?: "create" | "librar
     } finally {
       setBusy(false);
     }
+  }
+
+  function useGeneratedImageAsVideoSource(job: Job) {
+    if (job.kind !== "image" || job.status !== "succeeded" || !job.asset_path || !job.assetUrl) return;
+    const videoModel = config.models.find(
+      (candidate) => candidate.modality === "video" && candidate.ready && candidate.capabilities.imageToVideo
+    );
+    if (!videoModel) {
+      setMessage({ type: "error", text: "No ready image-to-video model is configured on this deployment." });
+      return;
+    }
+    setKind("video");
+    setModelId(videoModel.id);
+    setReferenceFile(null);
+    setSelectedReferenceAssetPath(job.asset_path);
+    setReferencePreview(job.assetUrl);
+    setPrompt(job.prompt);
+    setActiveJob(null);
+    setMessage({ type: "info", text: "Generated image loaded as the video start frame. Add a motion prompt, then generate." });
+    if (fileInputRef.current) fileInputRef.current.value = "";
   }
 
   async function extend(job: Job) {
@@ -679,7 +701,7 @@ export function Workspace({ view = "create", tool }: { view?: "create" | "librar
 
                 {caps?.imageToVideo || !isVideo ? (
                   <div className="mt-3">
-                    {referenceFile ? (
+                    {referenceFile || selectedReferenceAssetPath ? (
                       <div className="flex items-center gap-3 rounded-2xl border border-line bg-white/[0.03] p-3">
                         <Image
                           src={referencePreview || ""}
@@ -690,8 +712,8 @@ export function Workspace({ view = "create", tool }: { view?: "create" | "librar
                           className="h-[72px] w-[72px] rounded-xl object-cover"
                         />
                         <div className="min-w-0 flex-1">
-                          <p className="truncate text-xs font-semibold text-white/85">{referenceFile.name}</p>
-                          <p className="mt-0.5 text-[10px] text-dim">{(referenceFile.size / 1024 / 1024).toFixed(2)} MB · ready</p>
+                          <p className="truncate text-xs font-semibold text-white/85">{referenceFile?.name || "Generated NEXORA image"}</p>
+                          <p className="mt-0.5 text-[10px] text-dim">{referenceFile ? `${(referenceFile.size / 1024 / 1024).toFixed(2)} MB · ready` : "Saved image · ready for video"}</p>
                         </div>
                         <button type="button" onClick={clearReference} className="btn-ghost !p-2" aria-label="Remove">
                           <Trash2 size={14} />
@@ -717,6 +739,7 @@ export function Workspace({ view = "create", tool }: { view?: "create" | "librar
                           onChange={(event) => {
                             const file = event.target.files?.[0] || null;
                             setReferenceFile(file);
+                            setSelectedReferenceAssetPath(null);
                             setReferencePreview(file ? URL.createObjectURL(file) : null);
                             if (file) {
                               const compatible = modelsForKind.find(
@@ -1185,6 +1208,7 @@ export function Workspace({ view = "create", tool }: { view?: "create" | "librar
                   onFavorite={(job) => void patchJob(job, { favorite: !job.favorite })}
                   onRate={(job, rating) => void patchJob(job, { rating })}
                   onExtend={(job) => void extend(job)}
+                  onUseImage={useGeneratedImageAsVideoSource}
                 />
               ) : (
                 <div className="glass-strong rounded-3xl">
