@@ -70,7 +70,7 @@ export const TOOLS: ToolEntry[] = [
     tag: "Portraits",
     needsReference: false,
     steps: ["Describe the character", "Choose portrait format", "Generate", "Save to your library"],
-    promptTemplate: "Create a distinctive, polished avatar portrait. Subject: [describe appearance]. Framing: head and shoulders. Expression: natural and confident. Lighting: soft studio light. Background: clean and intentional. Render with detailed facial features and a refined finish.",
+    promptTemplate: "Create a distinctive, polished avatar portrait from this description. Use head-and-shoulders framing, a natural expression, soft studio lighting, a clean intentional background and detailed facial features. Subject: ",
   },
   {
     slug: "product-photography",
@@ -83,7 +83,7 @@ export const TOOLS: ToolEntry[] = [
     badge: "Pro",
     needsReference: false,
     steps: ["Describe the product", "Set the scene", "Generate", "Download or reuse"],
-    promptTemplate: "Create premium commercial product photography for: [product]. Use a carefully styled set, controlled studio lighting, realistic materials, crisp product details, intentional reflections and an elegant advertising composition.",
+    promptTemplate: "Create premium commercial product photography from the following product description. Use a carefully styled set, controlled studio lighting, realistic materials, crisp product details, intentional reflections and an elegant advertising composition. Product: ",
   },
   {
     slug: "fashion-studio",
@@ -95,7 +95,7 @@ export const TOOLS: ToolEntry[] = [
     tag: "Fashion design",
     needsReference: false,
     steps: ["Describe the look", "Set the editorial mood", "Generate", "Save your concept"],
-    promptTemplate: "Create a high-end fashion editorial for: [garment, outfit or concept]. Show the silhouette, materials, construction, styling and details clearly. Use considered editorial lighting and a cohesive art direction.",
+    promptTemplate: "Create a high-end fashion editorial from the following look description. Show the silhouette, materials, construction, styling and details clearly. Use considered editorial lighting and a cohesive art direction. Look: ",
   },
   {
     slug: "background-editor",
@@ -107,7 +107,20 @@ export const TOOLS: ToolEntry[] = [
     tag: "Scene editing",
     needsReference: true,
     steps: ["Upload an image", "Describe the new scene", "Generate", "Compare and save"],
-    promptTemplate: "Edit the uploaded image by changing its background or environment to: [describe the new scene]. Preserve the main subject, pose, proportions and important foreground details. Match the lighting and perspective naturally.",
+    promptTemplate: "Edit the uploaded image by changing its background or environment as described below. Preserve the main subject, pose, proportions and important foreground details. Match the lighting and perspective naturally. New background or environment: ",
+  },
+  {
+    slug: "image-enhancer",
+    name: "AI Image Enhancer",
+    category: "Images",
+    kind: "image",
+    workflow: "image-edit",
+    desc: "Refine an uploaded image's clarity, lighting, texture and fine details while preserving its composition.",
+    tag: "Image enhancement",
+    badge: "New",
+    needsReference: true,
+    steps: ["Upload an image", "Describe the finish", "Enhance", "Save the result"],
+    promptTemplate: "Enhance the uploaded image with cleaner detail, improved lighting balance, refined texture and natural sharpness. Preserve the original subject, identity, framing, colors and important details. Avoid changing the scene or introducing new objects. Enhancement direction: ",
   },
   {
     slug: "poster-studio",
@@ -119,7 +132,7 @@ export const TOOLS: ToolEntry[] = [
     tag: "Graphic concepts",
     needsReference: false,
     steps: ["Describe the message", "Choose the composition", "Generate", "Save or edit"],
-    promptTemplate: "Create a striking poster or video-thumbnail concept for: [topic]. Establish a strong focal point, clear visual hierarchy, bold composition, legible space for title text and a professional campaign finish.",
+    promptTemplate: "Create a striking poster or video-thumbnail concept from the following topic and message. Establish a strong focal point, clear visual hierarchy, bold composition, space for legible title text and a professional campaign finish. Topic and message: ",
   },
   {
     slug: "text-to-video",
