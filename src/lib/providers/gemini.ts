@@ -106,7 +106,8 @@ export const geminiVideoProvider: GenerationProvider = {
       input.push({ type: "image", data: image.data, mime_type: image.mime });
     }
     const camera = args.settings.cameraMovement === "static" ? "" : ` Camera movement: ${args.settings.cameraMovement.replace(/-/g, " ")}.`;
-    input.push({ type: "text", text: args.prompt + camera });
+    const frameInstruction = args.endImageUrl ? "Use the first reference image as the opening frame and the second reference image as the final frame. Create coherent motion that connects the two frames. " : "";
+    input.push({ type: "text", text: frameInstruction + args.prompt + camera });
     const duration = Math.min(15, Math.max(3, args.settings.durationSeconds || 5));
     const resolution = args.settings.resolution === "1080p" ? "1080p" : "720p";
     const task = args.imageUrl ? "image_to_video" : "text_to_video";
