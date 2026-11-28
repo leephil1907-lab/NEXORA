@@ -4,9 +4,8 @@ import { Footer } from "@/components/site/footer";
 import { ChatClient } from "./chat-client";
 
 export const metadata: Metadata = {
-  title: "Uncensored Chat — NEXORA AI",
-  description:
-    "Chat with uncensored models (DeepSeek V4.1 Flash, GLM-5.3, Qwen3.8-27B Abliterated, Gemma 4 31B Heretic, Venice Uncensored 1.2). Local-first: your machine runs the models, hosted engines are optional fallbacks.",
+  title: "AI Chat — NEXORA",
+  description: "A creative assistant powered by NEXORA's connected hosted inference provider.",
 };
 
 export default async function ChatPage({ searchParams }: { searchParams: Promise<{ prompt?: string }> }) {
