@@ -21,8 +21,6 @@ services:
         sync: false
       - key: SUPABASE_SERVICE_ROLE_KEY
         sync: false
-      - key: REPLICATE_API_TOKEN
-        sync: false
       - key: FASHN_API_KEY
         sync: false
       - key: OMEGA_API_KEY
