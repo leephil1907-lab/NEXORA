@@ -78,7 +78,7 @@ export const TEMPLATES: TemplatePreset[] = [
     name: "Runway Motion",
     category: "Fashion",
     kind: "video",
-    tool: "video-audio-studio",
+    tool: "image-to-video",
     prompt:
       "Fashion runway walk in slow motion, dynamic rim lighting, fabric movement, audience bokeh, confident pacing, synchronized ambient sound design",
     badge: "Pro",
@@ -188,7 +188,7 @@ export const TEMPLATES: TemplatePreset[] = [
     name: "Sneaker Launch",
     category: "Product",
     kind: "video",
-    tool: "video-audio-studio",
+    tool: "image-to-video",
     prompt:
       "Product launch video for a futuristic sneaker, floating rotation, gradient studio backdrop, punchy light streaks, synchronized beat-driven sound design",
     badge: "New",
