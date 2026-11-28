@@ -339,7 +339,7 @@ export function HomeHub() {
               <span className="grid h-7 w-7 place-items-center rounded-lg border border-white/10 bg-white/[0.03] text-lime">
                 <Zap size={12} />
               </span>
-              18+ gated · real credits · instant previews
+              18+ gated · real credits · live job tracking
             </div>
           </motion.div>
         </div>
