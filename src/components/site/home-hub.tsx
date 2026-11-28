@@ -5,7 +5,7 @@ import dynamic from "next/dynamic";
 import { useEffect, useState } from "react";
 import {
   ArrowRight, ArrowUpRight, Boxes, Check, Clapperboard, Flame, Image as ImageIcon,
-  Layers, Minus, Music4, Play, Plus, ShieldAlert, Sparkles, TimerReset, Wand2, Zap,
+  Layers, Minus, Play, Plus, ShieldAlert, Sparkles, Wand2, Zap,
 } from "lucide-react";
 import { motion } from "framer-motion";
 import {
