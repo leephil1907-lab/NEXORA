@@ -527,7 +527,7 @@ export function Workspace({ view = "create" }: { view?: "create" | "library" | "
       <aside className="border-b border-white/[.07] bg-[#0b101a]/80 backdrop-blur-2xl lg:sticky lg:top-0 lg:h-screen lg:border-b-0 lg:border-r">
         <div className="flex h-full flex-col p-4 sm:p-5">
           <div className="flex items-center justify-between gap-3 px-1 py-1">
-            <Link href="/" aria-label="NEXORA home"><Logo /></Link>
+            <Link href="/studio" aria-label="NEXORA home"><Logo /></Link>
             <span className="rounded-full border border-lime/20 bg-lime/[.08] px-2 py-1 text-[8px] font-bold uppercase tracking-[.15em] text-lime">Studio</span>
           </div>
           <p className="mb-2 mt-9 px-3 text-[9px] font-bold uppercase tracking-[.22em] text-dim">Workspace</p>
