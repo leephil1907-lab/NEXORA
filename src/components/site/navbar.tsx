@@ -9,6 +9,7 @@ const LINKS = [
   { href: "/tools", label: "Tools", icon: LayoutGrid },
   { href: "/templates", label: "Templates", icon: Layers },
   { href: "/cases", label: "Cases", icon: Workflow },
+  { href: "/workflows", label: "Flows", icon: Workflow },
   { href: "/characters", label: "Characters", icon: Bot },
   { href: "/api-access", label: "API", icon: KeyRound },
   { href: "/tasks", label: "Tasks", icon: ListChecks },
