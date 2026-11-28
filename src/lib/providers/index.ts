@@ -1,5 +1,4 @@
 import { customImageProvider, assistantConfigured, customImageConfigured, chatComplete } from "./custom";
-import { replicateProvider } from "./replicate";
 import { geminiImageProvider, geminiVideoProvider } from "./gemini";
 import { getModel, MODEL_CATALOG, ASSISTANT_CATALOG, publicCatalog } from "./catalog";
 import type { GenerationProvider, ModelEntry, ProviderJob, StartJobArgs, ProviderJobStatus } from "./types";
@@ -19,14 +18,8 @@ export type { ModelEntry, ProviderJob, StartJobArgs, ProviderJobStatus };
 
 export function geminiConfigured(): boolean { return Boolean(process.env.GEMINI_API_KEY); }
 
-export function replicateConfigured(): boolean {
-  return Boolean(process.env.REPLICATE_API_TOKEN);
-}
-
 export function providerFor(model: ModelEntry): GenerationProvider {
   switch (model.provider) {
-    case "replicate":
-      return replicateProvider;
     case "custom-image":
       return customImageProvider;
     case "gemini-image":
@@ -40,8 +33,6 @@ export function providerFor(model: ModelEntry): GenerationProvider {
 
 export function providerReady(model: ModelEntry): boolean {
   switch (model.provider) {
-    case "replicate":
-      return replicateConfigured();
     case "custom-image":
       return customImageConfigured();
     case "gemini-image":
