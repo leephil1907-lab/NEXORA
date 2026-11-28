@@ -720,7 +720,11 @@ export function Workspace({ view = "create", tool }: { view?: "create" | "librar
                             setReferencePreview(file ? URL.createObjectURL(file) : null);
                             if (file) {
                               const compatible = modelsForKind.find(
-                                (candidate) => candidate.capabilities.referenceImage && candidate.ready
+                                (candidate) =>
+                                  candidate.ready &&
+                                  (kind === "video"
+                                    ? candidate.capabilities.imageToVideo
+                                    : candidate.capabilities.referenceImage)
                               );
                               if (compatible) {
                                 setModelId(compatible.id);
