@@ -7,7 +7,6 @@ import {
   Send, ShieldCheck, Sparkles,
 } from "lucide-react";
 
-type LlmPublic = { id: string; label: string };
 type ChatMessage = { role: "user" | "assistant"; content: string; via?: string; detail?: string };
 
 type Engines = {
@@ -23,11 +22,9 @@ const VIA_LABEL: Record<string, string> = {
 };
 
 export function ChatClient({ initialPrompt = "", initialCharacterId = "" }: { initialPrompt?: string; initialCharacterId?: string }) {
-  const [models, setModels] = useState<LlmPublic[]>([]);
   const [characterId] = useState(initialCharacterId);
   const [characterName, setCharacterName] = useState("");
   const [engines, setEngines] = useState<Engines>({});
-  const [modelId, setModelId] = useState("");
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [input, setInput] = useState(initialPrompt);
   const [busy, setBusy] = useState(false);
@@ -50,11 +47,7 @@ export function ChatClient({ initialPrompt = "", initialCharacterId = "" }: { in
         const configResponse = await fetch("/api/config", { cache: "no-store" });
         const config = await configResponse.json();
         if (cancelled) return;
-        setModels(Array.isArray(config.llmCatalog) ? config.llmCatalog : []);
         setEngines(config.engines ?? {});
-        if (Array.isArray(config.llmCatalog) && config.llmCatalog.length > 0) {
-          setModelId((current) => current || config.llmCatalog[0].id);
-        }
       } catch { /* engine list stays empty — shown honestly */ }
 
       const accessResponse = await fetch("/api/generations?limit=1", { cache: "no-store" });
@@ -84,7 +77,6 @@ export function ChatClient({ initialPrompt = "", initialCharacterId = "" }: { in
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          modelId: modelId || undefined,
           characterId: characterId || undefined,
           messages: nextMessages
             .filter((message) => message.role === "user" || message.role === "assistant")
@@ -106,9 +98,9 @@ export function ChatClient({ initialPrompt = "", initialCharacterId = "" }: { in
     } finally {
       setBusy(false);
     }
-  }, [busy, input, messages, modelId, characterId]);
+  }, [busy, input, messages, characterId]);
 
-  const selected = models.find((model) => model.id === modelId);
+  const selectedLabel = engines.gemini ? "Google Gemini · automatic" : engines.omega ? "Omega AI · automatic" : engines.venice ? "Venice AI · automatic" : "AI assistant";
 
   return (
     <main className="mx-auto grid w-full max-w-[1400px] flex-1 gap-6 px-5 py-8 lg:grid-cols-[320px_minmax(0,1fr)]">
@@ -148,28 +140,10 @@ export function ChatClient({ initialPrompt = "", initialCharacterId = "" }: { in
 
         <div className="rounded-2xl border border-line bg-panel p-5">
           <p className="flex items-center gap-2 text-[10px] font-semibold uppercase tracking-[0.22em] text-dim">
-            <MessageSquare size={12} className="text-lime" /> Connected model
+            <MessageSquare size={12} className="text-lime" /> Automatic routing
           </p>
-          <div className="mt-3 space-y-1.5">
-            {models.map((model) => {
-              const active = model.id === modelId;
-              return (
-                <button
-                  key={model.id}
-                  type="button"
-                  onClick={() => setModelId(model.id)}
-                  className={`w-full rounded-xl border px-3 py-3 text-left transition-colors duration-200 ${
-                    active ? "border-lime/40 bg-lime/10" : "border-line bg-white/[0.02] hover:border-white/15"
-                  }`}
-                >
-                  <span className="flex items-center justify-between gap-2">
-                    <span className="text-[11px] font-semibold text-white/90">{model.label}</span>
-                    <span className="rounded-full bg-cyan/15 px-1.5 py-0.5 text-[8px] font-bold uppercase tracking-wider text-cyan">configured</span>
-                  </span>
-                </button>
-              );
-            })}
-          </div>
+          <p className="mt-3 text-sm font-semibold text-white/90">{selectedLabel}</p>
+          <p className="mt-1.5 text-[10px] leading-relaxed text-muted">NEXORA chooses the available connected engine automatically. There is nothing to select.</p>
         </div>
       </aside>
 
@@ -215,7 +189,7 @@ export function ChatClient({ initialPrompt = "", initialCharacterId = "" }: { in
               <Sparkles size={26} className="mx-auto text-lime" />
               <p className="mt-4 text-sm font-semibold text-white">Your creative assistant.</p>
               <p className="mx-auto mt-2 max-w-md text-xs leading-relaxed text-muted">
-                Choose the connected model and ask for help with prompts, ideas or creative planning.
+                Ask for help with prompts, ideas or creative planning. NEXORA routes the request automatically.
               </p>
             </div>
           )}
