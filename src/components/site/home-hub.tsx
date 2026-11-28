@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import {
-  ArrowRight, ArrowUpRight, Boxes, Check, Clapperboard, Image as ImageIcon,
+  ArrowRight, ArrowUpRight, Boxes, Camera, Check, Clapperboard, Image as ImageIcon, Paintbrush, PanelsTopLeft, Package, Shirt, UserRound,
   Layers, Play, ShieldAlert, Sparkles, Wand2,
 } from "lucide-react";
 import { motion } from "framer-motion";
@@ -215,6 +215,19 @@ function TemplatesRail() {
   );
 }
 
+const TOOL_ICONS: Record<string, typeof Boxes> = {
+  "text-to-image": Sparkles,
+  "image-editor": ImageIcon,
+  "style-transfer": Layers,
+  "avatar-studio": UserRound,
+  "product-photography": Camera,
+  "fashion-studio": Shirt,
+  "poster-studio": PanelsTopLeft,
+  "background-editor": Paintbrush,
+  "text-to-video": Clapperboard,
+  "image-to-video": Play,
+};
+
 export function HomeHub() {
   const [category, setCategory] = useState<"All" | "Images" | "Video">("All");
   const visibleTools = TOOLS.filter((tool) => category === "All" || tool.category === category);
@@ -222,7 +235,7 @@ export function HomeHub() {
     slug: tool.slug,
     name: tool.name,
     description: tool.desc,
-    icon: tool.category === "Images" ? ImageIcon : Clapperboard,
+    icon: TOOL_ICONS[tool.slug] || (tool.category === "Images" ? ImageIcon : Clapperboard),
     badge: tool.badge ? {
       label: tool.badge,
       tone: tool.badge === "Hot" ? "amber" : tool.badge === "Pro" ? "cyan" : "lime",
