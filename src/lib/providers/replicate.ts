@@ -191,10 +191,19 @@ export const replicateProvider: GenerationProvider = {
 
   async start(args: StartJobArgs, model: ModelEntry): Promise<ProviderJob> {
     const input = buildInput(model, args);
+    // Replicate has distinct routes for version-pinned community models and
+    // official models. Official models must be called through /models/{owner}/{name}/predictions;
+    // sending { model: ... } to /predictions is not a valid request body.
+    const path = model.replicateVersion
+      ? "/predictions"
+      : model.replicateModel
+        ? `/models/${model.replicateModel}/predictions`
+        : "";
+    if (!path) throw new Error(`No Replicate model identifier is configured for ${model.id}.`);
     const payload: Record<string, unknown> = model.replicateVersion
       ? { version: model.replicateVersion, input }
-      : { model: model.replicateModel, input };
-    const data = await replicateFetch("/predictions", {
+      : { input };
+    const data = await replicateFetch(path, {
       method: "POST",
       body: JSON.stringify(payload),
     });
