@@ -21,8 +21,6 @@ services:
         sync: false
       - key: SUPABASE_SERVICE_ROLE_KEY
         sync: false
-      - key: FASHN_API_KEY
-        sync: false
       - key: OMEGA_API_KEY
         sync: false
       - key: VENICE_API_KEY
@@ -31,27 +29,11 @@ services:
         sync: false
       - key: GEMINI_MODEL
         value: gemini-3.8-flash
-      - key: VIPEAK_API_KEY
-        sync: false
-      - key: VIPEAK_BASE_URL
-        sync: false
       - key: NEXORA_IMAGE_CREDIT_COST
         value: "1"
       - key: NEXORA_VIDEO_CREDIT_COST
         value: "10"
       - key: NEXORA_MAX_UPLOAD_MB
         value: "20"
-      - key: NEXORA_LLM_ENDPOINT
-        sync: false
-      - key: NEXORA_LLM_API_KEY
-        sync: false
-      - key: NEXORA_LLM_MODEL
-        value: default
-      - key: NEXORA_IMAGE_ENDPOINT
-        sync: false
-      - key: NEXORA_IMAGE_API_KEY
-        sync: false
-      - key: NEXORA_IMAGE_MODEL
-        value: default
       - key: NEXORA_ALLOW_SENSITIVE
         value: "false"
