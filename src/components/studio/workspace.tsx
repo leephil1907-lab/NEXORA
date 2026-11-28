@@ -87,10 +87,9 @@ export function Workspace({ view = "create", tool }: { view?: "create" | "librar
   const [duration, setDuration] = useState(5);
   const [resolution, setResolution] = useState("480p");
   const [aspect, setAspect] = useState("16:9");
-  const [mode, setMode] = useState<"standard" | "professional">("standard");
+  const [mode] = useState<"standard">("standard");
   const [guidance, setGuidance] = useState(5);
   const [camera, setCamera] = useState("static");
-  const [audio, setAudio] = useState(false);
   const [sensitive, setSensitive] = useState(false);
   const [sensitiveConsent, setSensitiveConsent] = useState(false);
   const [gateOpen, setGateOpen] = useState(false);
@@ -304,7 +303,7 @@ export function Workspace({ view = "create", tool }: { view?: "create" | "librar
       mode,
       cameraMovement: camera,
       guidance,
-      audio: Boolean(caps?.audio && audio),
+      audio: false,
       sensitive,
     };
   }
@@ -679,7 +678,6 @@ export function Workspace({ view = "create", tool }: { view?: "create" | "librar
                         if (value === kind) return;
                         setKind(value);
                         setModelId("");
-                        setAudio(false);
                         clearEnd();
                       }}
                       className={cn(
