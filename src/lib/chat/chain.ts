@@ -1,8 +1,5 @@
 /**
- * Hosted-first chat engine.
- *
- * Gemini is the primary hosted provider. Local Companion is not required.
- * Optional legacy providers remain available as fallbacks.
+ * Hosted-first chat engine. Gemini is primary, with configured Omega and Venice fallbacks.
  */
 import { omegaChatComplete, omegaConfigured } from "@/lib/providers/omega";
 import { getLlm, UNCENSORED_LLM_CATALOG, type LlmEntry } from "@/lib/models/uncensored-catalog";
