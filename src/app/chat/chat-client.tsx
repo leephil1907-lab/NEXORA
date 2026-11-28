@@ -110,21 +110,21 @@ export function ChatClient({ initialPrompt = "" }: { initialPrompt?: string }) {
           <ul className="mt-3 space-y-2 text-[11px]">
             <li className="flex items-center gap-2">
               {engines.gemini ? (
-                <><CheckCircle2 size={13} className="text-mint" /><span className="text-white/85">Gemini hosted — connected</span></>
+                <><CheckCircle2 size={13} className="text-mint" /><span className="text-white/85">Gemini hosted — configured</span></>
               ) : (
                 <><Sparkles size={13} className="text-dim" /><span className="text-muted">Gemini hosted — not configured</span></>
               )}
             </li>
             <li className="flex items-center gap-2">
               {engines.omega ? (
-                <><CheckCircle2 size={13} className="text-mint" /><span className="text-white/85">Omega AI fallback connected</span></>
+                <><CheckCircle2 size={13} className="text-mint" /><span className="text-white/85">Omega AI fallback configured</span></>
               ) : (
                 <><Sparkles size={13} className="text-dim" /><span className="text-muted">Omega AI fallback not configured</span></>
               )}
             </li>
             <li className="flex items-center gap-2">
               {engines.venice ? (
-                <><CheckCircle2 size={13} className="text-mint" /><span className="text-white/85">Venice fallback connected</span></>
+                <><CheckCircle2 size={13} className="text-mint" /><span className="text-white/85">Venice fallback configured</span></>
               ) : (
                 <><ShieldCheck size={13} className="text-dim" /><span className="text-muted">Venice fallback not configured</span></>
               )}
