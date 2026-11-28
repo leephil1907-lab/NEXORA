@@ -17,6 +17,7 @@ const TOOL_ICONS: Record<string, typeof ImageIcon> = {
   "product-photography": Camera,
   "fashion-studio": Shirt,
   "background-editor": Paintbrush,
+  "image-enhancer": Sparkles,
   "poster-studio": PanelsTopLeft,
   "text-to-video": Clapperboard,
   "image-to-video": Clapperboard,
