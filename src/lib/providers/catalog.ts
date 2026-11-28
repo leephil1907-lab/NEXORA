@@ -16,18 +16,8 @@ const cap = (partial: Partial<ModelCapabilities>): ModelCapabilities => ({
 });
 
 /**
- * NEXORA model catalog — every entry maps to a real, publicly documented model.
- *
- * Hosted on Replicate (real cloud GPUs):
- *   - wan-video/wan-2.2-t2v-fast, wan-video/wan-2.2-i2v-fast  (PrunaAI-optimized Wan 2.2)
- *   - wan-video/wan-2.5-t2v, wan-video/wan-2.5-i2v            (Wan 2.5, one-pass A/V sync)
- *   - lightricks/ltx-video, lightricks/ltx-video-0.9.7-distilled (LTX-Video)
- *   - black-forest-labs/flux-schnell                          (image)
- *
- * Bring-your-own endpoints (self-hosted GPU, OpenAI-compatible APIs):
- *   - axiomofmind/Moss-image-nsfw-uncensored-lora-GGUF        (image, via NEXORA_IMAGE_ENDPOINT)
- *   - AtomicChat/Inkling-2-Mini-Uncensored-GGUF               (assistant, via NEXORA_LLM_ENDPOINT)
- *   - dongfangshuo/Dongfangshuo-Qwen3.8-27B-NSFW-v4           (assistant, via NEXORA_LLM_ENDPOINT)
+ * Generation models supported by the server-side provider adapters.
+ * The public config endpoint exposes only entries whose provider is configured.
  */
 export const MODEL_CATALOG: ModelEntry[] = [
   {
@@ -36,8 +26,8 @@ export const MODEL_CATALOG: ModelEntry[] = [
     modality: "video",
     provider: "replicate",
     replicateModel: "wan-video/wan-2.2-t2v-fast",
-    source: "Replicate · Alibaba Tongyi Lab (PrunaAI optimized)",
-    tagline: "Fastest text-to-video. 5s clips in ~40s at 480p.",
+    source: "Replicate · Wan",
+    tagline: "Fast text-to-video generation.",
     durations: [5],
     resolutions: ["480p", "720p"],
     capabilities: cap({ textToVideo: true }),
@@ -48,11 +38,11 @@ export const MODEL_CATALOG: ModelEntry[] = [
     modality: "video",
     provider: "replicate",
     replicateModel: "wan-video/wan-2.2-i2v-fast",
-    source: "Replicate · Alibaba Tongyi Lab (PrunaAI optimized)",
-    tagline: "Animate a still image. 10M+ runs — the workhorse image-to-video model.",
+    source: "Replicate · Wan",
+    tagline: "Animate a still image with a motion prompt.",
     durations: [5],
     resolutions: ["480p", "720p"],
-    capabilities: cap({ imageToVideo: true, textToVideo: true }),
+    capabilities: cap({ imageToVideo: true }),
   },
   {
     id: "wan-2.2-i2v-a14b",
@@ -60,56 +50,44 @@ export const MODEL_CATALOG: ModelEntry[] = [
     modality: "video",
     provider: "replicate",
     replicateModel: "wan-video/wan-2.2-i2v-a14b",
-    source: "Replicate · Alibaba Tongyi Lab",
-    tagline: "Full-quality Wan 2.2 image-to-video at 480p/720p with step control.",
+    source: "Replicate · Wan",
+    tagline: "Higher-quality image-to-video with step control.",
     durations: [5],
     resolutions: ["480p", "720p"],
-    capabilities: cap({
-      imageToVideo: true,
-      textToVideo: true,
-      directDuration: true,
-      directResolution: true,
-    }),
+    capabilities: cap({ imageToVideo: true, directDuration: true, directResolution: true }),
   },
   {
     id: "wan-2.5-t2v",
-    label: "Wan 2.5 T2V",
+    label: "Wan 2.5 Text to Video",
     modality: "video",
     provider: "replicate",
     replicateModel: "wan-video/wan-2.5-t2v",
-    source: "Replicate · Alibaba Tongyi Lab",
-    tagline: "Richer text-to-video with synchronized audio. Up to 10s.",
+    source: "Replicate · Wan",
+    tagline: "Text-to-video with synchronized audio output.",
     durations: [5, 10],
     resolutions: ["480p", "720p", "1080p"],
     capabilities: cap({ textToVideo: true, audio: true, negativePrompt: true, directDuration: true, directResolution: true }),
   },
   {
     id: "wan-2.5-i2v",
-    label: "Wan 2.5 I2V",
+    label: "Wan 2.5 Image to Video",
     modality: "video",
     provider: "replicate",
     replicateModel: "wan-video/wan-2.5-i2v",
-    source: "Replicate · Alibaba Tongyi Lab",
-    tagline: "Image-to-video with one-pass A/V sync and lip-sync. Custom-voice support.",
+    source: "Replicate · Wan",
+    tagline: "Image-to-video with synchronized audio output.",
     durations: [5, 10],
     resolutions: ["480p", "720p", "1080p"],
-    capabilities: cap({
-      imageToVideo: true,
-      textToVideo: true,
-      audio: true,
-      negativePrompt: true,
-      directDuration: true,
-      directResolution: true,
-    }),
+    capabilities: cap({ imageToVideo: true, audio: true, negativePrompt: true, directDuration: true, directResolution: true }),
   },
   {
     id: "ltx-video",
-    label: "LTX-Video",
+    label: "LTX Video",
     modality: "video",
     provider: "replicate",
     replicateModel: "lightricks/ltx-video",
     source: "Replicate · Lightricks",
-    tagline: "Real-time DiT video with full parameter control (guidance, frames, seed).",
+    tagline: "Text or image guided video with camera and guidance controls.",
     durations: [5, 10],
     resolutions: ["480p", "720p"],
     capabilities: cap({
@@ -124,12 +102,12 @@ export const MODEL_CATALOG: ModelEntry[] = [
   },
   {
     id: "ltx-video-0.9.7",
-    label: "LTX-Video 0.9.7",
+    label: "LTX Video 0.9.7",
     modality: "video",
     provider: "replicate",
     replicateModel: "lightricks/ltx-video-0.9.7",
     source: "Replicate · Lightricks",
-    tagline: "Highest-fidelity LTX at 30 FPS up to 1216×704. Full parameter control.",
+    tagline: "High-fidelity text or image guided video.",
     durations: [5, 10],
     resolutions: ["720p", "1080p"],
     capabilities: cap({
@@ -144,13 +122,13 @@ export const MODEL_CATALOG: ModelEntry[] = [
   },
   {
     id: "ltx-video-0.9.7-distilled",
-    label: "LTX-Video 0.9.7 Distilled",
+    label: "LTX Video Distilled",
     modality: "video",
     provider: "replicate",
     replicateModel: "lightricks/ltx-video-0.9.7-distilled",
     replicateVersion: "e7f2778ec419047c564a6620b2d9bf7d6c64673411bf2ae13e628ee2b2c0b5b1",
     source: "Replicate · Lightricks",
-    tagline: "Fast 480p/720p video. Text, image, or video input — extend clips in both directions.",
+    tagline: "Fast text, image or video guided generation and clip continuation.",
     durations: [5, 10],
     resolutions: ["480p", "720p"],
     capabilities: cap({
@@ -162,77 +140,53 @@ export const MODEL_CATALOG: ModelEntry[] = [
   },
   {
     id: "flux-schnell",
-    label: "FLUX.1 [schnell]",
+    label: "FLUX.1 Schnell",
     modality: "image",
     provider: "replicate",
     replicateModel: "black-forest-labs/flux-schnell",
     source: "Replicate · Black Forest Labs",
-    tagline: "Photorealistic stills in seconds. Native aspect-ratio control.",
+    tagline: "Fast text-to-image generation.",
     durations: [0],
     resolutions: ["1080p"],
-    capabilities: cap({ textToVideo: true, directAspect: true }),
+    capabilities: cap({ directAspect: true }),
   },
   {
     id: "flux-kontext-dev",
-    label: "FLUX.1 Kontext [dev]",
+    label: "FLUX.1 Kontext Dev",
     modality: "image",
     provider: "replicate",
     replicateModel: "black-forest-labs/flux-kontext-dev",
     source: "Replicate · Black Forest Labs",
-    tagline: "Instruction-based image editing. Upload a reference and describe the change — restyle, relight, repose.",
+    tagline: "Edit an uploaded image with natural-language instructions.",
     durations: [0],
     resolutions: ["1080p"],
-    capabilities: cap({ textToVideo: true, referenceImage: true, directAspect: true }),
-  },
-  {
-    id: "moss-gguf-lora",
-    label: "MOSS Image · Uncensored LoRA (GGUF)",
-    modality: "image",
-    provider: "custom-image",
-    endpointModelId: "moss-image-nsfw-uncensored-lora",
-    source: "Self-hosted · axiomofmind/Moss-image-nsfw-uncensored-lora-GGUF",
-    tagline: "Bring-your-own GPU endpoint. Serve the GGUF LoRA pipeline and point NEXORA at it.",
-    durations: [0],
-    resolutions: ["1080p"],
-    capabilities: cap({ textToVideo: true, directAspect: true, directGuidance: true }),
+    capabilities: cap({ referenceImage: true, directAspect: true }),
   },
 ];
 
-/**
- * Prompt-assistant models. These are OpenAI-compatible chat backends (for
- * example llama.cpp server hosting the GGUF builds below). The assistant is a
- * real inference call to the operator's own GPU — never a canned response.
- */
 export const ASSISTANT_CATALOG = [
   {
-    id: "inkling-2-mini",
-    label: "Inkling 2 Mini (Uncensored GGUF)",
-    source: "Self-hosted · AtomicChat/Inkling-2-Mini-Uncensored-GGUF",
-    deployment:
-      "llama-server -m Inkling-2-Mini-Uncensored-AD-Q4_K.gguf --mmproj mmproj-Inkling-2-Mini-Uncensored-F16.gguf --jinja -c 32768 -ngl 99",
-  },
-  {
-    id: "dongfangshuo-qwen3.8",
-    label: "Dongfangshuo Qwen3.8 27B (NSFW GGUF)",
-    source: "Self-hosted · dongfangshuo/Dongfangshuo-Qwen3.8-27B-NSFW-v4",
-    deployment: "Serve with llama.cpp (llama-server) or any OpenAI-compatible runtime, then set NEXORA_LLM_MODEL.",
+    id: "gemini",
+    label: "Google Gemini",
+    source: "Google · Gemini API",
+    deployment: "Configured with GEMINI_API_KEY on the server.",
   },
 ] as const;
 
 export function getModel(id: string): ModelEntry | undefined {
-  return MODEL_CATALOG.find((m) => m.id === id);
+  return MODEL_CATALOG.find((model) => model.id === id);
 }
 
 export function publicCatalog() {
-  return MODEL_CATALOG.map((m) => ({
-    id: m.id,
-    label: m.label,
-    modality: m.modality,
-    provider: m.provider,
-    source: m.source,
-    tagline: m.tagline,
-    durations: m.durations,
-    resolutions: m.resolutions,
-    capabilities: m.capabilities,
+  return MODEL_CATALOG.map((model) => ({
+    id: model.id,
+    label: model.label,
+    modality: model.modality,
+    provider: model.provider,
+    source: model.source,
+    tagline: model.tagline,
+    durations: model.durations,
+    resolutions: model.resolutions,
+    capabilities: model.capabilities,
   }));
 }
