@@ -180,10 +180,9 @@ export function Workspace({ view = "create", tool }: { view?: "create" | "librar
 
   const caps = currentModel?.capabilities;
   const isVideo = kind === "video";
-  const modeMultiplier = mode === "professional" ? 2 : 1;
   const cost = isVideo
-    ? Math.max(1, Math.ceil((config.videoCreditCost * duration) / 5)) * modeMultiplier
-    : config.imageCreditCost * modeMultiplier;
+    ? Math.max(1, Math.ceil((config.videoCreditCost * duration) / 5))
+    : config.imageCreditCost;
 
   /* ------------------------------- data loading ------------------------------ */
 
@@ -721,7 +720,7 @@ export function Workspace({ view = "create", tool }: { view?: "create" | "librar
                   JPEG / PNG / WebP files up to {config.maxUploadMb}MB
                 </p>
 
-                {caps?.imageToVideo || !isVideo ? (
+                {(isVideo ? caps?.imageToVideo : caps?.referenceImage) ? (
                   <div className="mt-3">
                     {referenceFile || selectedReferenceAssetPath ? (
                       <div className="flex items-center gap-3 rounded-2xl border border-line bg-white/[0.03] p-3">
@@ -832,7 +831,7 @@ export function Workspace({ view = "create", tool }: { view?: "create" | "librar
                   </div>
                 ) : (
                   <p className="mt-3 rounded-xl border border-line bg-white/[0.02] px-3.5 py-2.5 text-[10px] text-dim">
-                    {currentModel?.label} is a pure text-to-video model — reference images stay disabled for it.
+                    {isVideo ? `${currentModel?.label} is a text-to-video model — reference images are not supported.` : `${currentModel?.label} is a text-to-image model — reference editing is not supported.`}
                   </p>
                 )}
               </div>
@@ -1059,31 +1058,6 @@ export function Workspace({ view = "create", tool }: { view?: "create" | "librar
                     className="mt-2.5 w-full accent-lime"
                     aria-label="Creativity versus relevance"
                   />
-                </div>
-
-                {/* Mode */}
-                <div className="mt-6">
-                  <p className="mb-2 text-xs font-semibold text-white/80">Mode</p>
-                  <div className="flex flex-wrap gap-2">
-                    {(["standard", "professional"] as const).map((value) => (
-                      <button
-                        key={value}
-                        type="button"
-                        onClick={() => setMode(value)}
-                        className={cn(
-                          "flex items-center gap-2 rounded-full border px-4 py-2 text-[11px] font-semibold capitalize transition-all duration-200",
-                          mode === value
-                            ? "border-lime/50 bg-lime/15 text-white"
-                            : "border-line bg-white/[0.02] text-muted hover:border-white/20 hover:text-white"
-                        )}
-                      >
-                        <span className={cn("grid h-3.5 w-3.5 place-items-center rounded-full border", mode === value ? "border-lime bg-lime" : "border-white/25")}>
-                          {mode === value && <Check size={8} className="text-ink" />}
-                        </span>
-                        {value} {value === "professional" && <span className="text-[9px] text-amber">×2 credits</span>}
-                      </button>
-                    ))}
-                  </div>
                 </div>
 
                 {/* Camera */}
