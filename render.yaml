@@ -29,6 +29,10 @@ services:
         sync: false
       - key: VENICE_API_KEY
         sync: false
+      - key: GEMINI_API_KEY
+        sync: false
+      - key: GEMINI_MODEL
+        value: gemini-3.8-flash
       - key: VIPEAK_API_KEY
         sync: false
       - key: VIPEAK_BASE_URL
