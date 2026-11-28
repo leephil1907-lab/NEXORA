@@ -262,7 +262,7 @@ export function Workspace({ view = "create", tool }: { view?: "create" | "librar
 
   useEffect(() => {
     const path = referencePath;
-    if (!path || !user || !ageVerified || !tool?.needsReference || selectedReferenceAssetPath === path) return;
+    if (!path || !user || !ageVerified || !tool?.needsReference) return;
     let cancelled = false;
     void fetch(`/api/uploads?path=${encodeURIComponent(path)}`, { cache: "no-store" })
       .then(async (response) => {
