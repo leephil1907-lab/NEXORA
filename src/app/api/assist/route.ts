@@ -15,11 +15,7 @@ const assistSchema = z.object({
 });
 
 /**
- * Real prompt-assistant inference on the local-first engine chain: the user's
- * own machine (Local Companion), then a self-hosted OpenAI-compatible endpoint
- * (e.g. llama.cpp serving Inkling-2-Mini or Dongfangshuo Qwen3.8), then the
- * optional hosted fallbacks. Never a canned response: when no engine is
- * connected this returns an explicit unavailability error.
+ * Real prompt-assistant inference through the hosted-first chat chain (Gemini, then configured hosted fallbacks). Never a canned response: when no provider is configured this returns an explicit unavailability error.
  */
 export async function POST(request: Request) {
   let body: unknown;
@@ -42,7 +38,6 @@ export async function POST(request: Request) {
   try {
     const result = await chatWithChain({
       userId: user.id,
-      modelId: parsed.data.modelId,
       maxTokens: 400,
       messages: [
         {
