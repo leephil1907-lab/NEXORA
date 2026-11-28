@@ -1,18 +1,5 @@
 import type { Metadata } from "next";
-import { Inter, Sora } from "next/font/google";
 import "./globals.css";
-
-const display = Sora({
-  subsets: ["latin"],
-  variable: "--font-display",
-  weight: ["400", "500", "600", "700", "800"]
-});
-
-const sans = Inter({
-  subsets: ["latin"],
-  variable: "--font-sans",
-  weight: ["400", "500", "600", "700"]
-});
 
 export const metadata: Metadata = {
   title: {
@@ -32,7 +19,7 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
   return (
-    <html lang="en" className={`${display.variable} ${sans.variable}`}>
+    <html lang="en">
       <body className="font-sans antialiased">
         {/* Tool-interface background: flat charcoal + faint grid */}
         <div aria-hidden className="fixed inset-0 z-0 overflow-hidden">
