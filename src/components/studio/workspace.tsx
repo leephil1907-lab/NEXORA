@@ -1175,9 +1175,11 @@ export function Workspace({ view = "create" }: { view?: "create" | "library" | "
               </div>
               <div className="mt-4"><LibraryTabs value={libraryFilter} onChange={setLibraryFilter} counts={filterCounts} /></div>
               <div className="mt-5"><LibraryGrid jobs={filteredJobs} activeId={activeJob?.id ?? null} onSelect={setActiveJob} /></div>
+              {activeJob && <div className="mt-6"><JobView job={activeJob} canExtend={canExtend} onFavorite={(job) => void patchJob(job, { favorite: !job.favorite })} onRate={(job, rating) => void patchJob(job, { rating })} onExtend={(job) => void extend(job)} /></div>}
             </section>
           )}
           {view === "credits" && <section className="glass-strong rounded-3xl p-5 sm:p-7"><CreditsPanel credits={credits} imageCost={config.imageCreditCost} videoCost={config.videoCreditCost} /></section>}
+          {view === "admin" && role !== "admin" && <section className="glass rounded-3xl p-8 text-center"><ShieldAlert size={24} className="mx-auto text-amber" /><h2 className="mt-3 text-base font-semibold text-white">Administrator access required</h2><p className="mt-2 text-sm text-muted">This area is available only to authorized NEXORA administrators.</p></section>}
           {view === "admin" && role === "admin" && (
             <section className="glass-strong rounded-3xl p-5 sm:p-7">
               <AdminPanel users={adminUsers} busy={adminBusy} onSubmit={adjustCredits} />
