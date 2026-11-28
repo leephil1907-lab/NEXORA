@@ -11,7 +11,7 @@ The interface only lists models whose provider is configured. Unsupported model 
 | `/` | NEXORA home and supported creative entry points |
 | `/studio` | Main image and video creation workspace |
 | `/tools` | Supported image/video tools |
-| `/templates` | Prompt presets that open supported tools |
+| `/templates` | Prompt presets that open supported tools |\n| `/cases` | Reusable creative briefs, starter cases and user-saved cases |\n| `/characters` | Private fictional character profiles and character-aware hosted chat |\n| `/workflows` | Guided image, video, character and reference production flows |\n| `/api-access` | API key management and available authenticated API endpoints |
 | `/tasks` | Generation history, results and saved assets |
 | `/chat` | Hosted creative assistant (Gemini first; configured fallbacks only) |
 | `/profile` | Account and usage summary |
@@ -45,7 +45,7 @@ The studio only enables controls supported by the selected model. Camera directi
 5. The status endpoint polls the provider and stores successful media in the private `lumi-assets` bucket.
 6. Failed jobs are marked failed and reserved credits are refunded.
 
-Generated image assets can be selected as image-to-video references. Clip continuation is available only on completed jobs whose selected model supports video input.
+Generated image assets can be selected as image-to-video references. Clip continuation is available only on completed jobs whose selected model supports video input. Character profiles and saved cases are private to their owner. Character-aware chat prepends the selected character profile as creative context. Guided workflows link the supported stages; there is no drag-and-drop node canvas yet.
 
 ## API
 
@@ -59,7 +59,7 @@ Generated image assets can be selected as image-to-video references. Clip contin
 | `POST /api/uploads` | Validate and store private reference images |
 | `POST /api/assist` | Prompt enhancement using the configured hosted chat chain |
 | `POST /api/chat` | Hosted AI chat |
-| `POST /api/admin/credits` | Admin-only credit adjustments |
+| `POST /api/admin/credits` | Admin-only credit adjustments |\n| `GET /api/keys`, `POST /api/keys`, `DELETE /api/keys?id=…` | Create, list and revoke personal API keys; raw keys are shown only once |\n| `GET /api/v1/account` | API-key authenticated account and credit balance |\n| `GET /api/v1/models` | API-key authenticated configured generation model catalog |
 
 ## Required environment
 
