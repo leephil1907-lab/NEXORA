@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import {
-  ArrowRight, ArrowUpRight, Boxes, Camera, Check, Clapperboard, Image as ImageIcon, Paintbrush, PanelsTopLeft, Package, Shirt, UserRound,
+  ArrowRight, ArrowUpRight, Boxes, Camera, Check, Clapperboard, Image as ImageIcon, Paintbrush, PanelsTopLeft, Package, Shirt, UserRound, Sparkles,
   Layers, Play, ShieldAlert, Sparkles, Wand2,
 } from "lucide-react";
 import { motion } from "framer-motion";
@@ -224,6 +224,7 @@ const TOOL_ICONS: Record<string, typeof Boxes> = {
   "fashion-studio": Shirt,
   "poster-studio": PanelsTopLeft,
   "background-editor": Paintbrush,
+  "image-enhancer": Sparkles,
   "text-to-video": Clapperboard,
   "image-to-video": Play,
 };
