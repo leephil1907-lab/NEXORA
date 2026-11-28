@@ -1,15 +1,14 @@
 /**
  * Hosted-first chat engine.
  *
- * Groq is the primary hosted provider. Optional legacy fallbacks remain
- * available for existing deployments, but Local Companion is no longer
- * required for chat.
+ * Gemini is the primary hosted provider. Local Companion is not required.
+ * Optional legacy providers remain available as fallbacks.
  */
 import { omegaChatComplete, omegaConfigured } from "@/lib/providers/omega";
 import { getLlm, UNCENSORED_LLM_CATALOG, type LlmEntry } from "@/lib/models/uncensored-catalog";
 
 export type ChatMessage = { role: "system" | "user" | "assistant"; content: string };
-export type ChainVia = "groq" | "omega" | "venice";
+export type ChainVia = "gemini" | "omega" | "venice";
 export type ChainResult = { text: string; via: ChainVia; detail: string; tried: string[] };
 
 export class ChatUnavailableError extends Error {
@@ -20,31 +19,40 @@ export class ChatUnavailableError extends Error {
   }
 }
 
-async function groqChatComplete(messages: ChatMessage[], maxTokens: number, temperature: number): Promise<string> {
-  const key = process.env.GROQ_API_KEY;
-  if (!key) throw new Error("Groq is not configured.");
-  const response = await fetch("https://api.groq.com/openai/v1/chat/completions", {
-    method: "POST",
-    headers: { "Content-Type": "application/json", Authorization: `Bearer ${key}` },
-    body: JSON.stringify({
-      model: process.env.GROQ_MODEL || "openai/gpt-oss-20b",
-      messages,
-      max_tokens: maxTokens,
-      temperature,
-      stream: false,
-    }),
-    signal: AbortSignal.timeout(60_000),
-  });
+async function geminiChatComplete(messages: ChatMessage[], maxTokens: number, temperature: number): Promise<string> {
+  const key = process.env.GEMINI_API_KEY;
+  if (!key) throw new Error("Gemini is not configured.");
+  const model = process.env.GEMINI_MODEL || "gemini-3.8-flash";
+  const system = messages.find((message) => message.role === "system")?.content;
+  const contents = messages
+    .filter((message) => message.role !== "system")
+    .map((message) => ({
+      role: message.role === "assistant" ? "model" : "user",
+      parts: [{ text: message.content }],
+    }));
+  const response = await fetch(
+    `https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(model)}:generateContent?key=${encodeURIComponent(key)}`,
+    {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        ...(system ? { systemInstruction: { parts: [{ text: system }] } } : {}),
+        contents,
+        generationConfig: { maxOutputTokens: maxTokens, temperature },
+      }),
+      signal: AbortSignal.timeout(60_000),
+    }
+  );
   const raw = await response.text();
-  let data: { choices?: { message?: { content?: string } }[]; error?: { message?: string } | string };
+  let data: {
+    candidates?: { content?: { parts?: { text?: string }[] } }[];
+    error?: { message?: string };
+  };
   try { data = JSON.parse(raw); }
-  catch { throw new Error(`Groq returned an unexpected response (HTTP ${response.status}).`); }
-  if (!response.ok) {
-    const detail = typeof data.error === "string" ? data.error : data.error?.message;
-    throw new Error(detail || `Groq request failed (HTTP ${response.status}).`);
-  }
-  const output = data.choices?.[0]?.message?.content;
-  if (typeof output !== "string" || !output.trim()) throw new Error("Groq returned no text.");
+  catch { throw new Error(`Gemini returned an unexpected response (HTTP ${response.status}).`); }
+  if (!response.ok) throw new Error(data.error?.message || `Gemini request failed (HTTP ${response.status}).`);
+  const output = data.candidates?.[0]?.content?.parts?.map((part) => part.text || "").join("");
+  if (typeof output !== "string" || !output.trim()) throw new Error("Gemini returned no text.");
   return output.trim();
 }
 
@@ -92,14 +100,14 @@ export async function chatWithChain(opts: {
   const tried: string[] = [];
   const failures: string[] = [];
 
-  // 1. Hosted Groq API. No local device or local model is needed.
-  if (process.env.GROQ_API_KEY) {
-    tried.push("groq");
+  // 1. Gemini hosted API. Free-tier model access is available on eligible projects.
+  if (process.env.GEMINI_API_KEY) {
+    tried.push("gemini");
     try {
-      const text = await groqChatComplete(opts.messages, maxTokens, temperature);
-      return { text, via: "groq", detail: "Groq hosted inference", tried };
+      const text = await geminiChatComplete(opts.messages, maxTokens, temperature);
+      return { text, via: "gemini", detail: "Google Gemini hosted inference", tried };
     } catch (error) {
-      failures.push(`Groq: ${error instanceof Error ? error.message : "request failed"}`);
+      failures.push(`Gemini: ${error instanceof Error ? error.message : "request failed"}`);
     }
   }
 
@@ -133,6 +141,6 @@ export async function chatWithChain(opts: {
     throw new ChatUnavailableError(`All configured hosted chat providers failed. ${failures.join(" · ")}`);
   }
   throw new ChatUnavailableError(
-    "NEXORA chat is not connected yet. Add GROQ_API_KEY in the Render environment to enable hosted chat. No Local Companion or local model is required."
+    "NEXORA chat is not connected yet. Add GEMINI_API_KEY in the Render environment to enable hosted chat. No Local Companion or local model is required."
   );
 }
