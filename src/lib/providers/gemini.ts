@@ -74,7 +74,7 @@ export const geminiImageProvider: GenerationProvider = {
       method: "POST",
       body: JSON.stringify({
         contents: [{ role: "user", parts }],
-        generationConfig: { responseModalities: ["IMAGE"], imageConfig: { aspectRatio: args.settings.aspectRatio, imageSize: "1K" } },
+        generationConfig: { responseModalities: ["TEXT", "IMAGE"], imageConfig: { aspectRatio: args.settings.aspectRatio, imageSize: "1K" } },
       }),
     });
     const candidates = body.candidates || [];
