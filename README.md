@@ -77,6 +77,10 @@ LocalAI, or a custom diffusers gateway.
 conventions of the `ccore/ThreeJS-3D-Scenes-v2` dataset (custom shader material, inline
 camera controls, no addons).
 
+## Hosted chat
+
+Chat uses hosted Gemini inference first and does not require the Local Companion. Set `GEMINI_API_KEY` in the deployment environment. `GEMINI_MODEL` is optional and defaults to `gemini-3.8-flash`. If Gemini is unavailable, configured Omega and Venice providers are attempted as fallbacks.
+
 ## Environment
 
 Copy `.env.example` to `.env.local`:
@@ -84,7 +88,7 @@ Copy `.env.example` to `.env.local`:
 | Variable | Purpose |
 | --- | --- |
 | `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY`, `SUPABASE_SERVICE_ROLE_KEY` | Supabase project (auth, Postgres, storage) |
-| `REPLICATE_API_TOKEN` | Enables the Replicate models (Wan / LTX / FLUX) |
+| `GEMINI_API_KEY`, `GEMINI_MODEL` | Hosted Gemini chat (model defaults to `gemini-3.8-flash`) |\n| `REPLICATE_API_TOKEN` | Enables the Replicate models (Wan / LTX / FLUX) |
 | `NEXORA_IMAGE_CREDIT_COST`, `NEXORA_VIDEO_CREDIT_COST`, `NEXORA_MAX_UPLOAD_MB` | Credit economy + upload limits |
 | `NEXORA_LLM_ENDPOINT`, `NEXORA_LLM_API_KEY`, `NEXORA_LLM_MODEL` | Prompt-assistant backend (llama.cpp etc.) |
 | `NEXORA_IMAGE_ENDPOINT`, `NEXORA_IMAGE_API_KEY`, `NEXORA_IMAGE_MODEL` | Custom image backend (ComfyUI/LocalAI etc.) |
