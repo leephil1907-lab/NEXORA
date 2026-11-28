@@ -21,6 +21,30 @@ const cap = (partial: Partial<ModelCapabilities>): ModelCapabilities => ({
  */
 export const MODEL_CATALOG: ModelEntry[] = [
   {
+    id: "gemini-3.1-flash-lite-image",
+    label: "Gemini 3.1 Flash Lite Image",
+    modality: "image",
+    provider: "gemini-image",
+    endpointModelId: "gemini-3.1-flash-lite-image",
+    source: "Google Gemini · Nano Banana 2 Lite",
+    tagline: "Native image generation and reference-image editing.",
+    durations: [0],
+    resolutions: ["1080p"],
+    capabilities: cap({ referenceImage: true, directAspect: true }),
+  },
+  {
+    id: "gemini-omni-1.2-flash",
+    label: "Gemini Omni 1.2 Flash",
+    modality: "video",
+    provider: "gemini-video",
+    endpointModelId: "gemini-omni-1.2-flash",
+    source: "Google Gemini · Omni",
+    tagline: "Native text-to-video and image-to-video with generated audio.",
+    durations: [5, 10],
+    resolutions: ["720p", "1080p"],
+    capabilities: cap({ textToVideo: true, imageToVideo: true, startEndFrame: true, audio: true, directDuration: true, directResolution: true, directAspect: true }),
+  },
+  {
     id: "wan-2.2-t2v-fast",
     label: "Wan 2.2 T2V Fast",
     modality: "video",
